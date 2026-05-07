@@ -63,7 +63,10 @@ public class SafeZone : MonoBehaviour
         {
             isPlayerInside = true;
             if (Player.instance != null) Player.instance.safeZoneInvincible = true; // 무적 활성화
-            Debug.Log("[SafeZone] 플레이어 보호 시작! 무적 상태입니다.");
+            Debug.Log("[SafeZone] 플레이어 보호 시작! 클리어 카운트다운 진입!");
+            
+            // 들어가자마자 바로(혹은 짧은 딜레이 후) 클리어되도록 변경
+            TriggerVictory();
         }
     }
 
@@ -72,36 +75,42 @@ public class SafeZone : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             isPlayerInside = false;
-            if (Player.instance != null) Player.instance.safeZoneInvincible = false; // 무적 해제
-            timer = 0f;
-            Debug.Log("[SafeZone] 플레이어 보호 종료! 공격에 취약합니다.");
+            if (Player.instance != null) Player.instance.safeZoneInvincible = false;
         }
     }
 
     private void Update()
     {
-        if (isPlayerInside)
-        {
-            timer += Time.deltaTime;
-            if (timer >= winDelay)
-            {
-                TriggerVictory();
-            }
-        }
+        // 기존의 버티기 로직은 제거 (들어가면 바로 클리어되므로)
     }
 
     void TriggerVictory()
     {
         isPlayerInside = false; // 중복 호출 방지
-        Debug.Log("🏆 [VICTORY] 스테이지 클리어!");
+        Debug.Log("🏆 [VICTORY] 스테이지 클리어! 곧 마을로 귀환합니다.");
         
         if (PlayerUI.instance != null)
         {
             PlayerUI.instance.ShowVictory();
         }
 
-        // 게임을 완전히 멈춥니다.
-        Time.timeScale = 0f; 
+        // 클리어 연출: 시간이 아예 멈추지 않고 영화처럼 1/10 속도로 아주 느리게 흘러감
+        Time.timeScale = 0.1f; 
+
+        // 3초 뒤에 마을로 돌아가는 코루틴 실행
+        StartCoroutine(ReturnToVillageRoutine());
+    }
+
+    private System.Collections.IEnumerator ReturnToVillageRoutine()
+    {
+        // 현실 시간 기준으로 3초 대기 (게임 내 시간은 느려졌지만 현실 시간은 그대로 감)
+        yield return new WaitForSecondsRealtime(3f);
+        
+        // 씬을 넘어가기 전에 무조건 시간을 원래대로 되돌려야 함
+        Time.timeScale = 1f; 
+        
+        // 마을 씬으로 자동 귀환
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Village_Scene");
     }
 }
 

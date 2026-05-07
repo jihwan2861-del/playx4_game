@@ -59,8 +59,9 @@ public class LevelController : MonoBehaviour {
     [Tooltip("다음 패턴까지의 간격 (초)")]
     public float laserPatternInterval = 4f;
 
-    [Header("Phase Frenzy Settings (60초 후 폭주 모드)")]
-    public float frenzyStartTime = 60f;
+    [Header("Survival / Boss Settings")]
+    public float frenzyStartTime = 60f; // 보스 출현까지 걸리는 기본 시간
+    [HideInInspector] public float currentBossTimer; // 현재 남은 보스 출현 시간
     public bool isFrenzyPhase = false;
     public GameObject interactionButtonPrefab;
     public GameObject safeZonePrefab;
@@ -72,13 +73,16 @@ public class LevelController : MonoBehaviour {
     private int activatedButtonsCount = 0;
     private bool isSafeZoneActive = false;
     private Coroutine laserCoroutine;
-
+    public static LevelController instance;
 
     private void Awake()
     {
-        // PC 빌드(exe 파일) 실행 시 해상도를 강제로 720 x 960 세로형 창모드로 고정합니다.
+        if (instance == null)
+            instance = this;
+            
+        // PC 빌드(exe 파일) 실행 시 해상도를 강제로 1920 x 1200 창모드로 고정합니다.
 #if UNITY_STANDALONE
-        Screen.SetResolution(720, 960, FullScreenMode.Windowed);
+        Screen.SetResolution(1920, 1200, FullScreenMode.Windowed);
 #endif
     }
 
@@ -116,9 +120,32 @@ public class LevelController : MonoBehaviour {
         {
             laserCoroutine = StartCoroutine(EndlessLaserPatternSpawning());
         }
+        // 타이머 방식 보스 등장으로 변경
+        currentBossTimer = frenzyStartTime;
+    }
 
-        // 60초 후 폭주 모드 시작 예약
-        Invoke(nameof(StartFrenzyPhase), frenzyStartTime);
+    private void Update()
+    {
+        if (!isFrenzyPhase && currentBossTimer > 0)
+        {
+            currentBossTimer -= Time.deltaTime;
+            // UI 업데이트 추가 가능
+            if (currentBossTimer <= 0)
+            {
+                currentBossTimer = 0;
+                StartFrenzyPhase();
+            }
+        }
+    }
+
+    public void ReduceBossTimer(float timeToReduce)
+    {
+        if (isFrenzyPhase) return;
+
+        currentBossTimer -= timeToReduce;
+        if (currentBossTimer < 0) currentBossTimer = 0;
+        
+        Debug.Log($"⏳ [보스 출현 단축] 남은 시간: {currentBossTimer:F1}초");
     }
 
     void StartFrenzyPhase()
@@ -251,10 +278,14 @@ public class LevelController : MonoBehaviour {
     {
         if (delay != 0)
             yield return new WaitForSeconds(delay);
-        if (Player.instance != null)
+            
+        if (Player.instance != null && mainCamera != null)
         {
-            // 웨이브 프리팹은 내부에 저장된 절대 좌표와 경로를 사용하므로, 원본 그대로 소환합니다.
-            GameObject waveInstance = Instantiate(Wave);
+            // 카메라의 현재 위치를 기준으로 소환 (월드 좌표(0,0)에 고정되지 않게 함)
+            Vector3 cameraPos = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, 0f);
+
+            GameObject waveInstance = Instantiate(Wave, cameraPos, Quaternion.identity);
+            
             if (inverted)
             {
                 // 뒤집혀야 하는 경우에만 기존 회전값에 180도를 추가로 더해줍니다.
@@ -344,25 +375,28 @@ public class LevelController : MonoBehaviour {
 
             switch(edge)
             {
-                case 0: // Top (아래로 비행)
+                case 0: // Top
                     spawnPos = new Vector2(Random.Range(minX, maxX), maxY);
-                    rotZ = 180f;
                     break;
-                case 1: // Bottom (위로 비행)
+                case 1: // Bottom
                     spawnPos = new Vector2(Random.Range(minX, maxX), minY);
-                    rotZ = 0f;
                     break;
-                case 2: // Left (오른쪽으로 비행)
+                case 2: // Left
                     spawnPos = new Vector2(minX, Random.Range(minY, maxY));
-                    rotZ = -90f;
                     break;
-                case 3: // Right (왼쪽으로 비행)
+                case 3: // Right
                     spawnPos = new Vector2(maxX, Random.Range(minY, maxY));
-                    rotZ = 90f;
                     break;
             }
 
-            GameObject newEnemy = Instantiate(prefabToSpawn, spawnPos, Quaternion.Euler(0, 0, rotZ));
+            // 카메라(화면 중앙)를 향하는 방향 계산
+            Vector2 targetPos = mainCamera.transform.position;
+            Vector2 direction = (targetPos - spawnPos).normalized;
+            
+            // 유니티 2D에서 위쪽(Y축)이 앞을 향한다고 가정할 때 각도 계산
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+
+            GameObject newEnemy = Instantiate(prefabToSpawn, spawnPos, Quaternion.Euler(0, 0, angle));
             
             // 기존 길따라가기 스크립트 제거 (직진만 하도록)
             var follow = newEnemy.GetComponent<FollowThePath>();

@@ -14733,7 +14733,7 @@ Transform:
   m_GameObject: {fileID: 1510184446397956}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -6.59, z: 0}
+  m_LocalPosition: {x: 448.45786, y: 210.61693, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -14767,7 +14767,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1510184446397956}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c089f20f9a699574f8238edac2f9da56, type: 3}
   m_Name: 
@@ -14782,8 +14782,11 @@ MonoBehaviour:
     minY: 0
     maxY: 0
   baseSpeed: 15
-  dashSpeedMultiplier: 3
-  dashInvincibilityDuration: 3
+  normalDashSpeedMultiplier: 2
+  justEvadeSpeedMultiplier: 4
+  justEvadeInvincibilityDuration: 1
+  grazeRadius: 2.5
+  deadzonePrefab: {fileID: 0}
   isDashing: 0
   maxDashCharges: 5
   currentDashCharges: 5

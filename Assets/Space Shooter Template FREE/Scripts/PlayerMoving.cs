@@ -25,9 +25,11 @@ public class PlayerMoving : MonoBehaviour {
     public float baseSpeed = 15f;
 
     [Header("Dash Settings")]
-    public float dashSpeedMultiplier = 3f;
-    public float dashInvincibilityDuration = 3f; // 장막(데드존) 유지 시간으로 사용
-    [Tooltip("야스오 장막(데드존) 프리팹을 여기에 넣으세요. 비워두면 임시로 파란 상자가 나옵니다.")]
+    public float normalDashSpeedMultiplier = 2f;
+    public float justEvadeSpeedMultiplier = 4f;
+    public float justEvadeInvincibilityDuration = 1.0f; 
+    public float grazeRadius = 2.5f; // 저스트 회피 감지 범위
+    [Tooltip("야스오 장막(데드존) 프리팹을 여기에 넣으세요.")]
     public GameObject deadzonePrefab;
     [HideInInspector] public bool isDashing = false;
 
@@ -142,8 +144,12 @@ public class PlayerMoving : MonoBehaviour {
             }
             // -------------------------
 
-            // 마우스 추적 시절의 30f는 키보드 조작에는 너무 빠를 수 있어 기본 baseSpeed(15f)를 사용
-            float currentSpeed = isDashing ? baseSpeed * dashSpeedMultiplier : baseSpeed;
+            // 기본 속도는 일정하게 (마우스 추적 시절의 30f는 너무 빠르므로)
+            float currentSpeed = baseSpeed;
+            if (isDashing)
+            {
+                currentSpeed = Player.instance.isInvincible ? baseSpeed * justEvadeSpeedMultiplier : baseSpeed * normalDashSpeedMultiplier;
+            }
 
             // Rigidbody2D를 이용한 물리 이동 처리 (벽 충돌을 위해 velocity 사용)
             if (rb != null)
@@ -177,10 +183,41 @@ public class PlayerMoving : MonoBehaviour {
     {
         currentDashCharges--;
         UpdateDashUI();
-        StartCoroutine(DashRoutine());
         
-        // 기존의 플레이어 무적 대신 장막(데드존) 소환
-        SpawnDeadzone();
+        // 저스트 회피 판정 (내 주변 반경에 적이 있는지 검사)
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, grazeRadius);
+        bool justEvaded = false;
+        foreach (var hit in hits)
+        {
+            // 적, 총알, 또는 레이저(이름이나 태그로 판별) 근처에서 대쉬하면 저스트 회피 발동!
+            if (hit.CompareTag("Enemy") || hit.CompareTag("Projectile") || hit.CompareTag("Laser") || hit.name.ToLower().Contains("laser"))
+            {
+                justEvaded = true;
+                break;
+            }
+        }
+
+        if (justEvaded)
+        {
+            Debug.Log("✨ [저스트 회피 발동!] 완벽한 타이밍!");
+            StartCoroutine(DashRoutine(justEvadeInvincibilityDuration));
+            Player.instance.StartCoroutine(Player.instance.DashInvincibility(justEvadeInvincibilityDuration));
+            
+            // 시각적 효과 (시간 느려짐)
+            StartCoroutine(HitStopRoutine());
+        }
+        else
+        {
+            Debug.Log("💨 일반 대쉬 (무적 없음)");
+            StartCoroutine(DashRoutine(0.3f)); // 일반 대쉬는 짧게 이동만
+        }
+    }
+
+    IEnumerator HitStopRoutine()
+    {
+        Time.timeScale = 0.3f;
+        yield return new WaitForSecondsRealtime(0.2f);
+        Time.timeScale = 1f;
     }
 
     void SpawnDeadzone()
@@ -218,8 +255,8 @@ public class PlayerMoving : MonoBehaviour {
             deadzoneObj.transform.localScale = new Vector3(5f, 5f, 1f); // 크기 조절
         }
 
-        // 대쉬 지속시간(dashInvincibilityDuration)이 끝나면 장막 자동 철거
-        Destroy(deadzoneObj, dashInvincibilityDuration);
+        // 대쉬 지속시간(justEvadeInvincibilityDuration)이 끝나면 장막 자동 철거
+        Destroy(deadzoneObj, justEvadeInvincibilityDuration);
     }
 
     public void AddDashCharge()
@@ -276,10 +313,17 @@ public class PlayerMoving : MonoBehaviour {
         }
     }
 
-    IEnumerator DashRoutine()
+    IEnumerator DashRoutine(float duration)
     {
         isDashing = true;
-        yield return new WaitForSeconds(dashInvincibilityDuration);
+        yield return new WaitForSeconds(duration);
         isDashing = false;
+    }
+    
+    // 에디터에서 위험 감지 구역(Graze Radius)을 보여주기 위한 기즈모
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0, 1, 1, 0.3f);
+        Gizmos.DrawWireSphere(transform.position, grazeRadius);
     }
 }

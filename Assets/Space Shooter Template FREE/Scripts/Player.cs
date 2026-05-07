@@ -77,6 +77,11 @@ public class Player : MonoBehaviour
     {
         if (destructionFX != null)
             Instantiate(destructionFX, transform.position, Quaternion.identity);
+
+        // 죽었을 때 화면이 어두워지고 마을/재시작 메뉴가 뜨는 연출 실행
+        if (GameTransitionManager.instance != null)
+            GameTransitionManager.instance.OnPlayerDeath();
+
         Destroy(gameObject);
     }
 }
