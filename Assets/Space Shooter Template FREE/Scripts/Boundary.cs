@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,12 +25,21 @@ public class Boundary : MonoBehaviour {
         boundareCollider.size = viewportSize;
     }
 
+    private void Update()
+    {
+        if (Camera.main != null)
+        {
+            // 바운더리가 항상 카메라(화면 중앙)를 따라다니도록 위치 업데이트
+            transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, transform.position.z);
+        }
+    }
+
     //when another object leaves collider
     private void OnTriggerExit2D(Collider2D collision) 
     {        
         if (collision.tag == "Projectile")
         {
-            Destroy(collision.gameObject);
+            collision.gameObject.SetActive(false); // 풀링을 위해 파괴 대신 비활성화
         }
         else if (collision.tag == "Bonus") 
             Destroy(collision.gameObject); 

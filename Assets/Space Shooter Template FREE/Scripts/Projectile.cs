@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,7 +35,8 @@ public class Projectile : MonoBehaviour {
 
     void Destruction() 
     {
-        Destroy(gameObject);
+        // 오브젝트 풀링을 위해 파괴하는 대신 꺼줍니다(비활성화).
+        gameObject.SetActive(false);
     }
 }
 

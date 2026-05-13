@@ -48,6 +48,6 @@ MonoBehaviour:
   - {x: 8, y: -90}
   warningPrefab: {fileID: 8635508656456218434, guid: 6a577f65e5a5c8d42986ccfb5a5d8dac,
     type: 3}
-  laserPrefab: {fileID: 6797077087356842565, guid: 061389246b21ef54a8e89450e4b68064,
+  laserPrefab: {fileID: 3537128510345306646, guid: fa6c3c504cfcaf347b08112080573b3f,
     type: 3}
   warningDuration: 1

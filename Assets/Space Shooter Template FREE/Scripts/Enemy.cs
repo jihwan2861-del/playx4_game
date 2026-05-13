@@ -27,6 +27,9 @@ public class Enemy : MonoBehaviour {
     [Header("Visual Override (그림 덮어씌우기)")]
     [Tooltip("에디터에서 만든 애니메이션 프리팹을 여기에 넣으면, 기존 우주선 그림을 지우고 이 그림으로 교체됩니다.")]
     public GameObject overrideVisualPrefab;
+    [Header("Animation Settings")]
+    [Tooltip("총알을 쏠 때 실행할 애니메이션 Trigger 이름 (예: Attack)")]
+    public string attackAnimTrigger = "Attack";
     #endregion
 
     private void Start()
@@ -73,6 +76,15 @@ public class Enemy : MonoBehaviour {
 
         if (Random.value < currentChance / 100f)                             //if random value less than shot probability, making a shot
         {                         
+            // [애니메이션 추가] 총알 발사 시 공격 애니메이션 실행
+            Animator anim = GetComponentInChildren<Animator>(); // 자식으로 들어간 overrideVisualPrefab 등에서 찾음
+            if (anim == null) anim = GetComponent<Animator>();
+
+            if (anim != null && !string.IsNullOrEmpty(attackAnimTrigger))
+            {
+                anim.SetTrigger(attackAnimTrigger);
+            }
+
             GameObject bullet = Instantiate(Projectile, gameObject.transform.position, Quaternion.identity); 
 
             // 발사한 것이 '레이저' 라면 (LaserBeam 스크립트를 갖고 있다면)

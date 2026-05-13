@@ -146,8 +146,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72b6089e27b1bf04d872f2468cdcd91e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: -3
-  isHoming: 1
+  speed: -10
+  isHoming: 0
   homingRotSpeed: 291.7
   homingDuration: 2
 --- !u!114 &114558762702151638

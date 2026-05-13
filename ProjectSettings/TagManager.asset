@@ -15,6 +15,7 @@ TagManager:
   - PlayerRay
   - Rocket
   - Suppressor
+  - Laser
   layers:
   - Default
   - TransparentFX
