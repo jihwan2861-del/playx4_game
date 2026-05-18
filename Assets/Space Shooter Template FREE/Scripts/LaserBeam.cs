@@ -30,7 +30,7 @@ public class LaserBeam : MonoBehaviour
         // 플레이어이고, 틱 시간이 지났을 때만 데미지를 줍니다.
         if (collision.CompareTag("Player") && Time.time >= nextDamageTime)
         {
-            Player.instance.GetDamage(damage);
+            Player.instance.GetDamage(damage, gameObject);
             nextDamageTime = Time.time + damageTickRate;
         }
     }

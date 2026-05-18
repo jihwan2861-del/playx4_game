@@ -20,6 +20,9 @@ public class PatternShooter : MonoBehaviour
     public float fireInterval = 0.5f;   // 몇 초 간격으로 계속 쏠지
     public bool loopFire = true;        // 계속 쏠 것인가?
 
+    [Header("랜덤 패턴 설정")]
+    public bool randomizePattern = true; // 매 연사(버스트) 시작 시 패턴을 랜덤으로 바꿀지 여부
+
     [Header("버스트(연사) & 쿨타임 세팅")]
     public int burstCount = 0;          // 0이면 쉬지 않고 무한 발사, N이면 N번 쏘고 쉼
     public float restTimeMin = 1.5f;    // 최소 쿨타임 (초)
@@ -40,6 +43,7 @@ public class PatternShooter : MonoBehaviour
     public string attackAnimTrigger = "Attack";
 
     private float currentSpiralAngle = 0f;
+    private bool hasAttackAnim = false;
 
     void Start()
     {
@@ -48,6 +52,19 @@ public class PatternShooter : MonoBehaviour
         {
             shooterAnimator = GetComponentInChildren<Animator>();
             if (shooterAnimator == null) shooterAnimator = GetComponent<Animator>();
+        }
+
+        // 애니메이터에 해당 Trigger 파라미터가 실제로 존재하는지 검사 (오류 방지)
+        if (shooterAnimator != null && shooterAnimator.runtimeAnimatorController != null && !string.IsNullOrEmpty(attackAnimTrigger))
+        {
+            foreach (AnimatorControllerParameter param in shooterAnimator.parameters)
+            {
+                if (param.name == attackAnimTrigger && param.type == AnimatorControllerParameterType.Trigger)
+                {
+                    hasAttackAnim = true;
+                    break;
+                }
+            }
         }
 
         if (projectilePrefab != null)
@@ -62,10 +79,16 @@ public class PatternShooter : MonoBehaviour
 
         int currentBurst = 0;
 
+        // 시작 시 첫 패턴 랜덤 배정 (옵션 켜져있을 때)
+        if (randomizePattern)
+        {
+            patternType = (PatternType)Random.Range(0, 3);
+        }
+
         while (true)
         {
             // 발사할 때마다 애니메이션 실행
-            if (shooterAnimator != null && !string.IsNullOrEmpty(attackAnimTrigger))
+            if (hasAttackAnim)
             {
                 shooterAnimator.SetTrigger(attackAnimTrigger);
             }
@@ -81,6 +104,12 @@ public class PatternShooter : MonoBehaviour
                 float randomRest = Random.Range(restTimeMin, restTimeMax);
                 yield return new WaitForSeconds(randomRest); // 랜덤 쿨타임 휴식
                 currentBurst = 0; // 발사 횟수 초기화
+
+                // 쿨타임(휴식)이 끝나고 다음 연사를 시작할 때 패턴을 랜덤으로 변경
+                if (randomizePattern)
+                {
+                    patternType = (PatternType)Random.Range(0, 3);
+                }
             }
             else
             {

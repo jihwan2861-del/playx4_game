@@ -77,8 +77,8 @@ SpriteRenderer:
   m_SortingLayerID: 1152134415
   m_SortingLayer: 4
   m_SortingOrder: 0
-  m_Sprite: {fileID: -1346186404, guid: 2c666f67d6061694394484734fafb2cb, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: -1346186404, guid: cccd0de48744b3647afe467932e48135, type: 3}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -111,6 +111,7 @@ MonoBehaviour:
   homingMissileNerf: 3
   overrideVisualPrefab: {fileID: 6123332142126215557, guid: a817389f10b12a0438e3756c24fe21ac,
     type: 3}
+  attackAnimTrigger: Attack
 --- !u!58 &58425179734721642
 CircleCollider2D:
   m_ObjectHideFlags: 0

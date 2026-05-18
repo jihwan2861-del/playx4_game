@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7283147950496610226}
   - component: {fileID: 1589429982279681533}
   - component: {fileID: 7703390757973035868}
-  - component: {fileID: 1870097938588158880}
   m_Layer: 0
   m_Name: 1st Boss
   m_TagString: Untagged
@@ -107,25 +106,3 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1870097938588158880
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8766710350043680367}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4111df3d8692ad84ebfaf0552401b4e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  projectilePrefab: {fileID: 6123332142126215557, guid: a817389f10b12a0438e3756c24fe21ac,
-    type: 3}
-  patternType: 0
-  startDelay: 1
-  fireInterval: 0.5
-  loopFire: 1
-  projectilesPerFire: 8
-  spiralRotSpeed: 15
-  coneProjectiles: 3
-  coneAngle: 45

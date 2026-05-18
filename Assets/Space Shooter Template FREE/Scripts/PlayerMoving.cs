@@ -29,9 +29,15 @@ public class PlayerMoving : MonoBehaviour {
     public float justEvadeSpeedMultiplier = 4f;
     public float justEvadeInvincibilityDuration = 1.0f; 
     public float grazeRadius = 2.5f; // 저스트 회피 감지 범위
-    [Tooltip("야스오 장막(데드존) 프리팹을 여기에 넣으세요.")]
-    public GameObject deadzonePrefab;
+
     [HideInInspector] public bool isDashing = false;
+
+    [Header("Knockback Settings")]
+    public float knockbackForce = 15f;
+    public float knockbackDuration = 0.2f;
+    [Tooltip("넉백 후 아무것도 못하고 멈춰있는 경직 시간")]
+    public float stunDuration = 0.3f;
+    [HideInInspector] public bool isKnockedBack = false;
 
     [Header("Dash Charges")]
     public int maxDashCharges = 5;
@@ -108,6 +114,17 @@ public class PlayerMoving : MonoBehaviour {
         {
             // 카메라가 이동할 수 있으므로 매 프레임 경계선을 업데이트합니다.
             ResizeBorders();
+
+            if (isKnockedBack)
+            {
+                // 화면 밖으로 나가는 것 방지
+                Vector2 kbClamped = new Vector2(
+                    Mathf.Clamp(rb.position.x, borders.minX, borders.maxX),
+                    Mathf.Clamp(rb.position.y, borders.minY, borders.maxY)
+                );
+                if (rb.position != kbClamped) rb.position = kbClamped;
+                return; // 넉백 중에는 조작 불가
+            }
 
             // 스페이스바 또는 우클릭 시 대쉬(무적) 발동
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(1))
@@ -189,8 +206,12 @@ public class PlayerMoving : MonoBehaviour {
         bool justEvaded = false;
         foreach (var hit in hits)
         {
-            // 적, 총알, 또는 레이저(이름이나 태그로 판별) 근처에서 대쉬하면 저스트 회피 발동!
-            if (hit.CompareTag("Enemy") || hit.CompareTag("Projectile") || hit.CompareTag("Laser") || hit.name.ToLower().Contains("laser"))
+            string objName = hit.name.ToLower();
+            // 적, 총알, 레이저, 보스, ball 등 (이름이나 태그, 컴포넌트로 싹 다 판별)
+            if (hit.CompareTag("Enemy") || hit.CompareTag("Projectile") || 
+                objName.Contains("laser") || objName.Contains("boss") || objName.Contains("ball") || objName.Contains("bullet") ||
+                hit.GetComponentInParent<LaserBeam>() != null || hit.GetComponentInParent<Projectile>() != null || 
+                hit.GetComponentInParent<Enemy>() != null || hit.GetComponentInParent<BossMovement>() != null)
             {
                 justEvaded = true;
                 break;
@@ -203,13 +224,44 @@ public class PlayerMoving : MonoBehaviour {
             StartCoroutine(DashRoutine(justEvadeInvincibilityDuration));
             Player.instance.StartCoroutine(Player.instance.DashInvincibility(justEvadeInvincibilityDuration));
             
+            // 물리적 통과를 위해 대쉬 시간 동안 충돌체를 Trigger로 변경
+            StartCoroutine(PassThroughRoutine(justEvadeInvincibilityDuration));
+            
             // 시각적 효과 (시간 느려짐)
             StartCoroutine(HitStopRoutine());
         }
         else
         {
-            Debug.Log("💨 일반 대쉬 (무적 없음)");
-            StartCoroutine(DashRoutine(0.3f)); // 일반 대쉬는 짧게 이동만
+            Debug.Log("💨 일반 대쉬 (짧은 무적 및 통과)");
+            StartCoroutine(DashRoutine(0.4f)); 
+            Player.instance.StartCoroutine(Player.instance.DashInvincibility(0.4f)); // 일반 대쉬도 0.4초 무적 부여!
+            StartCoroutine(PassThroughRoutine(0.4f)); // 일반 대쉬도 몹 통과 가능!
+        }
+    }
+
+    IEnumerator PassThroughRoutine(float duration)
+    {
+        // 플레이어 본체뿐만 아니라 자식(하위) 오브젝트에 있는 모든 충돌체를 다 찾습니다.
+        Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
+        bool[] originalTriggers = new bool[colliders.Length];
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            if (colliders[i] != null)
+            {
+                originalTriggers[i] = colliders[i].isTrigger;
+                colliders[i].isTrigger = true; // 통과 모드 ON
+            }
+        }
+
+        yield return new WaitForSeconds(duration);
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            if (colliders[i] != null)
+            {
+                colliders[i].isTrigger = originalTriggers[i]; // 원래대로 복구
+            }
         }
     }
 
@@ -220,44 +272,7 @@ public class PlayerMoving : MonoBehaviour {
         Time.timeScale = 1f;
     }
 
-    void SpawnDeadzone()
-    {
-        Debug.Log("🌀 [스킬 발동] 야스오 장막(Deadzone)이 생성되었습니다!");
-        GameObject deadzoneObj;
 
-        // 인스펙터에 프리팹을 등록해두었다면 그것을 생성
-        if (deadzonePrefab != null)
-        {
-            deadzoneObj = Instantiate(deadzonePrefab, transform.position, Quaternion.identity);
-        }
-        else
-        {
-            // 프리팹이 없다면 임시로 코드로 파란색 반투명 장막을 만들어 줍니다.
-            deadzoneObj = new GameObject("WindWall_Deadzone");
-            deadzoneObj.transform.position = transform.position;
-
-            // 투사체를 막을 콜라이더 (유령 모드)
-            CircleCollider2D col = deadzoneObj.AddComponent<CircleCollider2D>();
-            col.isTrigger = true;
-            col.radius = 2.5f; // 장막 크기
-
-            // 장막 파괴 기능 스크립트 부착
-            deadzoneObj.AddComponent<Deadzone>();
-
-            // 눈에 보이도록 임시 파란색 사각형 렌더러 추가
-            SpriteRenderer sr = deadzoneObj.AddComponent<SpriteRenderer>();
-            Texture2D tex = new Texture2D(1, 1);
-            tex.SetPixel(0, 0, Color.white);
-            tex.Apply();
-            sr.sprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
-            sr.color = new Color(0.2f, 0.8f, 1f, 0.4f); // 반투명 시안색
-            sr.sortingOrder = 999; // 배경에 가려지지 않게 최상단 배치
-            deadzoneObj.transform.localScale = new Vector3(5f, 5f, 1f); // 크기 조절
-        }
-
-        // 대쉬 지속시간(justEvadeInvincibilityDuration)이 끝나면 장막 자동 철거
-        Destroy(deadzoneObj, justEvadeInvincibilityDuration);
-    }
 
     public void AddDashCharge()
     {
@@ -318,6 +333,34 @@ public class PlayerMoving : MonoBehaviour {
         isDashing = true;
         yield return new WaitForSeconds(duration);
         isDashing = false;
+    }
+
+    public void ApplyKnockback(Vector3 sourcePosition)
+    {
+        if (!isKnockedBack && gameObject.activeInHierarchy)
+            StartCoroutine(KnockbackRoutine(sourcePosition));
+    }
+
+    IEnumerator KnockbackRoutine(Vector3 sourcePosition)
+    {
+        isKnockedBack = true;
+        
+        Vector3 dir = (transform.position - sourcePosition).normalized;
+        if (dir == Vector3.zero) dir = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0).normalized;
+        
+        if (rb != null) rb.velocity = dir * knockbackForce;
+
+        yield return new WaitForSeconds(knockbackDuration);
+        
+        if (rb != null) rb.velocity = Vector2.zero;
+
+        // 추가 경직(Stun) 시간 대기
+        if (stunDuration > 0)
+        {
+            yield return new WaitForSeconds(stunDuration);
+        }
+
+        isKnockedBack = false;
     }
     
     // 에디터에서 위험 감지 구역(Graze Radius)을 보여주기 위한 기즈모

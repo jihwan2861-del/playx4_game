@@ -62,6 +62,7 @@ public class Enemy : MonoBehaviour {
     //coroutine making a shot
     void ActivateShooting() 
     {
+        return; // 사용자의 요청으로 적 총알 발사 기능 비활성화
         float currentChance = shotChance;
         
         // 장착된 총알이 유도탄일 경우 발사 확률을 대폭 깎아서 게임오버를 방지합니다.
@@ -115,9 +116,9 @@ public class Enemy : MonoBehaviour {
         if (collision.tag == "Player")
         {
             if (Projectile.GetComponent<Projectile>() != null)
-                Player.instance.GetDamage(Projectile.GetComponent<Projectile>().damage);
+                Player.instance.GetDamage(Projectile.GetComponent<Projectile>().damage, gameObject);
             else
-                Player.instance.GetDamage(1);
+                Player.instance.GetDamage(1, gameObject);
         }
     }
 

@@ -51,4 +51,4 @@ MonoBehaviour:
     type: 3}
   laserPrefab: {fileID: 3537128510345306646, guid: fa6c3c504cfcaf347b08112080573b3f,
     type: 3}
-  warningDuration: 2
+  warningDuration: 1

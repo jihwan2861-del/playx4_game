@@ -19,18 +19,23 @@ public class Boundary : MonoBehaviour {
     //changing the collider's size up to Viewport's size multiply 1.5
     void ResizeCollider() 
     {        
-        Vector2 viewportSize = Camera.main.ViewportToWorldPoint(new Vector2(1, 1)) * 2;
+        // 카메라의 위치와 무관하게 정확한 화면 크기를 구하도록 수정
+        Vector2 bottomLeft = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
+        Vector2 topRight = Camera.main.ViewportToWorldPoint(new Vector2(1, 1));
+        Vector2 viewportSize = topRight - bottomLeft;
+        
         viewportSize.x *= 1.5f;
         viewportSize.y *= 1.5f;
         boundareCollider.size = viewportSize;
     }
 
-    private void Update()
+    private void LateUpdate()
     {
+        // 카메라가 이동할 때마다 Boundary도 카메라를 따라다니도록 위치 업데이트
         if (Camera.main != null)
         {
-            // 바운더리가 항상 카메라(화면 중앙)를 따라다니도록 위치 업데이트
-            transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, transform.position.z);
+            Vector3 camPos = Camera.main.transform.position;
+            transform.position = new Vector3(camPos.x, camPos.y, transform.position.z);
         }
     }
 

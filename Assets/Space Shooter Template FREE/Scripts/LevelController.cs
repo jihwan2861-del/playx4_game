@@ -22,10 +22,6 @@ public class LevelController : MonoBehaviour {
 
     public GameObject powerUp;
     public float timeForNewPowerup;
-    public GameObject[] planets;
-    public float timeBetweenPlanets;
-    public float planetsSpeed;
-    List<GameObject> planetsList = new List<GameObject>();
 
     Camera mainCamera;   
 
@@ -49,8 +45,6 @@ public class LevelController : MonoBehaviour {
     public float wallObstacleSpeed = 8f;
     public float wallObstacleSpacing = 2.5f; // 장애물 사이의 간격
 
-
-
     [Header("Endless Laser Patterns (레이저 패턴 무한 랜덤)")]
     [Tooltip("패턴 메이커 툴로 구워낸 레이저 프리팹을 넣으세요. 랜덤으로 나옵니다!")]
     public GameObject[] laserPatternPrefabs;
@@ -63,15 +57,11 @@ public class LevelController : MonoBehaviour {
     public float frenzyStartTime = 60f; // 보스 출현까지 걸리는 기본 시간
     [HideInInspector] public float currentBossTimer; // 현재 남은 보스 출현 시간
     public bool isFrenzyPhase = false;
-    public GameObject interactionButtonPrefab;
-    public GameObject safeZonePrefab;
     
-    [Tooltip("버튼이 생성될 위치들 (Hierachy에서 빈 오브젝트를 만들어 지정하세요. 비워두면 랜덤 생성됩니다)")]
-    public Transform[] buttonSpawnPoints;
-    
-    public int totalButtonsToActivate = 4;
-    private int activatedButtonsCount = 0;
-    private bool isSafeZoneActive = false;
+    // [보스 체력 관리가 BossPatternController로 이전되었습니다]
+    // public float bossSurvivalTime = 180f;
+    // [HideInInspector] public float currentSurvivalTimer; 
+
     private Coroutine laserCoroutine;
     public static LevelController instance;
 
@@ -104,7 +94,6 @@ public class LevelController : MonoBehaviour {
             }
         }
         StartCoroutine(PowerupBonusCreation());
-        StartCoroutine(PlanetsCreation());
 
         if (enableRandomSpawning)
         {
@@ -120,8 +109,10 @@ public class LevelController : MonoBehaviour {
         {
             laserCoroutine = StartCoroutine(EndlessLaserPatternSpawning());
         }
+        
         // 타이머 방식 보스 등장으로 변경
-        currentBossTimer = frenzyStartTime;
+        currentBossTimer = 0;
+        StartFrenzyPhase();
     }
 
     private void Update()
@@ -136,7 +127,10 @@ public class LevelController : MonoBehaviour {
                 StartFrenzyPhase();
             }
         }
+        // 이제 보스 체력(survival timer) 관리는 BossPatternController가 직접 합니다!
     }
+
+    public bool isHacking = false; // 현재 해킹 중인지 여부
 
     public void ReduceBossTimer(float timeToReduce)
     {
@@ -151,88 +145,32 @@ public class LevelController : MonoBehaviour {
     void StartFrenzyPhase()
     {
         isFrenzyPhase = true;
-        Debug.Log("🚨 [폭주 모드 시작] 화면 초기화 후 레이저 폭발!");
+        // currentSurvivalTimer = bossSurvivalTime; (더 이상 여기서 세팅하지 않음)
+        Debug.Log("🚨 [폭주 모드 시작] 레이저 폭발!");
 
-        // 1. 화면에 남아있는 모든 적 제거 (먼저 깨끗이 비웁니다)
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        foreach (GameObject enemy in enemies)
-        {
-            Destroy(enemy);
-        }
+        // 시작부터 보스전이므로 잡몹 지우기 로직 제거 완료
 
         // 2. 레이저 주기를 2초로 설정하고 딜레이 없이 즉시 시작
         laserPatternInterval = 2.0f;
         if (laserCoroutine != null) StopCoroutine(laserCoroutine);
         laserCoroutine = StartCoroutine(EndlessLaserPatternSpawning(true));
-
-        // 3. 버튼 스폰
-        if (interactionButtonPrefab != null)
-        {
-            // 사용자가 직접 스폰 위치를 지정해둔 경우
-            if (buttonSpawnPoints != null && buttonSpawnPoints.Length > 0)
-            {
-                totalButtonsToActivate = buttonSpawnPoints.Length; // 지정된 위치 개수만큼 목표 자동 조절
-                for (int i = 0; i < buttonSpawnPoints.Length; i++)
-                {
-                    if (buttonSpawnPoints[i] == null) continue;
-                    
-                    GameObject btn = Instantiate(interactionButtonPrefab, buttonSpawnPoints[i].position, Quaternion.identity);
-                    var interactScript = btn.AddComponent<InteractionPoint>();
-                    interactScript.controller = this;
-                }
-            }
-            else // 지정 안 했을 경우 (기존 랜덤 스폰)
-            {
-                for (int i = 0; i < totalButtonsToActivate; i++)
-                {
-                    Vector3 spawnPos = new Vector3(
-                        Random.Range(PlayerMoving.instance.borders.minX, PlayerMoving.instance.borders.maxX),
-                        Random.Range(PlayerMoving.instance.borders.minY, PlayerMoving.instance.borders.maxY),
-                        0f
-                    );
-                    GameObject btn = Instantiate(interactionButtonPrefab, spawnPos, Quaternion.identity);
-                    var interactScript = btn.AddComponent<InteractionPoint>();
-                    interactScript.controller = this;
-                }
-            }
-        }
-    }
-
-    public void OnButtonActivated()
-    {
-        activatedButtonsCount++;
-        Debug.Log($"[버튼 활성화] ({activatedButtonsCount}/{totalButtonsToActivate})");
-
-        if (activatedButtonsCount >= totalButtonsToActivate)
-        {
-            ActivateSafeZone();
-        }
-    }
-
-    void ActivateSafeZone()
-    {
-        if (isSafeZoneActive) return; // 이미 활성화되었으면 중복 소환 안 함
-        isSafeZoneActive = true;
-
-        Debug.Log("🏁 [미션 완료] 세이프존 활성화! 레이저 중단 및 화면 청소.");
         
-        // 1. 레이저 스폰 중단
-        if (laserCoroutine != null) StopCoroutine(laserCoroutine);
+        // 보스가 나타나는 연출 (보스 웨이브 소환 등)은 EnemyWaves 또는 별도로 구현 가능
+    }
 
-        // 2. 화면에 있는 모든 적과 레이저 제거 (최적화)
+    // 보스가 죽었을 때 외부에서 호출할 수 있도록 public으로 변경!
+    public void TriggerVictory()
+    {
+        Debug.Log("🏁 [미션 완료] 보스전 생존 성공! 스테이지 클리어!");
+        
+        // 1. 레이저 및 공격 중단
+        if (laserCoroutine != null) StopCoroutine(laserCoroutine);
         ClearAllEnemiesAndProjectiles();
 
-        if (safeZonePrefab != null)
+        // 2. UI 승리 표시
+        if (PlayerUI.instance != null)
         {
-            Instantiate(safeZonePrefab, Vector3.zero, Quaternion.identity);
-        }
-        else
-        {
-            // 사용자가 Inspector에 SafeZone 프리팹을 실수로 안 넣었을 경우를 대비한 자동 생성
-            Debug.LogWarning("SafeZone Prefab이 비어있습니다! 임시 세이프존을 자동 생성합니다.");
-            GameObject tempSafe = new GameObject("Temp_SafeZone");
-            tempSafe.transform.position = Vector3.zero;
-            tempSafe.AddComponent<SafeZone>();
+            PlayerUI.instance.ShowVictory();
         }
     }
 
@@ -308,34 +246,6 @@ public class LevelController : MonoBehaviour {
                     mainCamera.ViewportToWorldPoint(Vector2.up).y + powerUp.GetComponent<Renderer>().bounds.size.y / 2), 
                 Quaternion.identity
                 );
-        }
-    }
-
-    IEnumerator PlanetsCreation()
-    {
-        //Create a new list copying the arrey
-        for (int i = 0; i < planets.Length; i++)
-        {
-            planetsList.Add(planets[i]);
-        }
-        yield return new WaitForSeconds(10);
-        while (true)
-        {
-            ////choose random object from the list, generate and delete it
-            int randomIndex = Random.Range(0, planetsList.Count);
-            GameObject newPlanet = Instantiate(planetsList[randomIndex]);
-            planetsList.RemoveAt(randomIndex);
-            //if the list decreased to zero, reinstall it
-            if (planetsList.Count == 0)
-            {
-                for (int i = 0; i < planets.Length; i++)
-                {
-                    planetsList.Add(planets[i]);
-                }
-            }
-            newPlanet.GetComponent<DirectMoving>().speed = planetsSpeed;
-
-            yield return new WaitForSeconds(timeBetweenPlanets);
         }
     }
 
@@ -484,5 +394,4 @@ public class LevelController : MonoBehaviour {
             yield return new WaitForSeconds(wallSpawnInterval);
         }
     }
-
 }

@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Fire
+  m_Shader: {fileID: 4800000, guid: a36b7719ff0465b42ab1407d67672c5f, type: 3}
+  m_Parent: {fileID: 2100000, guid: cd0693e274874cc4f8ffd67a41ebe801, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - ATLAS_ON
+  - CUSTOMBLENDING_ON
+  - ETC1_EXTERNAL_ALPHA
+  - FLICKER_ON
+  - FOG_ON
+  - GLOWTEX_ON
+  - PIXELATE_ON
+  - WAVEUV_ON
+  m_InvalidKeywords:
+  - _GLOWTEXUSED_ON
+  - _OUTLINE8DIRECTIONS_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _FadeBurnTex:
+        m_Texture: {fileID: 2800000, guid: 677cca399782dea41aedc1d292ecb67d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GlowTex:
+        m_Texture: {fileID: 2800000, guid: 487cb2374bc49b848a1f4577212201cc, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: be304275dbf36014ca9828884588ac47, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Alpha: 0.27
+    - _FadeBurnGlow: 2
+    - _FadeBurnWidth: 0.025
+    - _Glow: 30
+    - _GlowTexUsed: 1
+    - _PixelateSize: 4
+    - _ShakeUvSpeed: 9.97
+    - _ShakeUvX: 1.62
+    - _ShakeUvY: 2.29
+    - _TextureScrollXSpeed: 0.1
+    - _TextureScrollYSpeed: 0.1
+    - _ZWrite: 1
+    m_Colors:
+    - _FadeBurnColor: {r: 1, g: 1, b: 0, a: 1}
+    - _GlowColor: {r: 1, g: 0.5103101, b: 0, a: 1}
+  m_BuildTextureStacks: []

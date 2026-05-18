@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     [Header("Invincibility Flags")]
     [HideInInspector] public bool isInvincible = false;      // 대쉬 등 일반 무적
     [HideInInspector] public bool safeZoneInvincible = false; // 세이프존 무적
+    public float damageInvincibilityDuration = 1.5f;          // 피격 시 무적 시간
 
     private SpriteRenderer spriteRenderer;
 
@@ -28,12 +29,19 @@ public class Player : MonoBehaviour
         health = maxHealth;
     }
 
-    public void GetDamage(int damage)   
+    public void GetDamage(int damage, GameObject source = null)   
     {
         // 대쉬 중이거나 세이프존 안에 있으면 무시함
         if (isInvincible || safeZoneInvincible) return; 
         
         health -= damage;
+
+        // 데미지를 입었을 때 넉백 적용
+        if (PlayerMoving.instance != null)
+        {
+            Vector3 sourcePos = source != null ? source.transform.position : transform.position + new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
+            PlayerMoving.instance.ApplyKnockback(sourcePos);
+        }
 
         // 맞을 때 화면 흔들림 효과 (강도: 0.4, 시간: 0.2초)
         if (Camera.main != null)
@@ -57,10 +65,33 @@ public class Player : MonoBehaviour
 
     IEnumerator DamageFlash()
     {
+        isInvincible = true;
         if (spriteRenderer != null) spriteRenderer.color = Color.red;
         yield return new WaitForSeconds(0.2f);
-        if (spriteRenderer != null && !isInvincible && !safeZoneInvincible) 
+        
+        float elapsedTime = 0f;
+        float blinkDuration = damageInvincibilityDuration - 0.2f;
+        bool isTransparent = false;
+
+        while (elapsedTime < blinkDuration)
+        {
+            if (spriteRenderer != null)
+            {
+                Color c = spriteRenderer.color;
+                if (c == Color.red) c = Color.white;
+                c.a = isTransparent ? 1f : 0.5f;
+                spriteRenderer.color = c;
+            }
+            isTransparent = !isTransparent;
+            yield return new WaitForSeconds(0.1f);
+            elapsedTime += 0.1f;
+        }
+
+        if (spriteRenderer != null && !safeZoneInvincible) 
+        {
             spriteRenderer.color = Color.white;
+        }
+        isInvincible = false;
     }
 
     public IEnumerator DashInvincibility(float duration)

@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class DirectMoving : MonoBehaviour {
 
-    [Tooltip("Moving speed on Y axis in local space")]
+    [Tooltip("이동 속도 (음수면 아래로 이동)")]
     public float speed;
 
     [Header("Homing Settings")]
@@ -21,14 +21,32 @@ public class DirectMoving : MonoBehaviour {
     public float homingDuration = 2f;
     private float homingTimer = 0f;
 
+    [Tooltip("스프라이트가 향하는 방향과 실제 이동 방향이 다를 때의 시각적 보정 각도 (예: 수리검 90 또는 -90)")]
+    public float visualAngleOffset = 0f;
+
+    [Header("조준 설정 (Aim)")]
+    [Tooltip("체크 시 스폰되자마자 플레이어가 있는 곳을 조준해서 날아갑니다 (직선)")]
+    public bool aimAtPlayerOnStart = false;
+
     private void Start()
     {
         homingTimer = homingDuration;
 
-        // 유도탄인데 기본 속도가 음수(뒤로 날아감)라면, 
-        // 머리 방향을 180도 돌려주고 속도를 양수로 바꿔 위화감 없이 추적하게 만듭니다.
-        if (isHoming && speed < 0)
+        // 태어나자마자 플레이어 쪽으로 한 번 각도를 확 틀어버리기 (저격)
+        if (aimAtPlayerOnStart && Player.instance != null)
         {
+            Vector2 direction = (Vector2)Player.instance.transform.position - (Vector2)transform.position;
+            direction.Normalize();
+            
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f + visualAngleOffset;
+            transform.rotation = Quaternion.Euler(0, 0, angle);
+
+            // 음수 속도라면 양수로 바꿔서 앞쪽으로 제대로 날아가게 보정
+            if (speed < 0) speed = Mathf.Abs(speed);
+        }
+        else if (isHoming && speed < 0)
+        {
+            // 기존 호밍 기능 보정
             speed = Mathf.Abs(speed);
             transform.Rotate(0, 0, 180f);
         }
@@ -46,13 +64,18 @@ public class DirectMoving : MonoBehaviour {
             direction.Normalize();
             
             // 스프라이트는 머리(위쪽)를 향하고 있다고 가정 (-90 보정)
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+            // visualAngleOffset을 더해서 눈에 보이는 스프라이트의 각도를 보정합니다.
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f + visualAngleOffset;
             Quaternion targetRotation = Quaternion.Euler(0, 0, angle);
             
             // 서서히 목표 각도로 회전
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, homingRotSpeed * Time.deltaTime);
         }
 
-        transform.Translate(Vector3.up * speed * Time.deltaTime); 
+        // 시각적 보정 각도(visualAngleOffset)를 제외한 실제 '앞(Up)' 방향을 계산하여 이동
+        float moveAngle = transform.eulerAngles.z - visualAngleOffset;
+        Vector3 moveDir = new Vector3(Mathf.Cos((moveAngle + 90f) * Mathf.Deg2Rad), Mathf.Sin((moveAngle + 90f) * Mathf.Deg2Rad), 0);
+        
+        transform.position += moveDir * speed * Time.deltaTime; 
     }
 }

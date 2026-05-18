@@ -14713,9 +14713,7 @@ GameObject:
   - component: {fileID: 4923957858404230}
   - component: {fileID: 114960433178452790}
   - component: {fileID: 114660646102788534}
-  - component: {fileID: 114642073701102404}
   - component: {fileID: 212419850576164182}
-  - component: {fileID: 61072580455120420}
   - component: {fileID: 50763816468549002}
   m_Layer: 0
   m_Name: Player
@@ -14760,6 +14758,7 @@ MonoBehaviour:
   health: 10
   isInvincible: 0
   safeZoneInvincible: 0
+  damageInvincibilityDuration: 1.5
 --- !u!114 &114660646102788534
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14786,37 +14785,15 @@ MonoBehaviour:
   justEvadeSpeedMultiplier: 4
   justEvadeInvincibilityDuration: 1
   grazeRadius: 2.5
-  deadzonePrefab: {fileID: 0}
   isDashing: 0
+  knockbackForce: 15
+  knockbackDuration: 0.2
+  stunDuration: 0.3
+  isKnockedBack: 0
   maxDashCharges: 5
   currentDashCharges: 5
   dashTextObj: {fileID: 0}
   warningTextObj: {fileID: 0}
---- !u!114 &114642073701102404
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1510184446397956}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f36bb360669b0a545b93ce92d3d0abe9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fireRate: 3.5
-  projectileObject: {fileID: 1413877261856170, guid: 7120694aa5e8a9d4a88b1e61228dabb0,
-    type: 3}
-  nextFire: 0
-  weaponPower: 1
-  guns:
-    rightGun: {fileID: 1781751546136816}
-    leftGun: {fileID: 1245768718816352}
-    centralGun: {fileID: 1211549119101102}
-    leftGunVFX: {fileID: 0}
-    rightGunVFX: {fileID: 0}
-    centralGunVFX: {fileID: 0}
-  maxweaponPower: 4
 --- !u!212 &212419850576164182
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -14837,7 +14814,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 4396a2d1265c9414e810fdf77d8238b5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14869,51 +14846,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &61072580455120420
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1510184446397956}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.36, y: 0.64}
-    newSize: {x: 2.048, y: 2.048}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1.59, y: 1.29}
-  m_EdgeRadius: 0
 --- !u!50 &50763816468549002
 Rigidbody2D:
   serializedVersion: 4

@@ -79,26 +79,35 @@ public class EnemySmartAI : MonoBehaviour
                 break;
         }
 
-        // --- 방향 쳐다보기 로직 ---
+        // --- 방향 쳐다보기 및 걷기/대기 애니메이션 로직 ---
         Vector3 moveDelta = transform.position - lastPos;
         
-        if (moveDelta.magnitude > 0.001f) // 이동 중일 때 (이동하는 방향 쳐다보기)
+        if (moveDelta.magnitude > 0.001f) // 이동 중일 때
         {
             Vector3 dir = moveDelta.normalized;
             if (anim != null)
             {
                 anim.SetFloat("InputX", dir.x);
                 anim.SetFloat("InputY", dir.y);
+                
+                // 이동 중이므로 달리기 애니메이션 켜기
+                anim.SetBool("isRunning", true);
             }
         }
-        else if (currentState == BehaviorState.Attack && Player.instance != null) 
+        else 
         {
-            // 멈춰서 공격 중일 때는 플레이어를 쳐다보게 함
-            Vector3 dirToPlayer = (Player.instance.transform.position - transform.position).normalized;
             if (anim != null)
             {
-                anim.SetFloat("InputX", dirToPlayer.x);
-                anim.SetFloat("InputY", dirToPlayer.y);
+                // 멈췄으므로 달리기 애니메이션 끄기 (Idle로 돌아감)
+                anim.SetBool("isRunning", false);
+
+                // 멈춰서 공격 중일 때는 플레이어를 쳐다보게 함
+                if (currentState == BehaviorState.Attack && Player.instance != null)
+                {
+                    Vector3 dirToPlayer = (Player.instance.transform.position - transform.position).normalized;
+                    anim.SetFloat("InputX", dirToPlayer.x);
+                    anim.SetFloat("InputY", dirToPlayer.y);
+                }
             }
         }
         
