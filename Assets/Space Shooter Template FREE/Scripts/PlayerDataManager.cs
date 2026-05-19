@@ -1,16 +1,25 @@
 using UnityEngine;
 
 /// <summary>
-/// 플레이어의 재화(부품) 및 업그레이드 데이터를 씬 전환 시에도 유지하는 데이터 매니저입니다.
+/// 플레이어의 업그레이드 칩(재화) 및 스탯 데이터를 씬 전환 시에도 유지하는 데이터 매니저입니다.
 /// </summary>
 public class PlayerDataManager : MonoBehaviour
 {
     public static PlayerDataManager instance;
 
-    [Header("플레이어 데이터")]
-    public int salvagedParts = 0; // 수거한 부품 (재화)
-    public int engineLevel = 1;   // 기체 엔진 레벨 (예시)
-    public int shieldLevel = 1;   // 방어막 레벨 (예시)
+    [Header("재화")]
+    public int upgradeChips = 0; // 업그레이드 칩 (핵심 재화)
+
+    [Header("기체 업그레이드 레벨")]
+    public int speedLevel = 0;        // 이동속도 강화
+    public int maxEnergyLevel = 0;    // 최대 에너지 강화
+    public int energyRegenLevel = 0;  // 에너지 재생력 강화
+    public int dashCostLevel = 0;     // 대쉬 소모 감소
+    public int maxHpLevel = 0;        // 최대 체력 강화
+
+    [Header("게임 진행 플래그")]
+    public bool tutorialCompleted = false; // 튜토리얼 완료 여부
+    public int currentStage = 1;           // 현재 스테이지
 
     void Awake()
     {
@@ -27,29 +36,28 @@ public class PlayerDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 전투 결과창 등에서 부품을 추가할 때 사용합니다.
+    /// 스테이지 클리어 후 칩을 획득합니다.
     /// </summary>
-    public void AddParts(int amount)
+    public void AddChips(int amount)
     {
-        salvagedParts += amount;
-        Debug.Log($"🔧 부품 획득! 현재 총 부품: {salvagedParts}");
+        upgradeChips += amount;
+        Debug.Log($"💎 [칩 획득] +{amount} → 총 보유: {upgradeChips}");
     }
 
     /// <summary>
-    /// 업그레이드 시 부품을 소모할 때 사용합니다.
+    /// 업그레이드 시 칩을 소모합니다.
     /// </summary>
-    /// <returns>소모 성공 여부</returns>
-    public bool SpendParts(int amount)
+    public bool SpendChips(int amount)
     {
-        if (salvagedParts >= amount)
+        if (upgradeChips >= amount)
         {
-            salvagedParts -= amount;
-            Debug.Log($"💰 부품 소모: {amount} / 남은 부품: {salvagedParts}");
+            upgradeChips -= amount;
+            Debug.Log($"🔧 [칩 소모] -{amount} → 남은 칩: {upgradeChips}");
             return true;
         }
         else
         {
-            Debug.Log("❌ 부품이 부족합니다!");
+            Debug.Log("❌ 칩이 부족합니다!");
             return false;
         }
     }

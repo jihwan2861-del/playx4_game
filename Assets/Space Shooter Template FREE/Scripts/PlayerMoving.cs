@@ -39,9 +39,25 @@ public class PlayerMoving : MonoBehaviour {
     public float stunDuration = 0.3f;
     [HideInInspector] public bool isKnockedBack = false;
 
-    [Header("Dash Charges")]
-    public int maxDashCharges = 5;
-    public int currentDashCharges = 5;
+    [Header("Energy System (에너지 시스템)")]
+    [Tooltip("최대 에너지량")]
+    public float maxEnergy = 100f;
+    [Tooltip("현재 에너지량")]
+    public float currentEnergy = 100f;
+    [Tooltip("대쉬 1회당 소모하는 에너지")]
+    public float dashEnergyCost = 20f;
+    [Tooltip("아이템 획득 시 회복하는 에너지")]
+    public float itemEnergyRestore = 20f;
+
+    [Header("에너지 자동 재생")]
+    [Tooltip("초당 자동으로 회복되는 에너지 (기본 재생량)")]
+    public float baseEnergyRegen = 2f;
+    [Tooltip("에너지 재생력 보너스 (아이템에 의해 증가, 0이면 보너스 없음)")]
+    public float energyRegenBonus = 0f;
+
+    // 하위 호환 프로퍼티 (기존 UI 코드가 참조할 수 있도록)
+    public int maxDashCharges => Mathf.FloorToInt(maxEnergy / dashEnergyCost);
+    public int currentDashCharges => Mathf.FloorToInt(currentEnergy / dashEnergyCost);
 
     [Header("UI Objects (직접 연결해주세요)")]
     public GameObject dashTextObj;
@@ -75,6 +91,28 @@ public class PlayerMoving : MonoBehaviour {
     private void Start()
     {
         mainCamera = Camera.main;
+        
+        // 데이터 매니저 업그레이드 수치 적용
+        if (PlayerDataManager.instance != null)
+        {
+            // 1. 이동속도 업그레이드 (레벨당 속도 +1.0)
+            baseSpeed = 15f + PlayerDataManager.instance.speedLevel * 1.0f;
+            
+            // 2. 최대 에너지 업그레이드 (레벨당 에너지 +10)
+            maxEnergy = 100f + PlayerDataManager.instance.maxEnergyLevel * 10f;
+            
+            // 3. 에너지 초당 자연재생 업그레이드 (레벨당 초당 +0.5)
+            baseEnergyRegen = 2f + PlayerDataManager.instance.energyRegenLevel * 0.5f;
+            
+            // 4. 대쉬 에너지 소모량 감소 업그레이드 (레벨당 소모량 -1.5, 최소 10)
+            dashEnergyCost = Mathf.Max(10f, 20f - PlayerDataManager.instance.dashCostLevel * 1.5f);
+            
+            // 현재 에너지를 새로운 최대 에너지에 맞춰 풀 충전
+            currentEnergy = maxEnergy;
+            
+            Debug.Log($"🔧 [스탯 강화 적용 완료] 속도: {baseSpeed}, 최대에너지: {maxEnergy}, 에너지회복/초: {baseEnergyRegen}, 대쉬소모량: {dashEnergyCost}");
+        }
+        
         ResizeBorders();                //setting 'Player's' moving borders deending on Viewport's size
         
         // --- [UI 자동 복구 코드] ---
@@ -103,7 +141,7 @@ public class PlayerMoving : MonoBehaviour {
         }
         // ---------------------------
 
-        UpdateDashUI();
+        UpdateEnergyUI();
         if (warningTextObj != null) 
             warningTextObj.SetActive(false);
     }
@@ -126,14 +164,22 @@ public class PlayerMoving : MonoBehaviour {
                 return; // 넉백 중에는 조작 불가
             }
 
+            // 에너지 자동 재생 (매 프레임)
+            if (currentEnergy < maxEnergy)
+            {
+                float totalRegen = baseEnergyRegen + energyRegenBonus;
+                currentEnergy = Mathf.Min(currentEnergy + totalRegen * Time.deltaTime, maxEnergy);
+                UpdateEnergyUI();
+            }
+
             // 스페이스바 또는 우클릭 시 대쉬(무적) 발동
             if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(1))
             {
-                if (currentDashCharges > 0 && !isDashing)
+                if (currentEnergy >= dashEnergyCost && !isDashing)
                 {
                     PerformDash();
                 }
-                else if (currentDashCharges <= 0 && warningTextObj != null && !warningTextObj.activeSelf)
+                else if (currentEnergy < dashEnergyCost && warningTextObj != null && !warningTextObj.activeSelf)
                 {
                     StartCoroutine(ShowWarningUI());
                 }
@@ -198,8 +244,9 @@ public class PlayerMoving : MonoBehaviour {
 
     void PerformDash()
     {
-        currentDashCharges--;
-        UpdateDashUI();
+        currentEnergy -= dashEnergyCost;
+        if (currentEnergy < 0) currentEnergy = 0;
+        UpdateEnergyUI();
         
         // 저스트 회피 판정 (내 주변 반경에 적이 있는지 검사)
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, grazeRadius);
@@ -229,6 +276,13 @@ public class PlayerMoving : MonoBehaviour {
             
             // 시각적 효과 (시간 느려짐)
             StartCoroutine(HitStopRoutine());
+
+            // 미션 패널 - "피" 또는 "회피" 키워드가 들어간 미션의 진행도를 올립니다.
+            if (MissionPanel.instance != null)
+            {
+                MissionPanel.instance.AddProgressByKeyword("피", 1);
+                MissionPanel.instance.AddProgressByKeyword("회피", 1);
+            }
         }
         else
         {
@@ -274,25 +328,44 @@ public class PlayerMoving : MonoBehaviour {
 
 
 
-    public void AddDashCharge()
+    /// <summary>
+    /// 에너지를 amount만큼 회복합니다.
+    /// </summary>
+    public void AddEnergy(float amount)
     {
-        if (currentDashCharges < maxDashCharges)
-        {
-            currentDashCharges++;
-            UpdateDashUI();
-        }
+        currentEnergy = Mathf.Min(currentEnergy + amount, maxEnergy);
+        UpdateEnergyUI();
     }
 
-    void UpdateDashUI()
+    /// <summary>
+    /// 에너지 재생력 보너스를 증가시킵니다. (아이템 스탯)
+    /// </summary>
+    public void AddRegenBonus(float bonus)
     {
-        SetTextIfPossible(dashTextObj, "Dash: " + currentDashCharges + " / " + maxDashCharges);
+        energyRegenBonus += bonus;
+        Debug.Log($"⚡ [에너지 재생력 증가!] 보너스: +{bonus} → 총 재생력: {baseEnergyRegen + energyRegenBonus}/s");
+    }
+
+    /// <summary>
+    /// 기존 호환용: 아이템 획득 시 호출 (에너지 회복)
+    /// </summary>
+    public void AddDashCharge()
+    {
+        AddEnergy(itemEnergyRestore);
+    }
+
+    void UpdateEnergyUI()
+    {
+        int current = Mathf.CeilToInt(currentEnergy);
+        int max = Mathf.CeilToInt(maxEnergy);
+        SetTextIfPossible(dashTextObj, "ENERGY: " + current + " / " + max);
     }
 
     IEnumerator ShowWarningUI()
     {
         if (warningTextObj != null)
         {
-            SetTextIfPossible(warningTextObj, "NO ITEMS!");
+            SetTextIfPossible(warningTextObj, "ENERGY LOW!");
             warningTextObj.SetActive(true);
             yield return new WaitForSeconds(1f);
             warningTextObj.SetActive(false);

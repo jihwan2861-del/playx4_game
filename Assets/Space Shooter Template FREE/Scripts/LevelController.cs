@@ -167,7 +167,13 @@ public class LevelController : MonoBehaviour {
         if (laserCoroutine != null) StopCoroutine(laserCoroutine);
         ClearAllEnemiesAndProjectiles();
 
-        // 2. UI 승리 표시
+        // 2. 업그레이드 칩 지급 (20 칩 제공)
+        if (PlayerDataManager.instance != null)
+        {
+            PlayerDataManager.instance.AddChips(20);
+        }
+
+        // 3. UI 승리 표시
         if (PlayerUI.instance != null)
         {
             PlayerUI.instance.ShowVictory();

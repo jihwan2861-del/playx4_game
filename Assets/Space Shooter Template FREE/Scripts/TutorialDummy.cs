@@ -74,6 +74,18 @@ public class TutorialDummy : MonoBehaviour
                     StartCoroutine(HackingGlowRoutine());
                 }
 
+                // 해킹 진행도: 감소된 체력만큼 진행도를 업데이트 (100 - 남은체력%)
+                if (MissionPanel.instance != null)
+                {
+                    int hackIndex = MissionPanel.instance.FindMissionIndexByKeyword("해킹");
+                    if (hackIndex != -1)
+                    {
+                        int target = MissionPanel.instance.missions[hackIndex].targetCount;
+                        int hacked = Mathf.RoundToInt((1f - currentHealth / maxHealth) * target);
+                        MissionPanel.instance.SetProgress(hackIndex, hacked);
+                    }
+                }
+
                 if (auraLine != null)
                 {
                     auraLine.startColor = mintColor;
@@ -223,7 +235,15 @@ public class TutorialDummy : MonoBehaviour
     void Die()
     {
         Debug.Log("🎉 더미 봇 처치 완료!");
-        // 여기에 나중에 튜토리얼 다음 단계로 넘어가는 코드를 넣을 수 있습니다.
+
+        // 미션 패널 - "체력" / "처치" / "격퇴" 관련 미션 완료
+        if (MissionPanel.instance != null)
+        {
+            MissionPanel.instance.AddProgressByKeyword("체력", 1);
+            MissionPanel.instance.AddProgressByKeyword("처치", 1);
+            MissionPanel.instance.AddProgressByKeyword("격퇴", 1);
+        }
+
         Destroy(gameObject);
     }
 

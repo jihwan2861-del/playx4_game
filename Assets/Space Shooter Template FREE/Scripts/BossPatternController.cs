@@ -42,6 +42,18 @@ public class BossPatternController : MonoBehaviour
             float timeMultiplier = isHacking ? 2.5f : 1.0f;
             currentSurvivalTimer -= Time.deltaTime * timeMultiplier;
 
+            // 추가: 씬에 미션 패널이 존재한다면, "해킹" 미션을 찾아 진행도 연동
+            if (MissionPanel.instance != null)
+            {
+                int hackIndex = MissionPanel.instance.FindMissionIndexByKeyword("해킹");
+                if (hackIndex != -1)
+                {
+                    int target = MissionPanel.instance.missions[hackIndex].targetCount;
+                    int hacked = Mathf.RoundToInt((1f - currentSurvivalTimer / bossSurvivalTime) * target);
+                    MissionPanel.instance.SetProgress(hackIndex, hacked);
+                }
+            }
+
             // 보스 사망 (시간 끝)
             if (currentSurvivalTimer <= 0)
             {
@@ -51,6 +63,14 @@ public class BossPatternController : MonoBehaviour
                 if (LevelController.instance != null)
                 {
                     LevelController.instance.TriggerVictory();
+                }
+
+                // 추가: 씬에 미션 패널이 존재한다면, 처치 관련 미션을 완료 처리합니다.
+                if (MissionPanel.instance != null)
+                {
+                    MissionPanel.instance.AddProgressByKeyword("처치", 1);
+                    MissionPanel.instance.AddProgressByKeyword("격퇴", 1);
+                    MissionPanel.instance.AddProgressByKeyword("체력", 1);
                 }
                 
                 // 보스 본체 파괴

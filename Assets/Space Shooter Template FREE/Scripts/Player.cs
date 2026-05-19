@@ -26,6 +26,13 @@ public class Player : MonoBehaviour
         if (instance == null) 
             instance = this;
         spriteRenderer = GetComponent<SpriteRenderer>();
+        
+        // 데이터 매니저에 저장된 체력 업그레이드 수치 적용 (레벨당 체력 +2)
+        if (PlayerDataManager.instance != null)
+        {
+            maxHealth = 10 + PlayerDataManager.instance.maxHpLevel * 2;
+        }
+        
         health = maxHealth;
     }
 

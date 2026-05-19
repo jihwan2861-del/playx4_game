@@ -94,7 +94,7 @@ public class GameTransitionManager : MonoBehaviour
     public void OnClickReturnToVillage()
     {
         Time.timeScale = 1f; // 시간 정지 풀고 넘어가야 함
-        SceneManager.LoadScene("Village_Scene");
+        SceneManager.LoadScene("Hub_Scene");
     }
 
     // 버튼 이벤트: 재시작
