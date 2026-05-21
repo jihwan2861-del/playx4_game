@@ -174,10 +174,14 @@ public class PatternShooter : MonoBehaviour
 
     void SpawnProjectile(float angle)
     {
+        // 파괴된 프리팹 참조 방어
+        if (projectilePrefab == null) return;
+
         // 일반 Instantiate 대신 오브젝트 풀링을 사용합니다.
         if (PoolingController.instance != null)
         {
             GameObject proj = PoolingController.instance.GetPoolingObject(projectilePrefab);
+            if (proj == null) return;
             proj.transform.position = transform.position;
             proj.transform.rotation = Quaternion.Euler(0, 0, angle);
             proj.SetActive(true);

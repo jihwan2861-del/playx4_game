@@ -1,0 +1,2 @@
+Assets/my assets/Boss/2ed Boss - ['보스 2'] - ['보스 2.meta']
+Assets/my assets/Boss/2ed Boss\보스 2 - [] - ['보스 이미지 대각선 뒤 오른쪽.png', '보스 이미지 대각선 뒤 오른쪽.png.meta', '보스 이미지 대각선 뒤 오른쪽1.png', '보스 이미지 대각선 뒤 오른쪽1.png.meta', '보스 이미지 대각선 뒤 오른쪽2.png', '보스 이미지 대각선 뒤 오른쪽2.png.meta', '보스 이미지 뒤 대각선 왼쪽.png', '보스 이미지 뒤 대각선 왼쪽.png.meta', '보스 이미지 뒷.png', '보스 이미지 뒷.png.meta', '보스 이미지 앞 대각선 오른쪽.png', '보스 이미지 앞 대각선 오른쪽.png.meta', '보스 이미지 앞 대각선.png', '보스 이미지 앞 대각선.png.meta', '보스 이미지 앞.png', '보스 이미지 앞.png.meta']

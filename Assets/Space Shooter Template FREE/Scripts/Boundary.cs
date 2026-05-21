@@ -44,10 +44,21 @@ public class Boundary : MonoBehaviour {
     {        
         if (collision.tag == "Projectile")
         {
-            collision.gameObject.SetActive(false); // 풀링을 위해 파괴 대신 비활성화
+            collision.gameObject.SetActive(false); // 풀링을 위해 비활성화
         }
         else if (collision.tag == "Bonus") 
-            Destroy(collision.gameObject); 
+        {
+            Destroy(collision.gameObject);
+        }
+        else
+        {
+            // 태그가 없더라도 Projectile 컴포넌트가 있으면 풀링 반환 (코드 생성 탄환 대응)
+            Projectile proj = collision.GetComponent<Projectile>();
+            if (proj != null)
+            {
+                collision.gameObject.SetActive(false);
+            }
+        }
     }
 
 }

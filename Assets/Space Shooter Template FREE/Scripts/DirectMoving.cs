@@ -14,6 +14,9 @@ public class DirectMoving : MonoBehaviour {
     [Tooltip("체크 시 플레이어를 따라가는 유도탄이 됩니다")]
     public bool isHoming = false;
     
+    [Tooltip("체크 시 적을 추적하는 유도탄이 됩니다 (플레이어 패링 카운터용)")]
+    public bool homingTargetEnemy = false;
+    
     [Tooltip("유도 회전 속도 (클수록 더 예리하게 꺾임)")]
     public float homingRotSpeed = 120f;
 
@@ -56,20 +59,45 @@ public class DirectMoving : MonoBehaviour {
     private void Update()
     {
         // 타이머가 0보다 클 때만 유도 기능 작동
-        if (isHoming && Player.instance != null && homingTimer > 0f)
+        if (isHoming && homingTimer > 0f)
         {
             homingTimer -= Time.deltaTime; // 남은 시간 틱다운
 
-            Vector2 direction = (Vector2)Player.instance.transform.position - (Vector2)transform.position;
-            direction.Normalize();
-            
-            // 스프라이트는 머리(위쪽)를 향하고 있다고 가정 (-90 보정)
-            // visualAngleOffset을 더해서 눈에 보이는 스프라이트의 각도를 보정합니다.
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f + visualAngleOffset;
-            Quaternion targetRotation = Quaternion.Euler(0, 0, angle);
-            
-            // 서서히 목표 각도로 회전
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, homingRotSpeed * Time.deltaTime);
+            Transform target = null;
+            if (homingTargetEnemy)
+            {
+                // 가장 가까운 적(또는 보스) 찾기
+                GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+                float minDistance = float.MaxValue;
+                foreach (GameObject enemy in enemies)
+                {
+                    if (enemy == null) continue;
+                    float dist = Vector2.Distance(transform.position, enemy.transform.position);
+                    if (dist < minDistance)
+                    {
+                        minDistance = dist;
+                        target = enemy.transform;
+                    }
+                }
+            }
+            else
+            {
+                if (Player.instance != null) target = Player.instance.transform;
+            }
+
+            if (target != null)
+            {
+                Vector2 direction = (Vector2)target.position - (Vector2)transform.position;
+                direction.Normalize();
+                
+                // 스프라이트는 머리(위쪽)를 향하고 있다고 가정 (-90 보정)
+                // visualAngleOffset을 더해서 눈에 보이는 스프라이트의 각도를 보정합니다.
+                float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f + visualAngleOffset;
+                Quaternion targetRotation = Quaternion.Euler(0, 0, angle);
+                
+                // 서서히 목표 각도로 회전
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, homingRotSpeed * Time.deltaTime);
+            }
         }
 
         // 시각적 보정 각도(visualAngleOffset)를 제외한 실제 '앞(Up)' 방향을 계산하여 이동

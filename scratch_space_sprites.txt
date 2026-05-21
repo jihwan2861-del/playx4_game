@@ -1,0 +1,8 @@
+Enemies
+Enemies.meta
+Power Ups
+Power Ups.meta
+VFX
+VFX.meta
+Weapons
+Weapons.meta

@@ -4,38 +4,52 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// This script defines the borders of ‘Player’s’ movement. Depending on the chosen handling type, it moves the ‘Player’ together with the pointer.
+/// 플레이어의 이동 속도, 경계 구역 제한, 넉백, 에너지 시스템 및 패링(Parry) 기능을 총괄하는 스크립트입니다.
+/// 기존의 대쉬와 저스트회피는 패링 메커니즘으로 전면 교체되었습니다.
 /// </summary>
 
 [System.Serializable]
 public class Borders
 {
-    [Tooltip("offset from viewport borders for player's movement")]
+    [Tooltip("viewport 경계로부터의 여백")]
     public float minXOffset = 1.5f, maxXOffset = 1.5f, minYOffset = 1.5f, maxYOffset = 1.5f;
     [HideInInspector] public float minX, maxX, minY, maxY;
 }
 
 public class PlayerMoving : MonoBehaviour {
 
-    [Tooltip("offset from viewport borders for player's movement")]
+    [Tooltip("플레이어 이동 가능 영역 경계")]
     public Borders borders;
     Camera mainCamera;
     bool controlIsActive = true; 
+
     [Header("Movement Settings")]
-    public float baseSpeed = 15f;
+    public float baseSpeed = 9f;
 
-    [Header("Dash Settings")]
-    public float normalDashSpeedMultiplier = 2f;
-    public float justEvadeSpeedMultiplier = 4f;
-    public float justEvadeInvincibilityDuration = 1.0f; 
-    public float grazeRadius = 2.5f; // 저스트 회피 감지 범위
+    [Header("Parry Settings (패링 설정)")]
+    [Tooltip("패링 판정 유효 시간 (초)")]
+    public float parryDuration = 0.25f;
+    [Tooltip("패링 실패(허공 사용) 시의 경직 리커버리 시간 (초)")]
+    public float parryWhiffRecoveryDuration = 0.4f;
+    [Tooltip("패링 재사용 대기 시간 (초)")]
+    public float parryCooldownDuration = 0.6f;
+    [Tooltip("패링 성공 시 주어지는 무적 시간 (초)")]
+    public float parrySuccessInvincibility = 0.8f;
+    [Tooltip("패링 1회당 소모 에너지")]
+    public float parryEnergyCost = 20f;
+    [Tooltip("패링 판정 범위 (파란 원 크기) - Inspector에서 자유롭게 조절하세요!")]
+    public float parryRadius = 1.5f;
+    [Tooltip("패링 성공 시 돌려받는 에너지량")]
+    public float parryEnergyRefund = 40f;
 
-    [HideInInspector] public bool isDashing = false;
+    [HideInInspector] public bool isParryActive = false;
+    [HideInInspector] public bool isParryCooldown = false;
+    [HideInInspector] public bool isParryRecovery = false; // 패링 실패(whiff) 시 경직 상태
 
     [Header("Knockback Settings")]
     public float knockbackForce = 15f;
     public float knockbackDuration = 0.2f;
-    [Tooltip("넉백 후 아무것도 못하고 멈춰있는 경직 시간")]
+    [Tooltip("넉백 후 경직 시간")]
     public float stunDuration = 0.3f;
     [HideInInspector] public bool isKnockedBack = false;
 
@@ -44,28 +58,23 @@ public class PlayerMoving : MonoBehaviour {
     public float maxEnergy = 100f;
     [Tooltip("현재 에너지량")]
     public float currentEnergy = 100f;
-    [Tooltip("대쉬 1회당 소모하는 에너지")]
-    public float dashEnergyCost = 20f;
     [Tooltip("아이템 획득 시 회복하는 에너지")]
     public float itemEnergyRestore = 20f;
 
     [Header("에너지 자동 재생")]
-    [Tooltip("초당 자동으로 회복되는 에너지 (기본 재생량)")]
+    [Tooltip("초당 자동으로 회복되는 에너지")]
     public float baseEnergyRegen = 2f;
-    [Tooltip("에너지 재생력 보너스 (아이템에 의해 증가, 0이면 보너스 없음)")]
+    [Tooltip("에너지 재생력 보너스")]
     public float energyRegenBonus = 0f;
 
-    // 하위 호환 프로퍼티 (기존 UI 코드가 참조할 수 있도록)
-    public int maxDashCharges => Mathf.FloorToInt(maxEnergy / dashEnergyCost);
-    public int currentDashCharges => Mathf.FloorToInt(currentEnergy / dashEnergyCost);
-
-    [Header("UI Objects (직접 연결해주세요)")]
+    [Header("UI Objects")]
     public GameObject dashTextObj;
     public GameObject warningTextObj;
 
-    public static PlayerMoving instance; //unique instance of the script for easy access to the script
+    public static PlayerMoving instance;
 
     private Rigidbody2D rb;
+    private SpriteRenderer shieldSr;
 
     private void Awake()
     {
@@ -73,18 +82,16 @@ public class PlayerMoving : MonoBehaviour {
             instance = this;
             
         rb = GetComponent<Rigidbody2D>();
-        // 혹시 Rigidbody2D가 없다면 자동으로 추가해줍니다.
         if (rb == null)
         {
             rb = gameObject.AddComponent<Rigidbody2D>();
         }
         
-        // 물리 충돌이 뚫리지 않도록 강제 설정
         if (rb != null)
         {
             rb.gravityScale = 0f;
             rb.freezeRotation = true;
-            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous; // 뚫림 방지
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         }
     }
 
@@ -95,51 +102,36 @@ public class PlayerMoving : MonoBehaviour {
         // 데이터 매니저 업그레이드 수치 적용
         if (PlayerDataManager.instance != null)
         {
-            // 1. 이동속도 업그레이드 (레벨당 속도 +1.0)
-            baseSpeed = 15f + PlayerDataManager.instance.speedLevel * 1.0f;
-            
-            // 2. 최대 에너지 업그레이드 (레벨당 에너지 +10)
+            baseSpeed = 9f + PlayerDataManager.instance.speedLevel * 1.2f;
             maxEnergy = 100f + PlayerDataManager.instance.maxEnergyLevel * 10f;
-            
-            // 3. 에너지 초당 자연재생 업그레이드 (레벨당 초당 +0.5)
             baseEnergyRegen = 2f + PlayerDataManager.instance.energyRegenLevel * 0.5f;
-            
-            // 4. 대쉬 에너지 소모량 감소 업그레이드 (레벨당 소모량 -1.5, 최소 10)
-            dashEnergyCost = Mathf.Max(10f, 20f - PlayerDataManager.instance.dashCostLevel * 1.5f);
-            
-            // 현재 에너지를 새로운 최대 에너지에 맞춰 풀 충전
+            // 기존 대쉬 소모 감소 업그레이드를 패링 소모 감소로 계승 적용!
+            parryEnergyCost = Mathf.Max(10f, 20f - PlayerDataManager.instance.dashCostLevel * 1.5f);
             currentEnergy = maxEnergy;
             
-            Debug.Log($"🔧 [스탯 강화 적용 완료] 속도: {baseSpeed}, 최대에너지: {maxEnergy}, 에너지회복/초: {baseEnergyRegen}, 대쉬소모량: {dashEnergyCost}");
+            Debug.Log($"🔧 [스탯 강화 적용 완료] 속도: {baseSpeed}, 최대에너지: {maxEnergy}, 에너지회복/초: {baseEnergyRegen}, 패링에너지소모: {parryEnergyCost}");
         }
         
-        ResizeBorders();                //setting 'Player's' moving borders deending on Viewport's size
+        ResizeBorders();
         
-        // --- [UI 자동 복구 코드] ---
-        // 텍스트가 안 보이는 현상(화면 밖 이탈, 캔버스 에러 등)을 
-        // 게임 시작 시 코드가 강제로 고쳐버립니다!
         if (dashTextObj != null)
         {
             Canvas canvas = dashTextObj.GetComponentInParent<Canvas>();
             if (canvas != null)
             {
-                // 무조건 화면 맨 앞(오버레이)에 붙임
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 var scaler = canvas.GetComponent<UnityEngine.UI.CanvasScaler>();
                 if (scaler != null)
                 {
-                    // 화면 비율에 따라 UI를 줄이고 늘리도록 강제 세팅 (해상도 밖으로 날아감 방지)
                     scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                    scaler.referenceResolution = new Vector2(640, 920); // 캡처본 기준 사이즈
+                    scaler.referenceResolution = new Vector2(640, 920);
                     scaler.screenMatchMode = UnityEngine.UI.CanvasScaler.ScreenMatchMode.Expand;
                 }
             }
             
-            // 혹시 Z값이 안드로메다로 가있을 경우를 대비해 위치 원상복구
             RectTransform rt = dashTextObj.GetComponent<RectTransform>();
             if (rt != null) rt.localPosition = new Vector3(rt.localPosition.x, rt.localPosition.y, 0f);
         }
-        // ---------------------------
 
         UpdateEnergyUI();
         if (warningTextObj != null) 
@@ -150,42 +142,78 @@ public class PlayerMoving : MonoBehaviour {
     {
         if (controlIsActive)
         {
-            // 카메라가 이동할 수 있으므로 매 프레임 경계선을 업데이트합니다.
             ResizeBorders();
 
+            // 넉백 처리
             if (isKnockedBack)
             {
-                // 화면 밖으로 나가는 것 방지
                 Vector2 kbClamped = new Vector2(
                     Mathf.Clamp(rb.position.x, borders.minX, borders.maxX),
                     Mathf.Clamp(rb.position.y, borders.minY, borders.maxY)
                 );
                 if (rb.position != kbClamped) rb.position = kbClamped;
-                return; // 넉백 중에는 조작 불가
+                return;
             }
 
-            // 에너지 자동 재생 (매 프레임)
-            if (currentEnergy < maxEnergy)
+            // 패링 실패로 인한 이동 경직(Whiff Freeze) 처리
+            if (isParryRecovery)
+            {
+                if (rb != null) rb.velocity = Vector2.zero;
+                return;
+            }
+
+            // 에너지 자동 재생
+            if (currentEnergy < maxEnergy && !isParryActive)
             {
                 float totalRegen = baseEnergyRegen + energyRegenBonus;
                 currentEnergy = Mathf.Min(currentEnergy + totalRegen * Time.deltaTime, maxEnergy);
                 UpdateEnergyUI();
             }
 
-            // 스페이스바 또는 우클릭 시 대쉬(무적) 발동
-            if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(1))
+            // 패링 발동 입력 받기 (스페이스바 또는 마우스 우클릭)
+            bool parryPressed = Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(1);
+
+            if (parryPressed && !isParryActive && !isParryCooldown && !isParryRecovery)
             {
-                if (currentEnergy >= dashEnergyCost && !isDashing)
+                if (currentEnergy >= parryEnergyCost)
                 {
-                    PerformDash();
+                    PerformParry();
                 }
-                else if (currentEnergy < dashEnergyCost && warningTextObj != null && !warningTextObj.activeSelf)
+                else if (warningTextObj != null && !warningTextObj.activeSelf)
                 {
                     StartCoroutine(ShowWarningUI());
                 }
             }
 
-            // 키보드 WASD 또는 방향키 입력 받기
+            // 패링 활성화 중 보호막 실시간 연출 (맥동 및 회전) + 범위 내 총알 자동 패링 감지
+            if (isParryActive)
+            {
+                if (shieldSr != null)
+                {
+                    float pulse = 1.0f + Mathf.Sin(Time.time * 30f) * 0.1f;
+                    float visualScale = parryRadius * pulse;
+                    shieldSr.transform.localScale = new Vector3(visualScale, visualScale, 1f);
+                    shieldSr.transform.Rotate(0, 0, 180f * Time.deltaTime);
+                }
+
+                // parryRadius 범위 안의 적 총알을 자동 감지하여 패링 성공 판정!
+                Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, parryRadius);
+                foreach (var col in hits)
+                {
+                    if (col == null) continue;
+                    Projectile proj = col.GetComponent<Projectile>();
+                    if (proj != null && proj.enemyBullet)
+                    {
+                        // 패링 성공 처리
+                        if (TryTriggerParrySuccess(col.gameObject))
+                        {
+                            break; // 1회 패링 성공이면 충분
+                        }
+                    }
+                }
+            }
+
+            // 이동 처리 (WASD / 방향키)
             float horizontal = Input.GetAxisRaw("Horizontal");
             float vertical = Input.GetAxisRaw("Vertical");
             Vector3 moveDirection = new Vector3(horizontal, vertical, 0).normalized;
@@ -194,32 +222,21 @@ public class PlayerMoving : MonoBehaviour {
             Animator anim = GetComponent<Animator>();
             if (anim != null)
             {
-                // 현재 이동 중인지 확인
                 bool isMoving = moveDirection != Vector3.zero;
                 anim.SetBool("isMoving", isMoving);
 
                 if (isMoving)
                 {
-                    // 이동 중일 때만 방향 파라미터 업데이트 (가만히 있을 때 이전 방향을 바라보게 하기 위함)
                     anim.SetFloat("InputX", horizontal);
                     anim.SetFloat("InputY", vertical);
                 }
             }
-            // -------------------------
 
-            // 기본 속도는 일정하게 (마우스 추적 시절의 30f는 너무 빠르므로)
-            float currentSpeed = baseSpeed;
-            if (isDashing)
-            {
-                currentSpeed = Player.instance.isInvincible ? baseSpeed * justEvadeSpeedMultiplier : baseSpeed * normalDashSpeedMultiplier;
-            }
-
-            // Rigidbody2D를 이용한 물리 이동 처리 (벽 충돌을 위해 velocity 사용)
+            // Rigidbody2D를 이용한 물리 이동 처리
             if (rb != null)
             {
-                rb.velocity = moveDirection * currentSpeed;
+                rb.velocity = moveDirection * baseSpeed;
 
-                // 카메라 화면 밖으로 나가지 않게 하는 제한 (transform.position 대신 물리 위치 보정)
                 Vector2 clampedPos = new Vector2(
                     Mathf.Clamp(rb.position.x, borders.minX, borders.maxX),
                     Mathf.Clamp(rb.position.y, borders.minY, borders.maxY)
@@ -233,7 +250,6 @@ public class PlayerMoving : MonoBehaviour {
         }
     }
 
-    //setting 'Player's' movement borders according to Viewport size and defined offset
     void ResizeBorders() 
     {
         borders.minX = mainCamera.ViewportToWorldPoint(Vector2.zero).x + borders.minXOffset;
@@ -242,113 +258,343 @@ public class PlayerMoving : MonoBehaviour {
         borders.maxY = mainCamera.ViewportToWorldPoint(Vector2.up).y - borders.maxYOffset;
     }
 
-    void PerformDash()
+    /// <summary>
+    /// 패링 보호막 발동 및 판정 코루틴을 실행합니다.
+    /// </summary>
+    void PerformParry()
     {
-        currentEnergy -= dashEnergyCost;
+        currentEnergy -= parryEnergyCost;
         if (currentEnergy < 0) currentEnergy = 0;
         UpdateEnergyUI();
         
-        // 저스트 회피 판정 (내 주변 반경에 적이 있는지 검사)
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, grazeRadius);
-        bool justEvaded = false;
-        foreach (var hit in hits)
-        {
-            string objName = hit.name.ToLower();
-            // 적, 총알, 레이저, 보스, ball 등 (이름이나 태그, 컴포넌트로 싹 다 판별)
-            if (hit.CompareTag("Enemy") || hit.CompareTag("Projectile") || 
-                objName.Contains("laser") || objName.Contains("boss") || objName.Contains("ball") || objName.Contains("bullet") ||
-                hit.GetComponentInParent<LaserBeam>() != null || hit.GetComponentInParent<Projectile>() != null || 
-                hit.GetComponentInParent<Enemy>() != null || hit.GetComponentInParent<BossMovement>() != null)
-            {
-                justEvaded = true;
-                break;
-            }
-        }
-
-        if (justEvaded)
-        {
-            Debug.Log("✨ [저스트 회피 발동!] 완벽한 타이밍!");
-            StartCoroutine(DashRoutine(justEvadeInvincibilityDuration));
-            Player.instance.StartCoroutine(Player.instance.DashInvincibility(justEvadeInvincibilityDuration));
-            
-            // 물리적 통과를 위해 대쉬 시간 동안 충돌체를 Trigger로 변경
-            StartCoroutine(PassThroughRoutine(justEvadeInvincibilityDuration));
-            
-            // 시각적 효과 (시간 느려짐)
-            StartCoroutine(HitStopRoutine());
-
-            // 미션 패널 - "피" 또는 "회피" 키워드가 들어간 미션의 진행도를 올립니다.
-            if (MissionPanel.instance != null)
-            {
-                MissionPanel.instance.AddProgressByKeyword("피", 1);
-                MissionPanel.instance.AddProgressByKeyword("회피", 1);
-            }
-        }
-        else
-        {
-            Debug.Log("💨 일반 대쉬 (짧은 무적 및 통과)");
-            StartCoroutine(DashRoutine(0.4f)); 
-            Player.instance.StartCoroutine(Player.instance.DashInvincibility(0.4f)); // 일반 대쉬도 0.4초 무적 부여!
-            StartCoroutine(PassThroughRoutine(0.4f)); // 일반 대쉬도 몹 통과 가능!
-        }
+        Debug.Log("🛡️ 패링 보호막 활성화!");
+        StartCoroutine(ParryRoutine());
     }
 
-    IEnumerator PassThroughRoutine(float duration)
+    IEnumerator ParryRoutine()
     {
-        // 플레이어 본체뿐만 아니라 자식(하위) 오브젝트에 있는 모든 충돌체를 다 찾습니다.
-        Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
-        bool[] originalTriggers = new bool[colliders.Length];
+        isParryActive = true;
+        
+        // 절차적 glowing 사이버 쉴드 활성화
+        GetOrCreateShieldVisual();
 
-        for (int i = 0; i < colliders.Length; i++)
+        yield return new WaitForSeconds(parryDuration);
+
+        // 유효 기간(0.25초) 내에 데미지 피격을 가로채 패링 성공하지 못했다면 -> 실패(Whiff) 처리!
+        if (isParryActive)
         {
-            if (colliders[i] != null)
-            {
-                originalTriggers[i] = colliders[i].isTrigger;
-                colliders[i].isTrigger = true; // 통과 모드 ON
-            }
-        }
+            isParryActive = false;
+            if (shieldSr != null) shieldSr.gameObject.SetActive(false);
 
-        yield return new WaitForSeconds(duration);
-
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            if (colliders[i] != null)
-            {
-                colliders[i].isTrigger = originalTriggers[i]; // 원래대로 복구
-            }
+            // 허공에 방패를 날린 패널티로 0.4초간 완벽 경직
+            StartCoroutine(ParryWhiffRecoveryRoutine());
         }
     }
-
-    IEnumerator HitStopRoutine()
-    {
-        Time.timeScale = 0.3f;
-        yield return new WaitForSecondsRealtime(0.2f);
-        Time.timeScale = 1f;
-    }
-
-
 
     /// <summary>
-    /// 에너지를 amount만큼 회복합니다.
+    /// 패링 실패(Whiff) 시 플레이어를 일시 경직 및 취약 상태로 만듭니다.
     /// </summary>
+    IEnumerator ParryWhiffRecoveryRoutine()
+    {
+        isParryRecovery = true;
+        if (rb != null) rb.velocity = Vector2.zero;
+        
+        // 시각적으로 붉은/회색 톤으로 깜빡여 무방비 경직 상태를 연출합니다.
+        SpriteRenderer playerSr = GetComponent<SpriteRenderer>();
+        if (playerSr != null) playerSr.color = new Color(0.6f, 0.6f, 0.6f, 0.8f);
+
+        yield return new WaitForSeconds(parryWhiffRecoveryDuration);
+
+        if (playerSr != null) playerSr.color = Color.white;
+        isParryRecovery = false;
+
+        // 재사용 대기 시간(쿨타임) 작동 시작
+        StartCoroutine(ParryCooldownRoutine());
+    }
+
+    IEnumerator ParryCooldownRoutine()
+    {
+        isParryCooldown = true;
+        yield return new WaitForSeconds(parryCooldownDuration);
+        isParryCooldown = false;
+    }
+
+    /// <summary>
+    /// 플레이어가 공격(탄알/적 충돌 등)을 당하는 찰나의 순간에 외부(Player.GetDamage)에서 호출되어 패링을 성사시킵니다.
+    /// </summary>
+    public bool TryTriggerParrySuccess(GameObject hazard)
+    {
+        if (!isParryActive) return false;
+
+        isParryActive = false;
+        if (shieldSr != null) shieldSr.gameObject.SetActive(false);
+
+        // 1. 역경직 및 카메라 흔들림 (튜토리얼 씬이면 멀미 방지를 위해 대폭 완화하고, 일반 보스 스테이지면 묵직한 타격감을 위해 강하게 유지)
+        bool isTutorial = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("Tutorial");
+        float targetHitStop = isTutorial ? 0.04f : 0.15f;
+        float shakeDuration = isTutorial ? 0.1f : 0.3f;
+        float shakeMagnitude = isTutorial ? 0.12f : 0.6f;
+
+        if (HitStop.instance != null)
+        {
+            HitStop.instance.Do(targetHitStop); 
+        }
+        if (Camera.main != null)
+        {
+            CameraFollow camFollow = Camera.main.GetComponent<CameraFollow>();
+            if (camFollow != null) camFollow.Shake(shakeDuration, shakeMagnitude); 
+        }
+
+        // 2. 강렬한 팽창 쇼크웨이브 이펙트 실행 (Unscaled Time 사용으로 프레임 멈춤 중에도 이펙트 정상 재생)
+        StartCoroutine(ParryShockwaveRoutine(transform.position));
+
+        // 3. 에너지 충전 보상 - 패링 비용을 즉각 환급하고 메리트 제공
+        AddEnergy(parryEnergyRefund);
+
+        // 4. 안전 무적 판정 부여 (0.8초) 및 시각적 홀로그램 효과(하늘색) 적용
+        if (Player.instance != null)
+        {
+            StartCoroutine(Player.instance.DashInvincibility(parrySuccessInvincibility));
+            StartCoroutine(InvincibilityVisualRoutine(parrySuccessInvincibility));
+        }
+
+        // 5. 주변 탄막 및 지속성 위협(반경 5.0) 소멸
+        ClearBulletsInRadius(Mathf.Max(parryRadius * 2f, 5.0f));
+
+        // 6. 플레이어 위치에서 적 추적 유도 미사일 5발 강력한 방출!
+        SpawnCounterProjectiles();
+
+        Debug.Log("🛡️ [패링 성공!] 탄막 제거, 유도 미사일 5발 반격, 에너지 회복!");
+        return true;
+    }
+
+    /// <summary>
+    /// 지정된 반경 안의 적 투사체(Projectile), 레이저(LaserBeam), 격자 폭격 기기(GridStrikePattern)를 영구 소거합니다.
+    /// </summary>
+    private void ClearBulletsInRadius(float radius)
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, radius);
+        foreach (var col in colliders)
+        {
+            if (col == null) continue;
+            
+            // 1. 적 일반/유도 투사체 → 풀링 반환
+            Projectile proj = col.GetComponent<Projectile>();
+            if (proj != null && proj.enemyBullet)
+            {
+                proj.gameObject.SetActive(false);
+                if (MissionPanel.instance != null)
+                {
+                    MissionPanel.instance.AddProgressByKeyword("파괴", 1);
+                }
+                continue;
+            }
+
+            // 2. 적 지속 레이저 빔 → 풀링 반환
+            LaserBeam laser = col.GetComponent<LaserBeam>();
+            if (laser != null)
+            {
+                laser.gameObject.SetActive(false);
+                continue;
+            }
+
+            // 3. 적 레이저 경고 패턴 → 풀링 반환
+            GridStrikePattern grid = col.GetComponent<GridStrikePattern>();
+            if (grid != null)
+            {
+                grid.gameObject.SetActive(false);
+                continue;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 정방향 앞 부채꼴 각도로 5발의 강력한 유도 미사일을 생성 및 발사합니다.
+    /// </summary>
+    private void SpawnCounterProjectiles()
+    {
+        if (PlayerShooting.instance == null || PlayerShooting.instance.projectileObject == null) return;
+
+        GameObject baseProj = PlayerShooting.instance.projectileObject;
+        float[] angles = { -40f, -20f, 0f, 20f, 40f };
+
+        foreach (float angleOffset in angles)
+        {
+            Vector3 spawnPos = transform.position;
+            Quaternion rot = Quaternion.Euler(0, 0, angleOffset);
+            
+            // 풀링 우선 사용, 없으면 Instantiate 폴백
+            GameObject counterMissile = null;
+            if (PoolingController.instance != null)
+            {
+                counterMissile = PoolingController.instance.GetPoolingObject(baseProj);
+                if (counterMissile != null)
+                {
+                    counterMissile.transform.position = spawnPos;
+                    counterMissile.transform.rotation = rot;
+                    counterMissile.SetActive(true);
+                }
+            }
+            if (counterMissile == null)
+            {
+                counterMissile = Instantiate(baseProj, spawnPos, rot);
+            }
+
+            if (counterMissile != null)
+            {
+                counterMissile.tag = "Projectile";
+
+                // 1. 비주얼 변주: 파랗게 이글거리는 대형 탄으로 변경
+                SpriteRenderer sr = counterMissile.GetComponent<SpriteRenderer>();
+                if (sr == null) sr = counterMissile.GetComponentInChildren<SpriteRenderer>();
+                if (sr != null)
+                {
+                    sr.color = new Color(0f, 0.8f, 1f, 1f); // Neon cyan glow
+                    counterMissile.transform.localScale = Vector3.one * 1.8f;
+                }
+
+                // 2. 유도탄 설정 주입 (DirectMoving 컴포넌트)
+                DirectMoving dm = counterMissile.GetComponent<DirectMoving>();
+                if (dm == null) dm = counterMissile.AddComponent<DirectMoving>();
+                
+                dm.speed = 28f;
+                dm.isHoming = true;
+                dm.homingTargetEnemy = true;
+                dm.homingRotSpeed = 380f;
+                dm.homingDuration = 3f;
+                
+                // 3. 투사체 기본 성질 가공 (Projectile 컴포넌트)
+                Projectile p = counterMissile.GetComponent<Projectile>();
+                if (p == null) p = counterMissile.AddComponent<Projectile>();
+                
+                p.enemyBullet = false;
+                p.damage = 10;
+                p.destroyedByCollision = true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 패링 성공 후 극적인 무적감 피드백을 전달하기 위해 플레이어를 하늘색 홀로그램 상태로 칠합니다.
+    /// </summary>
+    private IEnumerator InvincibilityVisualRoutine(float duration)
+    {
+        SpriteRenderer playerSr = GetComponent<SpriteRenderer>();
+        if (playerSr != null)
+        {
+            playerSr.color = new Color(0f, 0.8f, 1f, 1f); // Cyber Cyan
+            yield return new WaitForSeconds(duration);
+            playerSr.color = Color.white;
+        }
+    }
+
+    /// <summary>
+    /// 무실동(TimeScale=0) 상황 하에서도 정상 기능하는 패링 성공 비주얼 쇼크웨이브를 렌더링합니다.
+    /// </summary>
+    private IEnumerator ParryShockwaveRoutine(Vector3 spawnPos)
+    {
+        GameObject shockwaveObj = new GameObject("ParryShockwave");
+        shockwaveObj.transform.position = spawnPos;
+        
+        SpriteRenderer sr = shockwaveObj.AddComponent<SpriteRenderer>();
+        sr.sprite = CreateShieldSprite();
+        sr.sortingLayerName = "Default";
+        sr.sortingOrder = 54;
+        sr.color = new Color(0.2f, 0.9f, 1f, 1f);
+
+        float elapsed = 0f;
+        float duration = 0.25f;
+        Vector3 startScale = new Vector3(1.2f, 1.2f, 1f);
+        Vector3 targetScale = new Vector3(8.0f, 8.0f, 1f);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime; // HitStop 타임 정지 시에도 정상 확장 연출 유도
+            float t = elapsed / duration;
+            shockwaveObj.transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+            
+            Color c = sr.color;
+            c.a = Mathf.Lerp(1f, 0f, t);
+            sr.color = c;
+            
+            yield return null;
+        }
+        
+        Destroy(shockwaveObj);
+    }
+
+    /// <summary>
+    /// 외부 의존성을 배제하고 언제 어디서든 아름답고 화려하게 켜지는 보호막용 절차적 텍스처 스프라이트를 구워냅니다.
+    /// </summary>
+    private Sprite CreateShieldSprite()
+    {
+        int size = 128;
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        texture.filterMode = FilterMode.Bilinear;
+        texture.wrapMode = TextureWrapMode.Clamp;
+        float center = size / 2f;
+        float maxRadius = size / 2f - 2f;
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
+                if (dist <= maxRadius)
+                {
+                    float thickness = 8f;
+                    if (dist >= maxRadius - thickness)
+                    {
+                        float t = (dist - (maxRadius - thickness)) / thickness;
+                        texture.SetPixel(x, y, new Color(0.2f, 0.8f, 1f, t * 0.9f));
+                    }
+                    else
+                    {
+                        float t = dist / (maxRadius - thickness);
+                        texture.SetPixel(x, y, new Color(0.2f, 0.8f, 1f, t * 0.25f));
+                    }
+                }
+                else
+                {
+                    texture.SetPixel(x, y, Color.clear);
+                }
+            }
+        }
+        texture.Apply();
+        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+    }
+
+    private void GetOrCreateShieldVisual()
+    {
+        if (shieldSr == null)
+        {
+            GameObject shieldObj = new GameObject("ParryShield");
+            shieldObj.transform.SetParent(transform);
+            shieldObj.transform.localPosition = Vector3.zero;
+            shieldObj.transform.localRotation = Quaternion.identity;
+            
+            shieldSr = shieldObj.AddComponent<SpriteRenderer>();
+            shieldSr.sprite = CreateShieldSprite();
+            shieldSr.sortingLayerName = "Default";
+            shieldSr.sortingOrder = 53;
+        }
+        shieldSr.gameObject.SetActive(true);
+        shieldSr.color = new Color(0.2f, 0.8f, 1f, 0.8f);
+        shieldSr.transform.localScale = new Vector3(parryRadius, parryRadius, 1f);
+    }
+
     public void AddEnergy(float amount)
     {
         currentEnergy = Mathf.Min(currentEnergy + amount, maxEnergy);
         UpdateEnergyUI();
     }
 
-    /// <summary>
-    /// 에너지 재생력 보너스를 증가시킵니다. (아이템 스탯)
-    /// </summary>
     public void AddRegenBonus(float bonus)
     {
         energyRegenBonus += bonus;
         Debug.Log($"⚡ [에너지 재생력 증가!] 보너스: +{bonus} → 총 재생력: {baseEnergyRegen + energyRegenBonus}/s");
     }
 
-    /// <summary>
-    /// 기존 호환용: 아이템 획득 시 호출 (에너지 회복)
-    /// </summary>
     public void AddDashCharge()
     {
         AddEnergy(itemEnergyRestore);
@@ -376,7 +622,6 @@ public class PlayerMoving : MonoBehaviour {
     {
         if (obj == null) return;
         
-        // 1. Legacy Text 지원
         var legacyText = obj.GetComponent<UnityEngine.UI.Text>();
         if (legacyText != null) 
         {
@@ -384,7 +629,6 @@ public class PlayerMoving : MonoBehaviour {
             return;
         }
         
-        // 2. TextMeshPro 등 모든 Text 지원 (리플렉션 사용)
         Component[] components = obj.GetComponents<Component>();
         foreach(var comp in components)
         {
@@ -399,13 +643,6 @@ public class PlayerMoving : MonoBehaviour {
                 }
             }
         }
-    }
-
-    IEnumerator DashRoutine(float duration)
-    {
-        isDashing = true;
-        yield return new WaitForSeconds(duration);
-        isDashing = false;
     }
 
     public void ApplyKnockback(Vector3 sourcePosition)
@@ -427,19 +664,11 @@ public class PlayerMoving : MonoBehaviour {
         
         if (rb != null) rb.velocity = Vector2.zero;
 
-        // 추가 경직(Stun) 시간 대기
         if (stunDuration > 0)
         {
             yield return new WaitForSeconds(stunDuration);
         }
 
         isKnockedBack = false;
-    }
-    
-    // 에디터에서 위험 감지 구역(Graze Radius)을 보여주기 위한 기즈모
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = new Color(0, 1, 1, 0.3f);
-        Gizmos.DrawWireSphere(transform.position, grazeRadius);
     }
 }

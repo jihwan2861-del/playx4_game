@@ -101,6 +101,10 @@ public class GridStrikePattern : MonoBehaviour
             }
         }
 
+        // 레이저 일제 발사 순간: Bloom 연출
+        if (BloomController.instance != null)
+            BloomController.instance.DoBloom(6f, 0.4f);
+
         // 생성되었던 경고판 파괴
         foreach (GameObject w in activeWarnings)
         {

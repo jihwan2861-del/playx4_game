@@ -26,7 +26,7 @@ public class MissionPanel : MonoBehaviour
     [Header("미션 목록 (인스펙터에서 편집)")]
     public List<MissionData> missions = new List<MissionData>()
     {
-        new MissionData { description = "총알을 피해보세요",         targetCount = 3  },
+        new MissionData { description = "총알을 파괴하세요",         targetCount = 6  },
         new MissionData { description = "해킹존에서 적을 해킹하세요", targetCount = 100 },
         new MissionData { description = "적의 체력을 0으로 만드세요", targetCount = 1  },
     };

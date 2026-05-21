@@ -49,14 +49,22 @@ public class LevelController : MonoBehaviour {
     [Tooltip("패턴 메이커 툴로 구워낸 레이저 프리팹을 넣으세요. 랜덤으로 나옵니다!")]
     public GameObject[] laserPatternPrefabs;
     [Tooltip("패턴 랜덤 스폰 시작 대기 시간 (초)")]
-    public float laserPatternStartDelay = 10f;
+    public float laserPatternStartDelay = 15f;
     [Tooltip("다음 패턴까지의 간격 (초)")]
-    public float laserPatternInterval = 4f;
+    public float laserPatternInterval = 12f;
 
     [Header("Survival / Boss Settings")]
     public float frenzyStartTime = 60f; // 보스 출현까지 걸리는 기본 시간
     [HideInInspector] public float currentBossTimer; // 현재 남은 보스 출현 시간
     public bool isFrenzyPhase = false;
+
+    [Header("=== Button Interaction Settings ===")]
+    public GameObject interactionButtonPrefab;
+    public GameObject safeZonePrefab;
+    public Transform[] buttonSpawnPoints;
+    public int totalButtonsToActivate = 4;
+    private int activatedButtonsCount = 0;
+    private bool isSafeZoneActive = false;
     
     // [보스 체력 관리가 BossPatternController로 이전되었습니다]
     // public float bossSurvivalTime = 180f;
@@ -150,8 +158,8 @@ public class LevelController : MonoBehaviour {
 
         // 시작부터 보스전이므로 잡몹 지우기 로직 제거 완료
 
-        // 2. 레이저 주기를 2초로 설정하고 딜레이 없이 즉시 시작
-        laserPatternInterval = 2.0f;
+        // 2. 레이저 주기를 12.0초로 대폭 늘려 검찌르기(레이저 장판) 패턴의 발생 빈도를 크게 줄입니다.
+        laserPatternInterval = 12f;
         if (laserCoroutine != null) StopCoroutine(laserCoroutine);
         laserCoroutine = StartCoroutine(EndlessLaserPatternSpawning(true));
         
@@ -163,35 +171,145 @@ public class LevelController : MonoBehaviour {
     {
         Debug.Log("🏁 [미션 완료] 보스전 생존 성공! 스테이지 클리어!");
         
-        // 1. 레이저 및 공격 중단
-        if (laserCoroutine != null) StopCoroutine(laserCoroutine);
-        ClearAllEnemiesAndProjectiles();
-
-        // 2. 업그레이드 칩 지급 (20 칩 제공)
-        if (PlayerDataManager.instance != null)
+        // 1. 플레이어 강제 무적 상태 돌입 (보스 처치 후 투사체 궤적에 억울하게 맞아 죽는 사고 원천 차단)
+        if (Player.instance != null)
         {
-            PlayerDataManager.instance.AddChips(20);
+            Player.instance.safeZoneInvincible = true;
+            Debug.Log("🛡️ [플레이어 강제 무적 활성화] 스테이지 완료!");
         }
 
-        // 3. UI 승리 표시
+        // 보스 격퇴 Bloom 피날레: 강렬한 빛 번짐으로 클리어 순간을 극적으로 연출!
+        if (BloomController.instance != null)
+            BloomController.instance.DoBloom(10f, 1.5f);
+
+        // 2. 레벨 컨트롤러 내 모든 공격 및 스폰 코루틴 즉각 중단
+        StopAllCoroutines();
+        if (laserCoroutine != null) StopCoroutine(laserCoroutine);
+        
+        // 3. 레이저 및 적 공격 강제 중단 & 월드 내 모든 하ザ드 클리어
+        ClearAllEnemiesAndProjectiles();
+
+        // 4. 업그레이드 칩 지급 (Stage 1: 20 칩, Stage 2: 25 칩, Stage 3: 30 칩 제공)
+        if (PlayerDataManager.instance != null)
+        {
+            string activeSceneNameForChips = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            int chipReward = 20;
+            if (activeSceneNameForChips == "Stage2_Scene") chipReward = 25;
+            else if (activeSceneNameForChips == "Stage3_Scene") chipReward = 30;
+            
+            PlayerDataManager.instance.AddChips(chipReward);
+            Debug.Log($"💎 [스테이지 클리어 보상] 칩 {chipReward}개 지급 완료!");
+        }
+
+        // 현재 씬 명칭을 파악하여 해당하는 스테이지의 미션 완료 상태를 저장
+        string activeSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (activeSceneName == "game_Scene")
+        {
+            PlayerPrefs.SetInt("Mission_Stage1_Completed", 1);
+            PlayerPrefs.Save();
+            Debug.Log("💾 [미션 저장] 스테이지 1 완료 기록 저장 완료!");
+        }
+        else if (activeSceneName == "Stage2_Scene")
+        {
+            PlayerPrefs.SetInt("Mission_Stage2_Completed", 1);
+            PlayerPrefs.Save();
+            Debug.Log("💾 [미션 저장] 스테이지 2 완료 기록 저장 완료!");
+        }
+        else if (activeSceneName == "Stage3_Scene")
+        {
+            PlayerPrefs.SetInt("Mission_Stage3_Completed", 1);
+            PlayerPrefs.Save();
+            Debug.Log("💾 [미션 저장] 스테이지 3 완료 기록 저장 완료!");
+        }
+
+        // 5. UI 승리 표시
         if (PlayerUI.instance != null)
         {
             PlayerUI.instance.ShowVictory();
+        }
+
+        // 6. 4초 후 허브 씬으로 자동 복귀
+        StartCoroutine(AutoReturnToHubRoutine(4f));
+    }
+
+    private IEnumerator AutoReturnToHubRoutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Debug.Log("🏠 [자동 복귀] 스테이지 클리어로 인해 4초 후 허브 씬으로 자동 복귀합니다.");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Hub_Scene");
+    }
+
+    public void OnButtonActivated()
+    {
+        activatedButtonsCount++;
+        Debug.Log($"[버튼 활성화] ({activatedButtonsCount}/{totalButtonsToActivate})");
+
+        if (activatedButtonsCount >= totalButtonsToActivate)
+        {
+            ActivateSafeZone();
+        }
+    }
+
+    void ActivateSafeZone()
+    {
+        if (isSafeZoneActive) return; // 이미 활성화되었으면 중복 소환 안 함
+        isSafeZoneActive = true;
+
+        Debug.Log("🏁 [미션 완료] 세이프존 활성화! 레이저 중단 및 화면 청소.");
+        
+        // 1. 레이저 스폰 중단
+        if (laserCoroutine != null) StopCoroutine(laserCoroutine);
+
+        // 2. 화면에 있는 모든 적과 레이저 제거 (최적화)
+        ClearAllEnemiesAndProjectiles();
+
+        if (safeZonePrefab != null)
+        {
+            Instantiate(safeZonePrefab, Vector3.zero, Quaternion.identity);
+        }
+        else
+        {
+            // 사용자가 Inspector에 SafeZone 프리팹을 실수로 안 넣었을 경우를 대비한 자동 생성
+            Debug.LogWarning("SafeZone Prefab이 비어있습니다! 임시 세이프존을 자동 생성합니다.");
+            GameObject tempSafe = new GameObject("Temp_SafeZone");
+            tempSafe.transform.position = Vector3.zero;
+            tempSafe.AddComponent<SafeZone>();
         }
     }
 
     void ClearAllEnemiesAndProjectiles()
     {
-        // "Enemy" 태그를 가진 모든 오브젝트 파괴
+        // "Enemy" 태그를 가진 모든 적 기체 파괴
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject enemy in enemies) Destroy(enemy);
 
-        // "Projectile" 태그 등을 가진 오브젝트들도 파괴 (프리팹 설정에 따라 다를 수 있음)
-        // 만약 레이저 패턴이 별도 오브젝트라면 그것들도 찾아서 지웁니다.
+        // 씬 내의 모든 투사체(적 탄알) 파괴
         var projectiles = GameObject.FindObjectsOfType<Projectile>();
         foreach (var p in projectiles)
         {
             if (p.enemyBullet) Destroy(p.gameObject);
+        }
+
+        // 씬 내의 모든 지속성 레이저 빔 파괴
+        var lasers = GameObject.FindObjectsOfType<LaserBeam>();
+        foreach (var l in lasers) Destroy(l.gameObject);
+
+        // 씬 내의 모든 쿼드/그리드 폭격 연출 기기 파괴 (경고 영역과 본체 모두 포함)
+        var gridPatterns = GameObject.FindObjectsOfType<GridStrikePattern>();
+        foreach (var gp in gridPatterns) Destroy(gp.gameObject);
+
+        // 추가 조치: 이름에 'warning'이나 'laser'가 들어가는 미수거 비주얼 프리팹들 안전 파괴
+        GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
+        foreach (GameObject obj in allObjects)
+        {
+            if (obj != null && (obj.name.ToLower().Contains("warning") || obj.name.ToLower().Contains("laserbeam") || obj.name.ToLower().Contains("strike")))
+            {
+                // 플레이어, 메인 캔버스, UI 요소는 파괴 대상에서 제외
+                if (!obj.CompareTag("Player") && !obj.name.Contains("Canvas") && !obj.name.Contains("UI"))
+                {
+                    Destroy(obj);
+                }
+            }
         }
     }
 

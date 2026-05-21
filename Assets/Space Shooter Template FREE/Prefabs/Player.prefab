@@ -14649,7 +14649,6 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: f78b95d230bb2b546a24c7e45e474100, type: 2}
-  - {fileID: 2100000, guid: f78b95d230bb2b546a24c7e45e474100, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14715,6 +14714,7 @@ GameObject:
   - component: {fileID: 114660646102788534}
   - component: {fileID: 212419850576164182}
   - component: {fileID: 50763816468549002}
+  - component: {fileID: 4770571940347565871}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -14732,7 +14732,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 448.45786, y: 210.61693, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4378364581829048}
@@ -14790,8 +14790,12 @@ MonoBehaviour:
   knockbackDuration: 0.2
   stunDuration: 0.3
   isKnockedBack: 0
-  maxDashCharges: 5
-  currentDashCharges: 5
+  maxEnergy: 100
+  currentEnergy: 100
+  dashEnergyCost: 20
+  itemEnergyRestore: 20
+  baseEnergyRegen: 2
+  energyRegenBonus: 0
   dashTextObj: {fileID: 0}
   warningTextObj: {fileID: 0}
 --- !u!212 &212419850576164182
@@ -14814,7 +14818,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4396a2d1265c9414e810fdf77d8238b5, type: 2}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14873,6 +14877,27 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!95 &4770571940347565871
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1510184446397956}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: abfc8f4f3d17f1640a8b59cebf3f7d0e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1511134553118932
 GameObject:
   m_ObjectHideFlags: 0
@@ -19533,7 +19558,6 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2b972bb6bcf755b49bdc702bf972227c, type: 2}
   - {fileID: 2100000, guid: 2b972bb6bcf755b49bdc702bf972227c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -24434,7 +24458,6 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4fa12924968c51a4fbf7f67f630db413, type: 2}
   - {fileID: 2100000, guid: 4fa12924968c51a4fbf7f67f630db413, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0

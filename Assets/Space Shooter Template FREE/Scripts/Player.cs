@@ -38,8 +38,17 @@ public class Player : MonoBehaviour
 
     public void GetDamage(int damage, GameObject source = null)   
     {
+        // 패링 활성화 상태라면 무적 여부와 관계없이 패링 성공을 성사시킵니다!
+        if (PlayerMoving.instance != null && PlayerMoving.instance.isParryActive)
+        {
+            if (PlayerMoving.instance.TryTriggerParrySuccess(source))
+            {
+                return; // 패링 성공하여 데미지 판정 자체를 무시(Block)합니다!
+            }
+        }
+
         // 대쉬 중이거나 세이프존 안에 있으면 무시함
-        if (isInvincible || safeZoneInvincible) return; 
+        if (isInvincible || safeZoneInvincible) return;
         
         health -= damage;
 
@@ -54,11 +63,12 @@ public class Player : MonoBehaviour
         if (Camera.main != null)
         {
             CameraFollow camFollow = Camera.main.GetComponent<CameraFollow>();
-            if (camFollow != null)
-            {
-                camFollow.Shake(0.2f, 0.4f);
-            }
+            if (camFollow != null) camFollow.Shake(0.2f, 0.4f);
         }
+
+        // 플레이어 피격 시 역경직 (0.1초 - 위기감 강조)
+        if (HitStop.instance != null)
+            HitStop.instance.Do(0.1f);
 
         if (health <= 0)
         {
@@ -109,6 +119,18 @@ public class Player : MonoBehaviour
         if (spriteRenderer != null && !safeZoneInvincible) 
             spriteRenderer.color = Color.white;
         isInvincible = false;
+    }
+
+    public void SetDashInvincible(bool invincible)
+    {
+        isInvincible = invincible;
+
+        if (spriteRenderer == null || safeZoneInvincible)
+        {
+            return;
+        }
+
+        spriteRenderer.color = invincible ? Color.yellow : Color.white;
     }
 
     void Destruction()

@@ -1,0 +1,15 @@
+Assets/Space Shooter Template FREE/Sprites\Enemies\Enemy_01.png
+Assets/Space Shooter Template FREE/Sprites\Power Ups\Power Up Ring.png
+Assets/Space Shooter Template FREE/Sprites\Power Ups\Power Up.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Enemy Hit Effect\Enemy Hit Effect_01.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Enemy Hit Effect\Enemy Hit Effect_02.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Engines\Engine_01_Basic.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Engines\Engine_01_Effect.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Engines\Engine_01_Effect_Sphere.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Explosions\Rocket_Explosion_01.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Explosions\Small Explosion_01_Parts_01.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Explosions\Small Explosion_01_Smoke_01.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Explosions\Small Explosion_01_Smoke_02.png
+Assets/Space Shooter Template FREE/Sprites\VFX\Muzzle\Muzzle_Sprite_Sheet.png
+Assets/Space Shooter Template FREE/Sprites\Weapons\Ball_02.png
+Assets/Space Shooter Template FREE/Sprites\Weapons\Machine Gun.png

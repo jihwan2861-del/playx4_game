@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -47,11 +47,20 @@ public class PoolingController : MonoBehaviour {
     }
 
     
-    public GameObject GetPoolingObject(GameObject prefab)   //Lookikng for the needed object by prefab name and return it
+    public GameObject GetPoolingObject(GameObject prefab)   //Looking for the needed object by prefab name and return it
     {
+        // 파괴된 프리팹 참조가 넘어온 경우 방어
+        if (prefab == null) return null;
+
         string cloneName = GetCloneName(prefab);
-        for (int i =0; i<pooledObjectsList.Count; i++)      
+        for (int i = pooledObjectsList.Count - 1; i >= 0; i--)      
         {
+            // 풀 안의 오브젝트가 Destroy()로 파괴되었을 경우 무효 참조 제거
+            if (pooledObjectsList[i] == null)
+            {
+                pooledObjectsList.RemoveAt(i);
+                continue;
+            }
             if (!pooledObjectsList[i].activeSelf && pooledObjectsList[i].name == cloneName)
             {                
                 return pooledObjectsList[i];
@@ -62,6 +71,7 @@ public class PoolingController : MonoBehaviour {
 
     GameObject AddNewObject(GameObject prefab)              //create the new object and add it to the list
     {
+        if (prefab == null) return null;
         GameObject newObj = Instantiate(prefab, transform);
         pooledObjectsList.Add(newObj);
         newObj.SetActive(false);

@@ -47,7 +47,7 @@ public class PlayerShooting : MonoBehaviour {
 
     private void Update()
     {
-        if (shootingIsActive)
+        if (shootingIsActive && (PlayerMoving.instance == null || !PlayerMoving.instance.isParryRecovery))
         {
             if (Time.time > nextFire)
             {

@@ -88,7 +88,7 @@ public class PlayerUI : MonoBehaviour
         {
             float current = PlayerMoving.instance.currentEnergy;
             float max = PlayerMoving.instance.maxEnergy;
-            float cost = PlayerMoving.instance.dashEnergyCost;
+            float cost = PlayerMoving.instance.parryEnergyCost;
             float energyPercent = max > 0 ? current / max : 0f;
 
             if (energyFillImage != null)

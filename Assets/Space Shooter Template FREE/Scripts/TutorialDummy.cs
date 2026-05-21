@@ -143,15 +143,45 @@ public class TutorialDummy : MonoBehaviour
 
             if (Player.instance != null && bulletPrefab != null)
             {
-                // 플레이어를 향해 발사
-                Vector3 direction = (Player.instance.transform.position - transform.position).normalized;
-                GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);
+                // 플레이어를 향해 45도 범위 내에서 6발의 부채꼴(Fan) 발사
+                Vector3 baseDirection = (Player.instance.transform.position - transform.position).normalized;
+                float startAngle = -22.5f; // 45도의 절반
+                float angleStep = 9.0f;    // 45 / (6 - 1) = 9도 간격
                 
-                // 총알에 방향과 속도 부여
-                Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-                if (rb != null)
+                // 프리팹에서 visualAngleOffset 값을 사전에 파악합니다.
+                float visualOffset = 0f;
+                DirectMoving prefabDm = bulletPrefab.GetComponent<DirectMoving>();
+                if (prefabDm != null)
                 {
-                    rb.velocity = direction * bulletSpeed;
+                    visualOffset = prefabDm.visualAngleOffset;
+                }
+
+                for (int i = 0; i < 6; i++)
+                {
+                    float angle = startAngle + (i * angleStep);
+                    Vector3 bulletDir = Quaternion.Euler(0, 0, angle) * baseDirection;
+                    
+                    // 총알이 날아갈 방향(bulletDir)을 기반으로 정확한 회전 각도 계산
+                    float targetAngleDeg = Mathf.Atan2(bulletDir.y, bulletDir.x) * Mathf.Rad2Deg;
+                    float rotZ = targetAngleDeg - 90f + visualOffset;
+                    Quaternion rotation = Quaternion.Euler(0, 0, rotZ);
+                    
+                    GameObject bullet = Instantiate(bulletPrefab, transform.position, rotation);
+                    
+                    // DirectMoving 설정 조정 (Update 이동 방향 보정 및 중복 조준 방지)
+                    DirectMoving bulletDm = bullet.GetComponent<DirectMoving>();
+                    if (bulletDm != null)
+                    {
+                        bulletDm.aimAtPlayerOnStart = false; // 수동으로 계산한 각도를 덮어쓰지 않도록 강제 비활성화
+                        bulletDm.speed = bulletSpeed;        // 튜토리얼용 속도로 명시적 갱신
+                    }
+
+                    // Rigidbody2D를 사용하는 물리 이동도 함께 연동
+                    Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+                    if (rb != null)
+                    {
+                        rb.velocity = bulletDir * bulletSpeed;
+                    }
                 }
                 // ShootRoutine 안에서 총 쏘기 직전에 추가
                 GetComponent<Animator>().SetTrigger("Attack");
