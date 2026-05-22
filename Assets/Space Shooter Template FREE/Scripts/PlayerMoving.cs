@@ -46,6 +46,33 @@ public class PlayerMoving : MonoBehaviour {
     [HideInInspector] public bool isParryCooldown = false;
     [HideInInspector] public bool isParryRecovery = false; // 패링 실패(whiff) 시 경직 상태
 
+    [Header("Parry Sound Settings (사운드 설정)")]
+    [Tooltip("패링 활성화 시 (보호막 전개) 사운드")]
+    public AudioClip parryActivateSFX;
+    [Range(0f, 1f)]
+    [Tooltip("패링 활성화 볼륨")]
+    public float parryActivateVolume = 0.6f;
+
+    [Tooltip("패링 성공 시 사운드")]
+    public AudioClip parrySuccessSFX;
+    [Range(0f, 1f)]
+    [Tooltip("패링 성공 볼륨")]
+    public float parrySuccessVolume = 0.8f;
+
+    [Tooltip("패링 실패(허공 경직) 시 사운드")]
+    public AudioClip parryFailureSFX;
+    [Range(0f, 1f)]
+    [Tooltip("패링 실패 볼륨")]
+    public float parryFailureVolume = 0.6f;
+
+    private void PlaySFX(AudioClip clip, float volume)
+    {
+        if (clip != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, transform.position, volume);
+        }
+    }
+
     [Header("Knockback Settings")]
     public float knockbackForce = 15f;
     public float knockbackDuration = 0.2f;
@@ -268,6 +295,7 @@ public class PlayerMoving : MonoBehaviour {
         UpdateEnergyUI();
         
         Debug.Log("🛡️ 패링 보호막 활성화!");
+        PlaySFX(parryActivateSFX, parryActivateVolume);
         StartCoroutine(ParryRoutine());
     }
 
@@ -299,6 +327,8 @@ public class PlayerMoving : MonoBehaviour {
         isParryRecovery = true;
         if (rb != null) rb.velocity = Vector2.zero;
         
+        PlaySFX(parryFailureSFX, parryFailureVolume);
+        
         // 시각적으로 붉은/회색 톤으로 깜빡여 무방비 경직 상태를 연출합니다.
         SpriteRenderer playerSr = GetComponent<SpriteRenderer>();
         if (playerSr != null) playerSr.color = new Color(0.6f, 0.6f, 0.6f, 0.8f);
@@ -329,6 +359,8 @@ public class PlayerMoving : MonoBehaviour {
         isParryActive = false;
         if (shieldSr != null) shieldSr.gameObject.SetActive(false);
 
+        PlaySFX(parrySuccessSFX, parrySuccessVolume);
+
         // 1. 역경직 및 카메라 흔들림 (튜토리얼 씬이면 멀미 방지를 위해 대폭 완화하고, 일반 보스 스테이지면 묵직한 타격감을 위해 강하게 유지)
         bool isTutorial = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Contains("Tutorial");
         float targetHitStop = isTutorial ? 0.04f : 0.15f;
@@ -354,7 +386,7 @@ public class PlayerMoving : MonoBehaviour {
         // 4. 안전 무적 판정 부여 (0.8초) 및 시각적 홀로그램 효과(하늘색) 적용
         if (Player.instance != null)
         {
-            StartCoroutine(Player.instance.DashInvincibility(parrySuccessInvincibility));
+            StartCoroutine(Player.instance.DashInvincibility(parrySuccessInvincibility, false));
             StartCoroutine(InvincibilityVisualRoutine(parrySuccessInvincibility));
         }
 
@@ -475,16 +507,69 @@ public class PlayerMoving : MonoBehaviour {
     }
 
     /// <summary>
-    /// 패링 성공 후 극적인 무적감 피드백을 전달하기 위해 플레이어를 하늘색 홀로그램 상태로 칠합니다.
+    /// 패링 성공 후 극적인 무적감 피드백을 전달하기 위해 플레이어를 하얗게 번쩍이게 하고 하늘색 홀로그램 상태로 전이합니다.
     /// </summary>
     private IEnumerator InvincibilityVisualRoutine(float duration)
     {
         SpriteRenderer playerSr = GetComponent<SpriteRenderer>();
         if (playerSr != null)
         {
-            playerSr.color = new Color(0f, 0.8f, 1f, 1f); // Cyber Cyan
-            yield return new WaitForSeconds(duration);
-            playerSr.color = Color.white;
+            Material originalMat = playerSr.material;
+            Color originalColor = playerSr.color;
+
+            // 1. 단색 흰색 실루엣으로 빛나게 하기 위해 GUI/Text Shader를 찾아 임시 적용합니다.
+            Shader whiteShader = Shader.Find("GUI/Text Shader");
+            Material whiteMat = null;
+            if (whiteShader != null)
+            {
+                whiteMat = new Material(whiteShader);
+            }
+
+            if (whiteMat != null)
+            {
+                playerSr.material = whiteMat;
+                playerSr.color = Color.white; // GUI/Text Shader는 흰색일 때 완전한 단색 흰색 실루엣으로 빛납니다.
+            }
+            else
+            {
+                // 폴백: 셰이더를 찾지 못한 경우 일반 색상을 백색으로 강제 조정
+                playerSr.color = Color.white;
+            }
+
+            // 하얗게 강렬하게 번쩍이는 효과 시간 (0.15초)
+            yield return new WaitForSeconds(0.15f);
+
+            // 본래 머티리얼로 복구
+            playerSr.material = originalMat;
+
+            // 2. 남은 무적 시간 동안 하늘색 사이버 톤과 반투명 깜빡임 연출
+            float remaining = duration - 0.15f;
+            float blinkInterval = 0.08f;
+            float elapsed = 0f;
+            bool toggle = false;
+
+            while (elapsed < remaining)
+            {
+                if (playerSr == null) break;
+                
+                // 하늘색 사이버 홀로그램 색상과 일반 흰색/반투명을 교차하여 무적 상태 피드백 제공
+                playerSr.color = toggle ? new Color(0f, 0.8f, 1f, 1f) : new Color(1f, 1f, 1f, 0.4f);
+                toggle = !toggle;
+                
+                yield return new WaitForSeconds(blinkInterval);
+                elapsed += blinkInterval;
+            }
+
+            // 원상 복구
+            if (playerSr != null)
+            {
+                playerSr.color = originalColor;
+            }
+
+            if (whiteMat != null)
+            {
+                Destroy(whiteMat);
+            }
         }
     }
 

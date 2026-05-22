@@ -45,6 +45,22 @@ public class BossPattern_DashStrike : MonoBehaviour
     public float cloneHpThreshold = 0.5f;
     [Tooltip("분신 소환 후 돌진 쿨타임 (초)")]
     public float enragedDashCooldown = 0.5f;
+    [Tooltip("분신의 상시 몸체 색상 (보라색 계열)")]
+    public Color cloneBodyColor = new Color(0.65f, 0.2f, 1.0f, 0.5f);
+    [Tooltip("분신 돌진 및 대시 시 발광 색상 (밝은 보라색 계열)")]
+    public Color cloneFlashColor = new Color(0.85f, 0.4f, 1.0f, 1.0f);
+
+    [Header("사운드 설정")]
+    [Tooltip("대시 돌진 시 재생할 효과음")]
+    public AudioClip dashSFX;
+
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, transform.position);
+        }
+    }
 
     // ── 분신 여부 관련 내부 상태 ──────────────────────────────────────────────
     /// <summary>이 인스턴스가 분신(Clone)인지 여부. 분신은 체력 로직 및 승리 처리를 수행하지 않습니다.</summary>
@@ -175,20 +191,20 @@ public class BossPattern_DashStrike : MonoBehaviour
             cloneDash.isClone = true;
             cloneDash.mainBoss = this;
             cloneDash.dashCooldown = enragedDashCooldown;
-            // 분신 잔상은 강렬한 분홍 네온(Magenta)으로 시각적 차별화
-            cloneDash.afterimageColor = new Color(1f, 0f, 0.85f, 0.7f);
+            // 분신 잔상은 보라색 네온으로 시각적 차별화
+            cloneDash.afterimageColor = new Color(0.75f, 0.1f, 1.0f, 0.7f);
             // 분신은 체력 기반 재분신 없음
             cloneDash.hasSpawnedClone = true;
         }
 
-        // ── 분신 비주얼: 반투명 민트 홀로그램 컬러 적용 ──────────────────────
+        // ── 분신 비주얼: 반투명 보라색 홀로그램 컬러 적용 ──────────────────────
         SpriteRenderer[] cloneRenderers = cloneObj.GetComponentsInChildren<SpriteRenderer>(true);
         foreach (SpriteRenderer sr in cloneRenderers)
         {
             if (sr != null)
             {
-                // 반투명 민트 홀로그램 (알파 0.45)
-                sr.color = new Color(0f, 1f, 0.9f, 0.45f);
+                // 반투명 보라색 홀로그램
+                sr.color = cloneBodyColor;
             }
         }
 
@@ -268,7 +284,7 @@ public class BossPattern_DashStrike : MonoBehaviour
                     // 빠른 깜빡임 연출
                     if (Mathf.Repeat(elapsedWarn * 12f, 1f) > 0.5f)
                     {
-                        spriteRenderer.color = afterimageColor;
+                        spriteRenderer.color = isClone ? cloneFlashColor : afterimageColor;
                     }
                     else
                     {
@@ -293,6 +309,24 @@ public class BossPattern_DashStrike : MonoBehaviour
             Vector3 dashDirection = (targetPosition - startPosition).normalized;
             UpdateSpriteDirection(dashDirection);
 
+            // 대시 연출: 하얀/보라 플래시용 셰이더 머티리얼 구성 및 원본 스케일 저장
+            Material originalMaterial = spriteRenderer != null ? spriteRenderer.material : null;
+            Material whiteFlashMat = null;
+            Shader guiTextShader = Shader.Find("GUI/Text Shader");
+            if (guiTextShader != null)
+            {
+                whiteFlashMat = new Material(guiTextShader);
+            }
+
+            if (spriteRenderer != null && whiteFlashMat != null)
+            {
+                spriteRenderer.material = whiteFlashMat;
+                // 돌진 중 발광 강제 적용 (본체는 백색, 분신은 보라색)
+                spriteRenderer.color = isClone ? cloneFlashColor : Color.white;
+            }
+
+            PlaySFX(dashSFX);
+
             while (elapsedDash < dashDuration)
             {
                 elapsedDash += Time.deltaTime;
@@ -301,6 +335,11 @@ public class BossPattern_DashStrike : MonoBehaviour
                 // 스무스한 돌진을 위해 Ease-Out Lerp 적용
                 float easedProgress = Mathf.Sin(progress * Mathf.PI * 0.5f);
                 transform.position = Vector3.Lerp(startPosition, targetPosition, easedProgress);
+
+                // 형태 일그러짐 (Squash & Stretch Wobble) 연출: X와 Y축을 70Hz 고주파 Sine 파형으로 서로 반대로 찌그러뜨림
+                float wobbleX = 1.0f + Mathf.Sin(elapsedDash * 70f) * 0.28f;
+                float wobbleY = 1.0f - Mathf.Sin(elapsedDash * 70f) * 0.28f;
+                transform.localScale = new Vector3(originalScale.x * wobbleX, originalScale.y * wobbleY, originalScale.z);
 
                 // 주기적인 잔상(Ghost Trail) 생성
                 afterimageTimer += Time.deltaTime;
@@ -312,6 +351,14 @@ public class BossPattern_DashStrike : MonoBehaviour
 
                 yield return null;
             }
+
+            // 대시 종료 후 머티리얼, 원래 색상 및 본래 스케일로 완전히 원복
+            if (spriteRenderer != null)
+            {
+                if (originalMaterial != null) spriteRenderer.material = originalMaterial;
+                spriteRenderer.color = originalColor;
+            }
+            transform.localScale = originalScale;
 
             // 목표 지점에 완전히 안착
             transform.position = targetPosition;

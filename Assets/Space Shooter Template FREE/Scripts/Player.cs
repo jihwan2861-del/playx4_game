@@ -111,12 +111,12 @@ public class Player : MonoBehaviour
         isInvincible = false;
     }
 
-    public IEnumerator DashInvincibility(float duration)
+    public IEnumerator DashInvincibility(float duration, bool changeColor = true)
     {
         isInvincible = true;
-        if (spriteRenderer != null) spriteRenderer.color = Color.yellow;
+        if (changeColor && spriteRenderer != null) spriteRenderer.color = Color.yellow;
         yield return new WaitForSeconds(duration);
-        if (spriteRenderer != null && !safeZoneInvincible) 
+        if (changeColor && spriteRenderer != null && !safeZoneInvincible) 
             spriteRenderer.color = Color.white;
         isInvincible = false;
     }

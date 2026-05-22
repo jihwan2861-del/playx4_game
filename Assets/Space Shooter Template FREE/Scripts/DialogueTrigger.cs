@@ -19,8 +19,9 @@ public class DialogueTrigger : MonoBehaviour
     [Tooltip("순서대로 보여줄 대화 데이터들 (이름, 대사, 초상화 스프라이트 설정 가능)")]
     public List<HubDialogueLine> dialogueLines = new List<HubDialogueLine>()
     {
-        new HubDialogueLine { speakerName = "홀로그램 AI", message = "반갑네, 파일럿. 시스템을 복구할 준비가 되었는가?", isLeft = true },
-        new HubDialogueLine { speakerName = "주인공", message = "물론이지. 무엇을 먼저 처리해야 하나?", isLeft = false }
+        new HubDialogueLine { speakerName = "보안 AI 네티", message = "반갑네, 제이 엔지니어. 바이러스에 오염된 사이보그들의 공격성이 이제 제어 불가능한 수준일세!", isLeft = true },
+        new HubDialogueLine { speakerName = "엔지니어 제이", message = "예상했던 대로군. 내 패치 쉴드로 데이터 충격을 상쇄하면서 실시간 디버깅을 전개하겠네.", isLeft = false },
+        new HubDialogueLine { speakerName = "보안 AI 네티", message = "좋네! 각 구역의 실시간 디버깅 포트(해킹 존)를 확보하고 코드를 오버라이드하여 놈들을 안전하게 리부트해주게. 조심하게!", isLeft = true }
     };
 
     [Header("=== 대화 종료 후 이벤트 ===")]

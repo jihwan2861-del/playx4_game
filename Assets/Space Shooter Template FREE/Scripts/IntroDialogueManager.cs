@@ -61,6 +61,10 @@ public class IntroDialogueManager : MonoBehaviour
     [Tooltip("한 글자당 타이핑 속도 (초)")]
     public float typingSpeed = 0.03f;
 
+    [Header("=== 사운드 효과 ===")]
+    [Tooltip("대화를 클릭하여 진행하거나 스킵할 때 재생할 효과음")]
+    public AudioClip dialogueClickSFX;
+
     [Header("=== 대화 내용 설정 ===")]
     public DialogueLine[] lines = new DialogueLine[] {
         new DialogueLine { 
@@ -128,6 +132,7 @@ public class IntroDialogueManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.F))
         {
+            PlaySFX(dialogueClickSFX);
             if (isTyping)
             {
                 SkipTyping();
@@ -307,6 +312,14 @@ public class IntroDialogueManager : MonoBehaviour
                 Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
                 if (rb != null) rb.velocity = Vector2.zero;
             }
+        }
+    }
+
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : transform.position);
         }
     }
 }

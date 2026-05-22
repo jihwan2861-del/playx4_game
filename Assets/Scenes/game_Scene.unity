@@ -644,12 +644,22 @@ PrefabInstance:
     - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
         type: 3}
       propertyPath: parryEnergyCost
-      value: 30
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
         type: 3}
+      propertyPath: parrySuccessSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 2cfe48c022092a34a96ac1cfe4ce6917, type: 3}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
       propertyPath: parryEnergyRefund
-      value: 20
+      value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: parrySuccessVolume
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
         type: 3}
@@ -612900,6 +612910,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1407169434}
+    - targetCorrespondingSourceObject: {fileID: 1521038999978780, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1407169436}
   m_SourcePrefab: {fileID: 100100000, guid: 01cf4a33fc66cde4abc060ccfeadeb5a, type: 3}
 --- !u!1 &994693325 stripped
 GameObject:
@@ -612986,20 +613000,20 @@ MonoBehaviour:
   - {fileID: 7847443416816144299, guid: 411a080259e3f6245ab277573c24db4f, type: 3}
   - {fileID: 3663228080437020539, guid: 25a6ffe9c52ffb64496feeb7f2343ca7, type: 3}
   - {fileID: 8088439180297658945, guid: 7457601a9a7ce724ba3d334e8f1a0eb1, type: 3}
-  ezInterval: 3.5
+  ezInterval: 2
   normalPatterns:
   - {fileID: 2020991861450138195, guid: 0b8f273b6fd31194591792765fbe3d4d, type: 3}
   - {fileID: 7964999317648650255, guid: c45f3363bd8555e4a90b93dc8c6391c0, type: 3}
   - {fileID: 7701822112951921056, guid: 4b0b484aaeaad8e4a82bfd05feb1c427, type: 3}
   - {fileID: 7332403248913460301, guid: 6d3c156df25975646847cf3ac2f2a38b, type: 3}
-  normalInterval: 2
+  normalInterval: 1
   hardPatterns:
   - {fileID: 2672558063544216962, guid: 6899e50c7cb9dca42a230160dbebce38, type: 3}
   - {fileID: 1927208500936088772, guid: 9dd6f7a9e9073144aa862763092649d5, type: 3}
   - {fileID: 4730948169682322785, guid: 7ec89db21aec94b46a20727c80f579b4, type: 3}
   - {fileID: 3011148023377321845, guid: d148154532457a34f84e3fa9462fa60d, type: 3}
-  hardInterval: 1
-  bossSurvivalTime: 180
+  hardInterval: 0.5
+  bossSurvivalTime: 120
   currentSurvivalTimer: 0
   isHacking: 0
   initialDelay: 3
@@ -644325,6 +644339,21 @@ MonoBehaviour:
   offset: {x: 0, y: 0, z: 0}
   followXOnly: 0
   followYOnly: 0
+--- !u!114 &1407169436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407169429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5687b3797573fba49a05558e0801e84b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bgmClip: {fileID: 8300000, guid: 2eab331d80f6ae4468bbfe9ac2dbee6b, type: 3}
+  loop: 1
+  volume: 0.31
 --- !u!1 &1494499921
 GameObject:
   m_ObjectHideFlags: 0
@@ -644502,6 +644531,7 @@ MonoBehaviour:
     type: 3}
   energyBarRect: {fileID: 1181625137}
   victoryTextObj: {fileID: 0}
+  gameClearPanel: {fileID: 0}
   healthSlider: {fileID: 0}
   hpText: {fileID: 0}
   energySlider: {fileID: 0}

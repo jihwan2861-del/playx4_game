@@ -23,6 +23,8 @@ public class PlayerUI : MonoBehaviour
 
     [Header("Victory UI")]
     public GameObject victoryTextObj;
+    [Tooltip("신규 추가: 게임 클리어 시 부드럽게 페이드인 될 클리어 패널")]
+    public GameClearPanel gameClearPanel;
 
     // 하위 호환용
     [HideInInspector] public Slider healthSlider;
@@ -39,11 +41,18 @@ public class PlayerUI : MonoBehaviour
 
     public void ShowVictory()
     {
+        // 1. 기존 텍스트 활성화 (하위 호환 유지)
         if (victoryTextObj != null)
         {
             victoryTextObj.SetActive(true);
             Text t = victoryTextObj.GetComponent<Text>();
             if (t != null) t.text = "MISSION COMPLETE!\nSAFE ZONE REACHED";
+        }
+
+        // 2. 신규 부드러운 UI 페이드 연출 실행
+        if (gameClearPanel != null)
+        {
+            gameClearPanel.PlayClearAnimation();
         }
     }
 

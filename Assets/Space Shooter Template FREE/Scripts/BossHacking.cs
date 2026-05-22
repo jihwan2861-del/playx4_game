@@ -20,7 +20,7 @@ public class BossHacking : MonoBehaviour
     public SpriteRenderer customHackingZone;
 
     private bool isHackingActive = false;
-    private Color originalZoneColor; // 해킹존 원본 색상 저장용
+    private Color originalZoneColor; // 해킹존 원래의 색상 저장용
 
     void Start()
     {

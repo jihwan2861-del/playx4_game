@@ -142,6 +142,18 @@ public class HubUIManager : MonoBehaviour
     [Header("=== 플레이어 이동 제어 ===")]
     public HubPlayerMovement playerMovement;
 
+    [Header("=== Sound Settings (사운드 설정) ===")]
+    [Tooltip("버튼 클릭 시 재생할 효과음")]
+    public AudioClip buttonClickSFX;
+
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : transform.position);
+        }
+    }
+
     // 미션 수락 여부 플래그
     private bool hasAcceptedMission = false;
     private int currentHoloMissionIndex = 0;
@@ -283,6 +295,7 @@ public class HubUIManager : MonoBehaviour
 
     public void OpenStageSelect()
     {
+        PlaySFX(buttonClickSFX);
         CloseAllPanels();
         if (garagePanel != null) garagePanel.SetActive(true);
         SetPlayerControl(false);
@@ -290,6 +303,7 @@ public class HubUIManager : MonoBehaviour
 
     public void OpenHologram()
     {
+        PlaySFX(buttonClickSFX);
         CloseAllPanels();
         if (hologramPanel != null) hologramPanel.SetActive(true);
         SetPlayerControl(false);
@@ -713,6 +727,7 @@ public class HubUIManager : MonoBehaviour
     // ========== [ 미션 넘겨보기 클릭 함수 ] ==========
     public void ShowNextHoloMission()
     {
+        PlaySFX(buttonClickSFX);
         if (currentHoloMissionIndex < hologramMissions.Count - 1)
         {
             currentHoloMissionIndex++;
@@ -722,6 +737,7 @@ public class HubUIManager : MonoBehaviour
 
     public void ShowPrevHoloMission()
     {
+        PlaySFX(buttonClickSFX);
         if (currentHoloMissionIndex > 0)
         {
             currentHoloMissionIndex--;
@@ -951,6 +967,7 @@ public class HubUIManager : MonoBehaviour
 
     public void OpenShop()
     {
+        PlaySFX(buttonClickSFX);
         CloseAllPanels();
         if (workshopPanel != null) workshopPanel.SetActive(true);
         SetPlayerControl(false);
@@ -960,6 +977,7 @@ public class HubUIManager : MonoBehaviour
 
     public void CloseAllPanels()
     {
+        PlaySFX(buttonClickSFX);
         if (garagePanel != null) garagePanel.SetActive(false);
         if (hologramPanel != null) hologramPanel.SetActive(false);
         if (workshopPanel != null) workshopPanel.SetActive(false);
@@ -970,30 +988,35 @@ public class HubUIManager : MonoBehaviour
 
     public void StartMission()
     {
+        PlaySFX(buttonClickSFX);
         Debug.Log("🏍️ 출격! 오토바이 이동 씬으로 전환합니다.");
         SceneManager.LoadScene("Ride_Scene");
     }
 
     public void StartTutorial()
     {
+        PlaySFX(buttonClickSFX);
         Debug.Log("📖 튜토리얼 시작!");
         SceneManager.LoadScene("Tutorial_scene");
     }
 
     public void StartStageOne()
     {
+        PlaySFX(buttonClickSFX);
         Debug.Log("🚀 1스테이지로 출격!");
         SceneManager.LoadScene("game_Scene");
     }
 
     public void StartStageTwo()
     {
+        PlaySFX(buttonClickSFX);
         Debug.Log("🚀 2스테이지로 출격!");
         SceneManager.LoadScene("Stage2_Scene");
     }
 
     public void StartStageThree()
     {
+        PlaySFX(buttonClickSFX);
         Debug.Log("🚀 3스테이지로 출격!");
         SceneManager.LoadScene("Stage3_Scene");
     }
@@ -1002,26 +1025,31 @@ public class HubUIManager : MonoBehaviour
 
     public void UpgradeSpeed()
     {
+        PlaySFX(buttonClickSFX);
         TryUpgrade(ref PlayerDataManager.instance.speedLevel, "이동속도");
     }
 
     public void UpgradeMaxEnergy()
     {
+        PlaySFX(buttonClickSFX);
         TryUpgrade(ref PlayerDataManager.instance.maxEnergyLevel, "최대 에너지");
     }
 
     public void UpgradeEnergyRegen()
     {
+        PlaySFX(buttonClickSFX);
         TryUpgrade(ref PlayerDataManager.instance.energyRegenLevel, "에너지 재생력");
     }
 
     public void UpgradeDashCost()
     {
+        PlaySFX(buttonClickSFX);
         TryUpgrade(ref PlayerDataManager.instance.dashCostLevel, "대쉬 소모 감소");
     }
 
     public void UpgradeMaxHp()
     {
+        PlaySFX(buttonClickSFX);
         TryUpgrade(ref PlayerDataManager.instance.maxHpLevel, "최대 체력");
     }
 

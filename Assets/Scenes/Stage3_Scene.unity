@@ -638,13 +638,43 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
         type: 3}
+      propertyPath: parryEnergyCost
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: parrySuccessSFX
+      value: 
+      objectReference: {fileID: 8300000, guid: 2cfe48c022092a34a96ac1cfe4ce6917, type: 3}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: parryEnergyRefund
+      value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: parrySuccessVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
       propertyPath: dashSpeedMultiplier
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
         type: 3}
+      propertyPath: parryCooldownDuration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
       propertyPath: dashInvincibilityDuration
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: parryWhiffRecoveryDuration
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 114960433178452790, guid: 8e33fda0c220936498f5288af83d7450,
         type: 3}
@@ -2009,7 +2039,7 @@ PrefabInstance:
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
       propertyPath: laserPatternPrefabs.Array.size
-      value: 9
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
@@ -2085,49 +2115,49 @@ PrefabInstance:
         type: 3}
       propertyPath: laserPatternPrefabs.Array.data[0]
       value: 
-      objectReference: {fileID: 2020991861450138195, guid: 0b8f273b6fd31194591792765fbe3d4d,
+      objectReference: {fileID: 7964999317648650255, guid: c45f3363bd8555e4a90b93dc8c6391c0,
         type: 3}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
       propertyPath: laserPatternPrefabs.Array.data[1]
       value: 
-      objectReference: {fileID: 3663228080437020539, guid: 25a6ffe9c52ffb64496feeb7f2343ca7,
+      objectReference: {fileID: 7964999317648650255, guid: c45f3363bd8555e4a90b93dc8c6391c0,
         type: 3}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
       propertyPath: laserPatternPrefabs.Array.data[2]
       value: 
-      objectReference: {fileID: 7964999317648650255, guid: c45f3363bd8555e4a90b93dc8c6391c0,
+      objectReference: {fileID: 7701822112951921056, guid: 4b0b484aaeaad8e4a82bfd05feb1c427,
         type: 3}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
       propertyPath: laserPatternPrefabs.Array.data[3]
       value: 
-      objectReference: {fileID: 7701822112951921056, guid: 4b0b484aaeaad8e4a82bfd05feb1c427,
+      objectReference: {fileID: 7332403248913460301, guid: 6d3c156df25975646847cf3ac2f2a38b,
         type: 3}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
       propertyPath: laserPatternPrefabs.Array.data[4]
       value: 
-      objectReference: {fileID: 7332403248913460301, guid: 6d3c156df25975646847cf3ac2f2a38b,
+      objectReference: {fileID: 2672558063544216962, guid: 6899e50c7cb9dca42a230160dbebce38,
         type: 3}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
       propertyPath: laserPatternPrefabs.Array.data[5]
       value: 
-      objectReference: {fileID: 2672558063544216962, guid: 6899e50c7cb9dca42a230160dbebce38,
+      objectReference: {fileID: 1927208500936088772, guid: 9dd6f7a9e9073144aa862763092649d5,
         type: 3}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
       propertyPath: laserPatternPrefabs.Array.data[6]
       value: 
-      objectReference: {fileID: 1927208500936088772, guid: 9dd6f7a9e9073144aa862763092649d5,
+      objectReference: {fileID: 4730948169682322785, guid: 7ec89db21aec94b46a20727c80f579b4,
         type: 3}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
       propertyPath: laserPatternPrefabs.Array.data[7]
       value: 
-      objectReference: {fileID: 4730948169682322785, guid: 7ec89db21aec94b46a20727c80f579b4,
+      objectReference: {fileID: 3011148023377321845, guid: d148154532457a34f84e3fa9462fa60d,
         type: 3}
     - target: {fileID: 114004447756405556, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
         type: 3}
@@ -2335,6 +2365,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1407169434}
+    - targetCorrespondingSourceObject: {fileID: 1521038999978780, guid: 01cf4a33fc66cde4abc060ccfeadeb5a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1407169436}
   m_SourcePrefab: {fileID: 100100000, guid: 01cf4a33fc66cde4abc060ccfeadeb5a, type: 3}
 --- !u!1 &994693325 stripped
 GameObject:
@@ -2446,8 +2480,8 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.64, y: 3.09}
-    newSize: {x: 11.99, y: 9.99}
+    oldSize: {x: 2.105, y: 1.965}
+    newSize: {x: 2.105, y: 1.965}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -2476,7 +2510,7 @@ MonoBehaviour:
   hardPatterns:
   - {fileID: 1, guid: 7b5e8a9d4f0c4a169b32c84dbef7e002, type: 3}
   hardInterval: 1.2
-  bossSurvivalTime: 140
+  bossSurvivalTime: 100
   currentSurvivalTimer: 0
   isHacking: 0
   initialDelay: 1
@@ -2549,14 +2583,45 @@ MonoBehaviour:
   stopDistance: 3
   bossAnimator: {fileID: 0}
   runBoolName: isRunning
-  spriteFront: {fileID: 0}
-  spriteBack: {fileID: 0}
-  spriteUpLeft: {fileID: 0}
-  spriteUpRight: {fileID: 0}
-  spriteDownLeft: {fileID: 0}
-  spriteDownRight: {fileID: 0}
-  spriteLeft: {fileID: 0}
-  spriteRight: {fileID: 0}
+  spriteFront: {fileID: 1003207829, guid: f292c5111acf3c14c9d323867435b64e, type: 3}
+  spriteBack: {fileID: 2147277341, guid: f292c5111acf3c14c9d323867435b64e, type: 3}
+  spriteUpLeft: {fileID: -2083376248, guid: f292c5111acf3c14c9d323867435b64e, type: 3}
+  spriteUpRight: {fileID: -275582348, guid: ce4d54d133e425c478cde25baadacfc8, type: 3}
+  spriteDownLeft: {fileID: -1406816267, guid: ce4d54d133e425c478cde25baadacfc8, type: 3}
+  spriteDownRight: {fileID: 124034315, guid: f292c5111acf3c14c9d323867435b64e, type: 3}
+  spriteLeft: {fileID: -1975965142, guid: ce4d54d133e425c478cde25baadacfc8, type: 3}
+  spriteRight: {fileID: 933704276, guid: f292c5111acf3c14c9d323867435b64e, type: 3}
+--- !u!114 &994693357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994693325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c75ac7cc43c19b4cb5e886e01996f93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dashCooldown: 2
+  dashDuration: 0.4
+  warnDuration: 0.5
+  stunDuration: 0.4
+  maxDashDistance: 0
+  afterimageInterval: 0.1
+  afterimageFadeDuration: 0.3
+  afterimageColor: {r: 0, g: 0.75, b: 1, a: 0.6}
+  bulletCount360: 24
+  bulletSpeed: 6
+  bulletPrefab: {fileID: 552700416494034036, guid: f6c7681985f5459448499e6aac15ae1c,
+    type: 3}
+  cloneHpThreshold: 0.5
+  enragedDashCooldown: 0.5
+  cloneBodyColor: {r: 0.65, g: 0.2, b: 1, a: 0.5}
+  cloneFlashColor: {r: 0.85, g: 0.4, b: 1, a: 1}
+  dashSFX: {fileID: 0}
+  isClone: 0
+  mainBoss: {fileID: 0}
 --- !u!1 &1085004577 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1510184446397956, guid: 8e33fda0c220936498f5288af83d7450,
@@ -3035,6 +3100,21 @@ MonoBehaviour:
   offset: {x: 0, y: 0, z: 0}
   followXOnly: 0
   followYOnly: 0
+--- !u!114 &1407169436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407169429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5687b3797573fba49a05558e0801e84b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bgmClip: {fileID: 8300000, guid: 8a32b24e97024674f9c1154dff963de8, type: 3}
+  loop: 1
+  volume: 0.5
 --- !u!1 &1494499921
 GameObject:
   m_ObjectHideFlags: 0
@@ -3212,6 +3292,7 @@ MonoBehaviour:
     type: 3}
   energyBarRect: {fileID: 1181625137}
   victoryTextObj: {fileID: 0}
+  gameClearPanel: {fileID: 0}
   healthSlider: {fileID: 0}
   hpText: {fileID: 0}
   energySlider: {fileID: 0}
@@ -3470,7 +3551,7 @@ MonoBehaviour:
   - pooledPrefab: {fileID: 552700416494034036, guid: 5974dc68dd0e6bc4bbcd001f950e0f1c,
       type: 3}
     count: 200
-  - pooledPrefab: {fileID: 6123332142126215557, guid: a817389f10b12a0438e3756c24fe21ac,
+  - pooledPrefab: {fileID: 552700416494034036, guid: f6c7681985f5459448499e6aac15ae1c,
       type: 3}
     count: 200
 --- !u!4 &1555451424
@@ -4049,7 +4130,7 @@ PrefabInstance:
     - target: {fileID: 3844258671799329967, guid: 4c7836b404131c944b33d116752d9853,
         type: 3}
       propertyPath: m_Name
-      value: 2ed Boss
+      value: boss 3
       objectReference: {fileID: 0}
     - target: {fileID: 3844258671799329967, guid: 4c7836b404131c944b33d116752d9853,
         type: 3}
@@ -4058,14 +4139,29 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6019297042463171846, guid: 4c7836b404131c944b33d116752d9853,
         type: 3}
+      propertyPath: m_Size.x
+      value: 2.105
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019297042463171846, guid: 4c7836b404131c944b33d116752d9853,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 1.965
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019297042463171846, guid: 4c7836b404131c944b33d116752d9853,
+        type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: e63023478f0a23a459ab26e45163c654,
+      objectReference: {fileID: 1003207829, guid: f292c5111acf3c14c9d323867435b64e,
         type: 3}
     - target: {fileID: 6019297042463171846, guid: 4c7836b404131c944b33d116752d9853,
         type: 3}
       propertyPath: m_SortingOrder
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019297042463171846, guid: 4c7836b404131c944b33d116752d9853,
+        type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6019297042463171846, guid: 4c7836b404131c944b33d116752d9853,
         type: 3}
@@ -4108,6 +4204,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 994693355}
+    - targetCorrespondingSourceObject: {fileID: 3844258671799329967, guid: 4c7836b404131c944b33d116752d9853,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 994693357}
   m_SourcePrefab: {fileID: 100100000, guid: 4c7836b404131c944b33d116752d9853, type: 3}
 --- !u!1 &1890121433
 GameObject:

@@ -64,6 +64,10 @@ public class HubDialogueManager : MonoBehaviour
     [Tooltip("한 글자당 타이핑 속도 (초)")]
     public float typingSpeed = 0.03f;
 
+    [Header("=== 사운드 효과 ===")]
+    [Tooltip("대화를 클릭하여 진행하거나 스킵할 때 재생할 효과음")]
+    public AudioClip dialogueClickSFX;
+
     // 대화 상태 관련 변수들
     private List<HubDialogueLine> currentLines = new List<HubDialogueLine>();
     private int currentLineIndex = 0;
@@ -119,6 +123,7 @@ public class HubDialogueManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.F))
         {
+            PlaySFX(dialogueClickSFX);
             if (isTyping)
             {
                 StopTypingAndShowFullText();
@@ -311,6 +316,14 @@ public class HubDialogueManager : MonoBehaviour
                     anim.SetFloat("Speed", 0f);
                 }
             }
+        }
+    }
+
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : transform.position);
         }
     }
 }

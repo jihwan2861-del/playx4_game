@@ -45,6 +45,9 @@ public class BossPatternController : MonoBehaviour
 
         currentSurvivalTimer = bossSurvivalTime;
 
+        // 해킹 연출을 위한 꼬불이 라인 컴포넌트 자동 부착
+        gameObject.AddComponent<HackingConnectionLine>();
+
         // 보스가 존재하는 동안 항상 주위를 도는 아우렐리온 솔 스타일 영구 공전 돌 패턴 스폰
         SpawnPermanentRockPattern();
 

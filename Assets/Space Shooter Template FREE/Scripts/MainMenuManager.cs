@@ -4,28 +4,17 @@ using UnityEngine.SceneManagement;
 public class MainMenuManager : MonoBehaviour
 {
     [Header("이동할 씬 이름")]
-    [Tooltip("게임 시작 버튼을 눌렀을 때 넘어갈 스테이지 씬의 이름을 정확히 적어주세요. (예: Level_1)")]
-    public string gameSceneName = "Level_1";
+    [Tooltip("게임이 시작되자마자 즉시 넘어갈 대상 씬의 정확한 이름입니다. (기본값: Hub_Scene)")]
+    public string gameSceneName = "Hub_Scene";
 
-    /// <summary>
-    /// 게임 시작 버튼에 연결할 함수입니다.
-    /// </summary>
-    public void OnClickStartGame()
+    private void Start()
     {
-        Debug.Log($"[{gameSceneName}] 씬으로 이동합니다!");
-        
-        // 시간 배속을 원래대로 돌려놓습니다. (혹시 이전 씬에서 멈춰있었을 경우 대비)
+        // 시간 배속을 원래대로 돌려놓습니다. (정상 스케일 보장)
         Time.timeScale = 1f; 
-        
-        SceneManager.LoadScene(gameSceneName);
-    }
 
-    /// <summary>
-    /// 게임 종료 버튼에 연결할 함수입니다.
-    /// </summary>
-    public void OnClickQuitGame()
-    {
-        Debug.Log("게임을 종료합니다.");
-        Application.Quit(); // 실제 빌드된 게임에서만 작동합니다.
+        Debug.Log($"[MainMenuManager] 게임 기동 완료. 복잡한 메인 UI를 건너뛰고 [{gameSceneName}]으로 즉시 진입합니다!");
+        
+        // 씬 로딩 지연 없이 곧바로 허브 씬(또는 지정된 씬)으로 텔레포트합니다.
+        SceneManager.LoadScene(gameSceneName);
     }
 }

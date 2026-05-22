@@ -40,14 +40,25 @@ public class BossPattern_RockDrop : MonoBehaviour
     [Tooltip("체크 시 이 패턴 오브젝트가 씬에 머물며 쿨타임 후 지속 반복")]
     public bool repeatPattern = false;
 
+    [Header("보스 HP 연동 설정")]
+    [Tooltip("공전 속도가 빨라지기 시작하는 보스 체력(생존시간) 비율 (0.5 = 50%)")]
+    public float hpThreshold = 0.5f;
+    [Tooltip("보스 체력이 임계값 미만일 때 적용할 공전 속도 배율")]
+    public float speedMultiplier = 1.8f;
+
     [Header("애니메이션")]
     [Tooltip("보스의 애니메이터 컴포넌트")]
     public Animator bossAnimator;
+
+    [Header("사운드 설정")]
+    [Tooltip("돌들이 공전할 때 재생할 루핑 효과음")]
+    public AudioClip rockOrbitSFX;
 
     private List<GameObject> spawnedRocks = new List<GameObject>();
     private float currentAngle = 0f;
     private BossPatternController bossPC;
     private bool isPatternActive = false;
+    private AudioSource orbitAudioSource;
 
     private void Start()
     {
@@ -92,8 +103,22 @@ public class BossPattern_RockDrop : MonoBehaviour
         // 패턴 구동 중일 때 돌들의 위치를 공전 궤도 좌표로 실시간 계산 및 갱신
         if (isPatternActive && spawnedRocks.Count > 0)
         {
+            // 보스 체력 비율 확인
+            float hpPercent = 1f;
+            if (bossPC != null && bossPC.bossSurvivalTime > 0)
+            {
+                hpPercent = Mathf.Clamp01(bossPC.currentSurvivalTimer / bossPC.bossSurvivalTime);
+            }
+
+            // 체력이 임계값 미만이면 속도 증가 배율 적용
+            float activeOrbitSpeed = orbitSpeed;
+            if (hpPercent < hpThreshold)
+            {
+                activeOrbitSpeed *= speedMultiplier;
+            }
+
             // 시간 경과에 따른 기본 각도 갱신
-            currentAngle += orbitSpeed * Time.deltaTime;
+            currentAngle += activeOrbitSpeed * Time.deltaTime;
             if (currentAngle >= 360f)
             {
                 currentAngle -= 360f;
@@ -139,6 +164,17 @@ public class BossPattern_RockDrop : MonoBehaviour
 
         CleanUpRocks();
 
+        if (rockOrbitSFX != null && orbitAudioSource == null)
+        {
+            orbitAudioSource = gameObject.AddComponent<AudioSource>();
+            orbitAudioSource.clip = rockOrbitSFX;
+            orbitAudioSource.loop = true;
+            orbitAudioSource.playOnAwake = false;
+            orbitAudioSource.volume = 0.5f;
+            orbitAudioSource.spatialBlend = 0f; // 2D Sound
+            orbitAudioSource.Play();
+        }
+
         Vector3 centerPos = bossPC != null ? bossPC.transform.position : transform.position;
 
         for (int i = 0; i < rockCount; i++)
@@ -162,6 +198,13 @@ public class BossPattern_RockDrop : MonoBehaviour
     /// </summary>
     private void CleanUpRocks()
     {
+        if (orbitAudioSource != null)
+        {
+            orbitAudioSource.Stop();
+            Destroy(orbitAudioSource);
+            orbitAudioSource = null;
+        }
+
         if (spawnedRocks != null)
         {
             for (int i = 0; i < spawnedRocks.Count; i++)

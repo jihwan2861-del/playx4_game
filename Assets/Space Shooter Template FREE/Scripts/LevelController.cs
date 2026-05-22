@@ -70,6 +70,12 @@ public class LevelController : MonoBehaviour {
     // public float bossSurvivalTime = 180f;
     // [HideInInspector] public float currentSurvivalTimer; 
 
+    [Header("🎵 BGM Settings (배경 음악 설정)")]
+    [Tooltip("이 스테이지에서 반복 재생할 배경 음악(BGM)입니다.")]
+    public AudioClip stageBGM;
+
+    private AudioSource bgmAudioSource;
+
     private Coroutine laserCoroutine;
     public static LevelController instance;
 
@@ -86,6 +92,19 @@ public class LevelController : MonoBehaviour {
 
     private void Start()
     {
+        // BGM 재생
+        if (stageBGM != null)
+        {
+            bgmAudioSource = gameObject.AddComponent<AudioSource>();
+            bgmAudioSource.clip = stageBGM;
+            bgmAudioSource.loop = true;
+            bgmAudioSource.playOnAwake = false;
+            bgmAudioSource.volume = 0.5f;
+            bgmAudioSource.spatialBlend = 0f; // 2D BGM
+            bgmAudioSource.Play();
+            Debug.Log($"🎵 [LevelController] 배경 음악 '{stageBGM.name}' 재생 시작!");
+        }
+
         mainCamera = Camera.main;
         if (!disableOriginalWaves)
         {
@@ -170,6 +189,11 @@ public class LevelController : MonoBehaviour {
     public void TriggerVictory()
     {
         Debug.Log("🏁 [미션 완료] 보스전 생존 성공! 스테이지 클리어!");
+
+        if (bgmAudioSource != null)
+        {
+            bgmAudioSource.Stop();
+        }
         
         // 1. 플레이어 강제 무적 상태 돌입 (보스 처치 후 투사체 궤적에 억울하게 맞아 죽는 사고 원천 차단)
         if (Player.instance != null)
