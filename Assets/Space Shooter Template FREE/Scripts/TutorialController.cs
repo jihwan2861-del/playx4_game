@@ -171,6 +171,19 @@ public class TutorialController : MonoBehaviour
                     dummyBot.gameObject.SetActive(false);
                     dummyBot.gameObject.SetActive(true);
                 }
+
+                // 2단계 해킹 실전 돌입 시 플레이어 기체와 더미 봇 간에 LineRenderer 유도 가이드라인 활성화
+                if (PathGuideLine.instance == null)
+                {
+                    GameObject guideObj = new GameObject("PathGuideLineObject");
+                    guideObj.AddComponent<PathGuideLine>();
+                }
+
+                if (PathGuideLine.instance != null && dummyBot != null)
+                {
+                    PathGuideLine.instance.SetTarget(dummyBot.transform);
+                    Debug.Log("🎯 2단계 유도 가이드 라인(LineRenderer)이 활성화되었습니다!");
+                }
                 
                 Debug.Log("🎯 2단계 활성화: 더미 봇 해킹 훈련 시작!");
             });
@@ -183,6 +196,12 @@ public class TutorialController : MonoBehaviour
     private void TriggerPhase3()
     {
         currentPhase = 3;
+
+        // 3단계 진입 시 가이드 유도선 클리어
+        if (PathGuideLine.instance != null)
+        {
+            PathGuideLine.instance.ClearTarget();
+        }
 
         // 더미가 죽는 순간 즉시 시간을 멈추고 축하 대화를 시작
         Time.timeScale = 0f;
