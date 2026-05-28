@@ -167,6 +167,51 @@ public class PlayerMoving : MonoBehaviour {
 
     private void Update()
     {
+        // --- 튜토리얼 1단계 전용: 총알이 플레이어 근처에 오면 슬로우 모션 (Bullet Time) ---
+        if (TutorialController.instance != null && TutorialController.instance.currentPhase == 1)
+        {
+            if (Time.timeScale > 0f)
+            {
+                bool bulletNear = false;
+                Collider2D[] slowHits = Physics2D.OverlapCircleAll(transform.position, parryRadius);
+                foreach (var col in slowHits)
+                {
+                    if (col == null) continue;
+                    Projectile proj = col.GetComponent<Projectile>();
+                    if (proj != null && proj.enemyBullet && col.gameObject.activeInHierarchy)
+                    {
+                        bulletNear = true;
+                        break;
+                    }
+                }
+
+                if (bulletNear)
+                {
+                    if (Time.timeScale != 0.2f)
+                    {
+                        Time.timeScale = 0.2f;
+                        Time.fixedDeltaTime = 0.02f * Time.timeScale;
+                    }
+                }
+                else
+                {
+                    if (Time.timeScale != 1.0f)
+                    {
+                        Time.timeScale = 1.0f;
+                        Time.fixedDeltaTime = 0.02f;
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (Time.timeScale == 0.2f)
+            {
+                Time.timeScale = 1.0f;
+                Time.fixedDeltaTime = 0.02f;
+            }
+        }
+
         if (controlIsActive)
         {
             ResizeBorders();
@@ -243,6 +288,14 @@ public class PlayerMoving : MonoBehaviour {
             // 이동 처리 (WASD / 방향키)
             float horizontal = Input.GetAxisRaw("Horizontal");
             float vertical = Input.GetAxisRaw("Vertical");
+
+            // 튜토리얼 1단계(대쉬 회피 훈련) 중에는 플레이어 기동을 강제로 정지시켜 패링에 집중시킴
+            if (TutorialController.instance != null && TutorialController.instance.currentPhase == 1)
+            {
+                horizontal = 0f;
+                vertical = 0f;
+            }
+
             Vector3 moveDirection = new Vector3(horizontal, vertical, 0).normalized;
 
             // --- [애니메이션 처리] ---

@@ -60,7 +60,7 @@ public class TutorialController : MonoBehaviour
     public string lobbySceneName = "Hub_Scene";
 
     // 진행 상태 추적 변수
-    private int currentPhase = 1;
+    [HideInInspector] public int currentPhase = 1;
     private AudioSource bgmAudioSource;
     private bool phase2Triggered = false;
     private bool phase3Triggered = false;
