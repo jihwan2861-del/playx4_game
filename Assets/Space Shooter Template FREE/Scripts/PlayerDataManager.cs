@@ -69,8 +69,8 @@ public class PlayerDataManager : MonoBehaviour
             string currentScene = SceneManager.GetActiveScene().name;
             string nextScene = "Hub_Scene";
             if (currentScene == "MainMenu_Sc") nextScene = "Hub_Scene";
-            else if (currentScene == "Hub_Scene") nextScene = "Tutorial_scene";
-            else if (currentScene == "Tutorial_scene")
+            else if (currentScene == "Hub_Scene") nextScene = "1st scene";
+            else if (currentScene == "1st scene")
             {
                 tutorialCompleted = true;
                 PlayerPrefs.SetInt("Save_TutorialCompleted", 1);
