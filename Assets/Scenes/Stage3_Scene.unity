@@ -653,6 +653,26 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
         type: 3}
+      propertyPath: borders.maxXOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: borders.maxYOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: borders.minXOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: borders.minYOffset
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
       propertyPath: parrySuccessVolume
       value: 1
       objectReference: {fileID: 0}
@@ -2451,7 +2471,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 994693325}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -2528,7 +2548,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableBackgroundSpiral: 1
-  baseProjectilePrefab: {fileID: 552700416494034036, guid: 5974dc68dd0e6bc4bbcd001f950e0f1c,
+  baseProjectilePrefab: {fileID: 552700416494034036, guid: 55eb28619cd82b34395b9a5abbe6b724,
     type: 3}
   spiralFireInterval: 1.4
   spiralBulletCount: 4
@@ -2608,20 +2628,19 @@ MonoBehaviour:
   warnDuration: 0.5
   stunDuration: 0.4
   maxDashDistance: 0
-  afterimageInterval: 0.1
-  afterimageFadeDuration: 0.3
-  afterimageColor: {r: 0, g: 0.75, b: 1, a: 0.6}
+  arrivalPatternPrefab: {fileID: 0}
+  onDashArrival:
+    m_PersistentCalls:
+      m_Calls: []
+  onDashArrivalWithPosition:
+    m_PersistentCalls:
+      m_Calls: []
+  useDefault360AsFallback: 1
   bulletCount360: 24
   bulletSpeed: 6
   bulletPrefab: {fileID: 552700416494034036, guid: f6c7681985f5459448499e6aac15ae1c,
     type: 3}
-  cloneHpThreshold: 0.5
-  enragedDashCooldown: 0.5
-  cloneBodyColor: {r: 0.65, g: 0.2, b: 1, a: 0.5}
-  cloneFlashColor: {r: 0.85, g: 0.4, b: 1, a: 1}
   dashSFX: {fileID: 0}
-  isClone: 0
-  mainBoss: {fileID: 0}
 --- !u!1 &1085004577 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1510184446397956, guid: 8e33fda0c220936498f5288af83d7450,
@@ -3550,10 +3569,13 @@ MonoBehaviour:
   poolingObjectsClass:
   - pooledPrefab: {fileID: 552700416494034036, guid: 5974dc68dd0e6bc4bbcd001f950e0f1c,
       type: 3}
-    count: 200
+    count: 400
   - pooledPrefab: {fileID: 552700416494034036, guid: f6c7681985f5459448499e6aac15ae1c,
       type: 3}
-    count: 200
+    count: 400
+  - pooledPrefab: {fileID: 552700416494034036, guid: 55eb28619cd82b34395b9a5abbe6b724,
+      type: 3}
+    count: 400
 --- !u!4 &1555451424
 Transform:
   m_ObjectHideFlags: 0
