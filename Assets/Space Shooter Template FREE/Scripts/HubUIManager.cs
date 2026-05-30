@@ -997,7 +997,7 @@ public class HubUIManager : MonoBehaviour
     {
         PlaySFX(buttonClickSFX);
         Debug.Log("📖 튜토리얼 시작!");
-        SceneManager.LoadScene("1st scene");
+        SceneManager.LoadScene("1st_scene");
     }
 
     public void StartStageOne()
