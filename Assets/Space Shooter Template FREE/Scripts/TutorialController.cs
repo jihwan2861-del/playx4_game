@@ -50,7 +50,7 @@ public class TutorialController : MonoBehaviour
     // 5: 적 폭주 ➔ 플레이어 방전 피격 넉백 ➔ 기체 발견 대화
     // 6: 기체 수거 완료 ➔ 오토바이 복귀 유도 상태
     // 7: 오토바이 재탑승 탈출 연출 중
-    private int currentPhase = 1;
+    [HideInInspector] public int currentPhase = 1;
 
     private bool playerHasMech = false;
     private bool cyborgEncounterTriggered = false;
