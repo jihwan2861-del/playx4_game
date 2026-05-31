@@ -167,8 +167,8 @@ public class PlayerMoving : MonoBehaviour {
 
     private void Update()
     {
-        // --- 튜토리얼 1단계 전용: 총알이 플레이어 근처에 오면 슬로우 모션 (Bullet Time) ---
-        if (TutorialController.instance != null && TutorialController.instance.currentPhase == 1)
+        // --- 튜토리얼 3단계 전용: 총알이 플레이어 근처에 오면 슬로우 모션 (Bullet Time) ---
+        if (TutorialController.instance != null && TutorialController.instance.currentPhase == 3)
         {
             if (Time.timeScale > 0f)
             {
@@ -289,8 +289,9 @@ public class PlayerMoving : MonoBehaviour {
             float horizontal = Input.GetAxisRaw("Horizontal");
             float vertical = Input.GetAxisRaw("Vertical");
 
-            // 튜토리얼 1단계(대쉬 회피 훈련) 중에는 플레이어 기동을 강제로 정지시켜 패링에 집중시킴
-            if (TutorialController.instance != null && TutorialController.instance.currentPhase == 1)
+            // 튜토리얼 1단계(오토바이 자동이동) 및 3단계(패링 훈련) 중에는 플레이어 수동 기동을 잠금
+            if (TutorialController.instance != null && 
+                (TutorialController.instance.currentPhase == 1 || TutorialController.instance.currentPhase == 3))
             {
                 horizontal = 0f;
                 vertical = 0f;

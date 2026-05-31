@@ -57,6 +57,10 @@ public class TutorialController : MonoBehaviour
     private bool mechFoundTriggered = false;
     private List<GameObject> activeBullets = new List<GameObject>();
     private CameraFollow mainCameraFollow;
+    
+    // 자동 주행용 목적지 변수
+    private Vector3 autoMoveTargetPosition;
+    private bool hasAutoMoveTarget = false;
 
     private void Awake()
     {
@@ -75,7 +79,13 @@ public class TutorialController : MonoBehaviour
         // 초기 비주얼 셋업: 플레이어는 오토바이 탑승 비주얼만 활성화된 상태로 시작
         SetRidingMode(true);
         if (carriedMechVisual != null) carriedMechVisual.SetActive(false);
-        if (parkedMotorcycle != null) parkedMotorcycle.SetActive(false);
+        if (parkedMotorcycle != null)
+        {
+            autoMoveTargetPosition = parkedMotorcycle.transform.position;
+            hasAutoMoveTarget = true;
+            parkedMotorcycle.SetActive(false);
+            Debug.Log($"🛵 [자동 이동 목적지 설정 완료] 좌표: {autoMoveTargetPosition}");
+        }
 
         // 주인공 오프닝 첫 대사 말풍선 출력
         if (player != null)
@@ -86,6 +96,27 @@ public class TutorialController : MonoBehaviour
 
     private void Update()
     {
+        // 1단계: 플레이어 오토바이 자동 이동 처리
+        if (currentPhase == 1 && player != null && hasAutoMoveTarget)
+        {
+            float distToTarget = Vector3.Distance(player.transform.position, autoMoveTargetPosition);
+            if (distToTarget > 0.8f)
+            {
+                Vector3 moveDir = (autoMoveTargetPosition - player.transform.position).normalized;
+                Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    rb.velocity = new Vector2(moveDir.x, moveDir.y) * 8.5f;
+                }
+            }
+            else
+            {
+                Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+                if (rb != null) rb.velocity = Vector2.zero;
+                OnPlayerArrived();
+            }
+        }
+
         // 3단계 감시: 패링 훈련 중 날아오는 총알 실시간 감시 (슬로우모션 트리거)
         if (currentPhase == 3)
         {
