@@ -1,21 +1,19 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 /// <summary>
 /// 《산나비》 스타일의 동적 캐릭터 말풍선 시스템입니다.
-/// 특정 오브젝트 머리 위에 팝업되며, 텍스트 길이에 따라 배경 크기가 탄력적으로 맞춤 조절됩니다.
-/// 에디터 작업 없이도 동적으로 월드 스페이스 캔버스를 빌드하여 작동할 수 있게 설계되었습니다.
+/// 유니티 기본 Text 컴포넌트를 사용하여 한국어를 별도 에셋 로드 없이 100% 선명하게 출력합니다.
 /// </summary>
 public class SpeechBubble : MonoBehaviour
 {
     private Canvas canvas;
     private Image backgroundImage;
-    private TextMeshProUGUI textComponent;
+    private Text textComponent;
     
     private Transform targetTransform;
-    private Vector3 positionOffset = new Vector3(0f, 1.8f, 0f);
+    private Vector3 positionOffset = new Vector3(0f, 2.0f, 0f); // 캐릭터 머리 위 여유 오프셋
     
     private bool isTyping = false;
     private Coroutine typingCoroutine;
@@ -26,7 +24,7 @@ public class SpeechBubble : MonoBehaviour
     /// </summary>
     public static SpeechBubble Create(GameObject owner, string text, Color themeColor, System.Action onComplete = null)
     {
-        // 이미 머리 위에 말풍선이 존재한다면 제거하여 중첩을 방지합니다.
+        // 중첩 생성 방지
         SpeechBubble existing = owner.GetComponentInChildren<SpeechBubble>();
         if (existing != null)
         {
@@ -47,46 +45,47 @@ public class SpeechBubble : MonoBehaviour
         targetTransform = target;
         onCompleteCallback = onComplete;
 
-        // 1. 월드 스페이스 캔버스 동적 빌드
+        // 1. 월드 스페이스 캔버스 고해상도 빌드 (텍스트 깨짐 방지 대형 스케일법)
         canvas = gameObject.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
-        
-        // 소팅 레이어 및 오더 설정 (항상 몬스터나 장애물보다 앞에 그려지도록 높여 둠)
         canvas.sortingLayerName = "Default";
         canvas.sortingOrder = 100;
 
         CanvasScaler scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.dynamicPixelsPerUnit = 20f;
 
-        // 캔버스 크기 제어
         RectTransform canvasRt = canvas.GetComponent<RectTransform>();
-        canvasRt.sizeDelta = new Vector2(5f, 2.5f);
-        canvasRt.localScale = new Vector3(0.7f, 0.7f, 1f); // 2.5D 및 일반 씬 스케일에 알맞게 스케일 조정
+        canvasRt.sizeDelta = new Vector2(400f, 200f);
+        canvasRt.localScale = new Vector3(0.012f, 0.012f, 1f); // 텍스트 해상도를 확보하고 0.012배로 미니어처화
 
-        // 2. 프리미엄 사이버펑크 스타일 배경 패널 자동 생성
+        // 2. 프리미엄 사이버펑크 스타일 9-Slice 배경 자동 생성
         GameObject bgObj = new GameObject("BubbleBG");
         bgObj.transform.SetParent(transform, false);
         backgroundImage = bgObj.AddComponent<Image>();
         backgroundImage.sprite = CreateProceduralBubbleSprite(themeColor);
-        backgroundImage.type = Image.Type.Sliced; // 9-Slice 대응
+        backgroundImage.type = Image.Type.Sliced;
 
         RectTransform bgRt = backgroundImage.GetComponent<RectTransform>();
         bgRt.anchorMin = new Vector2(0.5f, 0.5f);
         bgRt.anchorMax = new Vector2(0.5f, 0.5f);
-        bgRt.pivot = new Vector2(0.5f, 0.0f); // 말풍선 꼬리 쪽(바닥)을 기준점으로 잡음
+        bgRt.pivot = new Vector2(0.5f, 0.0f); // 꼬리 바닥 기준점
         bgRt.localPosition = Vector3.zero;
 
-        // 3. 텍스트 컴포넌트 추가 및 폰트 세팅
+        // 3. 한국어 100% 호환 내장 기본 폰트 탑재 텍스트 추가
         GameObject textObj = new GameObject("BubbleText");
         textObj.transform.SetParent(bgObj.transform, false);
-        textComponent = textObj.AddComponent<TextMeshProUGUI>();
+        textComponent = textObj.AddComponent<Text>();
         
-        textComponent.fontSize = 2.0f; // 월드 스페이스 크기 대응
-        textComponent.alignment = TextAlignmentOptions.Center;
+        // Arial ➔ LegacyRuntime ➔ OS 폰트 순서대로 완벽한 한글 호환 폰트 확보
+        Font defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        if (defaultFont == null) defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if (defaultFont == null) defaultFont = Font.CreateDynamicFontFromOSFont("Arial", 24);
+        
+        textComponent.font = defaultFont;
+        textComponent.fontSize = 20;
+        textComponent.fontStyle = FontStyle.Bold;
+        textComponent.alignment = TextAnchor.MiddleCenter;
         textComponent.color = Color.white;
-        
-        // 폰트 스타일을 살짝 굵게 설정
-        textComponent.fontStyle = FontStyles.Bold;
 
         // 텍스트 여백 설정
         RectTransform textRt = textComponent.GetComponent<RectTransform>();
@@ -95,13 +94,14 @@ public class SpeechBubble : MonoBehaviour
         textRt.sizeDelta = Vector2.zero;
         textRt.localPosition = Vector3.zero;
         
-        // 패딩 적용
-        textComponent.margin = new Vector4(0.3f, 0.3f, 0.3f, 0.3f);
+        // 내부 패딩 설정
+        textRt.offsetMin = new Vector2(15f, 15f);
+        textRt.offsetMax = new Vector2(-15f, -15f);
 
         // 4. 머리 위 팝업 위치 고정
         transform.position = targetTransform.position + positionOffset;
 
-        // 5. 타이핑 이펙트 & 바운싱 스케일 오프닝 연출 시작
+        // 5. 타이핑 이펙트 & 바운싱 애니메이션 기동
         if (typingCoroutine != null) StopCoroutine(typingCoroutine);
         typingCoroutine = StartCoroutine(TypeTextRoutine(text, bgRt));
         StartCoroutine(PopUpBounceRoutine(bgRt));
@@ -109,20 +109,17 @@ public class SpeechBubble : MonoBehaviour
 
     private void Update()
     {
-        // 카메라를 똑바로 바라보도록 빌보드(Billboard) 처리
+        // 2D 씬 빌보드 처리 (회전 방지)
         transform.rotation = Quaternion.identity;
 
-        // 대상의 위치를 부드럽게 실시간 추적 (Y축 오프셋 자동 연동)
+        // 플레이어 캐릭터 머리 위에 부드럽게 고정 추적
         if (targetTransform != null)
         {
             Vector3 targetPos = targetTransform.position + positionOffset;
-            transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * 15f);
+            transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * 18f);
         }
     }
 
-    /// <summary>
-    /// 말풍선이 닫힐 때 완전히 소멸하거나 페이드아웃 되게 조작하는 외부 메서드입니다.
-    /// </summary>
     public void Close(float delay = 0f)
     {
         if (gameObject.activeInHierarchy)
@@ -147,7 +144,6 @@ public class SpeechBubble : MonoBehaviour
         float duration = 0.15f;
         Vector3 startScale = bgRt.localScale;
 
-        // 부드럽게 0으로 수축하며 소멸
         while (elapsed < duration)
         {
             elapsed += Time.unscaledDeltaTime;
@@ -165,9 +161,6 @@ public class SpeechBubble : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 타이핑 글자 출력 및 9-Slice 크기 자동 리사이징 루틴입니다.
-    /// </summary>
     private IEnumerator TypeTextRoutine(string fullText, RectTransform bgRt)
     {
         isTyping = true;
@@ -181,25 +174,21 @@ public class SpeechBubble : MonoBehaviour
             currentText += characters[i];
             textComponent.text = currentText;
 
-            // 텍스트 크기에 맞게 배경 패널 크기를 실시간 리사이징
-            float preferredWidth = Mathf.Clamp(textComponent.preferredWidth + 0.8f, 2.5f, 6.0f);
-            float preferredHeight = textComponent.preferredHeight + 0.6f;
+            // 한글 포함 길이에 따라 9-Slice 배경판 실시간 가변 조정 (픽셀 해상도 대응)
+            float preferredWidth = Mathf.Clamp(textComponent.preferredWidth + 40f, 150f, 380f);
+            float preferredHeight = textComponent.preferredHeight + 35f;
             bgRt.sizeDelta = new Vector2(preferredWidth, preferredHeight);
 
-            // 산나비 특유의 글자 타이핑 딜레이 속도 (초당)
-            yield return new WaitForSecondsRealtime(0.04f);
+            yield return new WaitForSecondsRealtime(0.035f); // 찰진 타이핑 타이밍
         }
 
         isTyping = false;
     }
 
-    /// <summary>
-    /// 0.0에서 1.0으로 띠용 하며 튀어 오르는 탄성(Elastic) 애니메이션 연출입니다.
-    /// </summary>
     private IEnumerator PopUpBounceRoutine(RectTransform bgRt)
     {
         float elapsed = 0f;
-        float duration = 0.45f;
+        float duration = 0.4f;
         bgRt.localScale = Vector3.zero;
 
         while (elapsed < duration)
@@ -207,9 +196,9 @@ public class SpeechBubble : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / duration;
             
-            // Elastic Ease Out 공식 대입 (쫀득하게 튀어 오름)
-            float scaleValue = Mathf.Sin(t * Mathf.PI * 1.5f) * Mathf.Lerp(1.2f, 1.0f, t);
-            if (t >= 0.95f) scaleValue = 1f;
+            // 쫀득한 탄성 감쇠 애니메이션 기법
+            float scaleValue = Mathf.Sin(t * Mathf.PI * 1.4f) * Mathf.Lerp(1.25f, 1.0f, t);
+            if (t >= 0.96f) scaleValue = 1f;
 
             bgRt.localScale = new Vector3(scaleValue, scaleValue, 1f);
             yield return null;
@@ -217,9 +206,6 @@ public class SpeechBubble : MonoBehaviour
         bgRt.localScale = Vector3.one;
     }
 
-    /// <summary>
-    /// 애셋 이미지 파일 로드 없이도 자체적으로 구워내는 사이버 네온 스타일 말풍선 9-Slice 텍스처입니다.
-    /// </summary>
     private Sprite CreateProceduralBubbleSprite(Color themeColor)
     {
         int size = 64;
@@ -227,13 +213,12 @@ public class SpeechBubble : MonoBehaviour
         tex.filterMode = FilterMode.Bilinear;
         tex.wrapMode = TextureWrapMode.Clamp;
 
-        Color darkBg = new Color(0.05f, 0.05f, 0.07f, 0.9f); // 불투명한 하이테크 그레이
+        Color darkBg = new Color(0.04f, 0.04f, 0.06f, 0.94f); // 중후한 네온 그레이 SF 백그라운드
 
         for (int y = 0; y < size; y++)
         {
             for (int x = 0; x < size; x++)
             {
-                // 테두리로부터의 최소 거리 계산 (둥근 모서리용)
                 float distFromBorder = Mathf.Min(Mathf.Min(x, size - 1 - x), Mathf.Min(y, size - 1 - y));
                 
                 if (distFromBorder < 0)
@@ -242,20 +227,18 @@ public class SpeechBubble : MonoBehaviour
                 }
                 else if (distFromBorder <= 2)
                 {
-                    // 가장자리 2픽셀은 강렬한 네온 보더라인 처리
                     tex.SetPixel(x, y, themeColor);
                 }
                 else
                 {
-                    // 안쪽은 반투명하고 묵직한 하이테크 배경색
                     tex.SetPixel(x, y, darkBg);
                 }
             }
         }
 
         // 말풍선 아래의 '꼬리' 모양을 픽셀 상에 그려 줌
-        int tailWidth = 8;
-        int tailHeight = 6;
+        int tailWidth = 10;
+        int tailHeight = 8;
         int startX = size / 2 - tailWidth / 2;
         int endX = size / 2 + tailWidth / 2;
 
@@ -280,8 +263,8 @@ public class SpeechBubble : MonoBehaviour
 
         tex.Apply();
 
-        // 9-Slice 보더 패딩 영역 지정 (동적 크기 조절 대응)
-        Vector4 borderPadding = new Vector4(12, 12, 12, 12);
+        // 9-Slice 보더 슬라이싱 영역 (16픽셀 상하좌우 보존)
+        Vector4 borderPadding = new Vector4(16, 16, 16, 16);
         return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.0f), 20f, 0, SpriteMeshType.FullRect, borderPadding);
     }
 }

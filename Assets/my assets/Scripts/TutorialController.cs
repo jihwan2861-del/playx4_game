@@ -87,11 +87,8 @@ public class TutorialController : MonoBehaviour
             Debug.Log($"🛵 [자동 이동 목적지 설정 완료] 좌표: {autoMoveTargetPosition}");
         }
 
-        // 주인공 오프닝 첫 대사 말풍선 출력
-        if (player != null)
-        {
-            SpeechBubble.Create(player.gameObject, "여기도 꽝인가 멀쩡한 부품 비슷한것도 안보이네;;", new Color(0.1f, 0.9f, 0.8f));
-        }
+        // 오토바이 자동 주행 시네마틱 대사 연속 출력
+        StartCoroutine(RidingDialogueRoutine());
     }
 
     private void Update()
@@ -171,8 +168,62 @@ public class TutorialController : MonoBehaviour
         // 2. 오토바이 비주얼 끄고 보행용 자식 비주얼 활성화
         SetRidingMode(false);
 
-        // 3. 하차 독백 말풍선 출력
-        SpeechBubble.Create(player.gameObject, "여기서부터는 걸어서 진입해야겠군... 쓸만한 부품이 남아있는지 찾아보자.", new Color(0.1f, 0.9f, 0.8f));
+        // 3. 하차 독백 대사 연속 출력
+        StartCoroutine(ArriveDialogueRoutine());
+    }
+
+    private IEnumerator RidingDialogueRoutine()
+    {
+        if (player == null) yield break;
+
+        yield return new WaitForSeconds(0.5f);
+
+        bool nextDial = false;
+        SpeechBubble.Create(player.gameObject, "또 연료 필터가 나갔네.", new Color(0.1f, 0.9f, 0.8f), () => nextDial = true);
+        yield return new WaitUntil(() => nextDial);
+        yield return new WaitForSeconds(1.2f);
+
+        nextDial = false;
+        SpeechBubble.Create(player.gameObject, "이번엔 제대로 된 부품을 구해야겠어.", new Color(0.1f, 0.9f, 0.8f), () => nextDial = true);
+        yield return new WaitUntil(() => nextDial);
+        yield return new WaitForSeconds(1.2f);
+
+        nextDial = false;
+        SpeechBubble.Create(player.gameObject, "저번에 스캔해둔 구역이 이 근처였는데...", new Color(0.1f, 0.9f, 0.8f), () => nextDial = true);
+        yield return new WaitUntil(() => nextDial);
+        yield return new WaitForSeconds(1.5f);
+
+        nextDial = false;
+        SpeechBubble.Create(player.gameObject, "응?", new Color(0.1f, 0.9f, 0.8f), () => nextDial = true);
+        yield return new WaitUntil(() => nextDial);
+        yield return new WaitForSeconds(0.6f);
+
+        nextDial = false;
+        SpeechBubble.Create(player.gameObject, "저런 시설이 여기 있었나?", new Color(0.1f, 0.9f, 0.8f), () => nextDial = true);
+        yield return new WaitUntil(() => nextDial);
+        yield return new WaitForSeconds(1.0f);
+
+        nextDial = false;
+        SpeechBubble.Create(player.gameObject, "지도에도 없던 곳인데.", new Color(0.1f, 0.9f, 0.8f), () => nextDial = true);
+        yield return new WaitUntil(() => nextDial);
+    }
+
+    private IEnumerator ArriveDialogueRoutine()
+    {
+        if (player == null) yield break;
+        
+        player.enabled = false; // 대사 중 키보드 입력 차단
+
+        bool nextDial = false;
+        SpeechBubble.Create(player.gameObject, "방치된 지는 꽤 된 것 같은데...", new Color(0.1f, 0.9f, 0.8f), () => nextDial = true);
+        yield return new WaitUntil(() => nextDial);
+        yield return new WaitForSeconds(1.2f);
+
+        nextDial = false;
+        SpeechBubble.Create(player.gameObject, "안에 뭐라도 남아있으면 횡재겠어.", new Color(0.1f, 0.9f, 0.8f), () => nextDial = true);
+        yield return new WaitUntil(() => nextDial);
+
+        player.enabled = true; // 이동 자유 허용
     }
 
     /// <summary>
