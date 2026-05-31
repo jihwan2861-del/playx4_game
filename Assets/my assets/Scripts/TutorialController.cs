@@ -597,6 +597,12 @@ public class TutorialController : MonoBehaviour
         if (playerRidingVisual != null) playerRidingVisual.SetActive(isRiding);
         if (playerWalkingVisual != null) playerWalkingVisual.SetActive(!isRiding);
 
+        if (player == null)
+        {
+            Debug.LogError("🚨 [TutorialController] 'Player' 필드가 인스펙터 슬롯에 연결되지 않았습니다! TutorialController 컴포넌트의 Player 슬롯에 씬의 Player 오브젝트를 드래그 앤 드롭으로 연결해 주세요.");
+            return;
+        }
+
         // 오토바이를 탄 상태에서는 부피 충돌체(BoxCollider)를 대폭 슬림하게 하여 피격 꼬임 방지
         BoxCollider2D col = player.GetComponent<BoxCollider2D>();
         if (col != null)
