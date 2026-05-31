@@ -289,9 +289,12 @@ public class PlayerMoving : MonoBehaviour {
             float horizontal = Input.GetAxisRaw("Horizontal");
             float vertical = Input.GetAxisRaw("Vertical");
 
-            // 튜토리얼 1단계(오토바이 자동이동) 및 3단계(패링 훈련) 중에는 플레이어 수동 기동을 잠금
-            if (TutorialController.instance != null && 
-                (TutorialController.instance.currentPhase == 1 || TutorialController.instance.currentPhase == 3))
+            // 자동 이동 컴포넌트 감지
+            PlayerAutoMove autoMove = GetComponent<PlayerAutoMove>();
+            bool isAutoMoving = autoMove != null && autoMove.IsAutoMoving;
+
+            // 자동 이동 중이거나 튜토리얼 3단계(패링 훈련) 중에는 플레이어 수동 기동을 잠금
+            if (isAutoMoving || (TutorialController.instance != null && TutorialController.instance.currentPhase == 3))
             {
                 horizontal = 0f;
                 vertical = 0f;
@@ -300,7 +303,7 @@ public class PlayerMoving : MonoBehaviour {
             Vector3 moveDirection = new Vector3(horizontal, vertical, 0).normalized;
 
             // --- [애니메이션 처리] ---
-            Animator anim = GetComponent<Animator>();
+            Animator anim = GetComponentInChildren<Animator>();
             if (anim != null)
             {
                 bool isMoving = moveDirection != Vector3.zero;
@@ -316,7 +319,11 @@ public class PlayerMoving : MonoBehaviour {
             // Rigidbody2D를 이용한 물리 이동 처리
             if (rb != null)
             {
-                rb.velocity = moveDirection * baseSpeed;
+                // 자동 이동 중이 아닐 때만 수동 속도 덮어쓰기 적용
+                if (!isAutoMoving)
+                {
+                    rb.velocity = moveDirection * baseSpeed;
+                }
 
                 Vector2 clampedPos = new Vector2(
                     Mathf.Clamp(rb.position.x, borders.minX, borders.maxX),

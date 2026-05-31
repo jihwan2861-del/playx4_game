@@ -106,7 +106,7 @@ public class GameTransitionManager : MonoBehaviour
     /// 씬이 파괴될 때 코루틴이 끊기는 현상을 완벽 차단하기 위해
     /// DontDestroyOnLoad 오브젝트를 먼저 만들고, 여기에 TransitionRunner 컴포넌트를 붙여 트랜지션을 실행합니다.
     /// </summary>
-    private void TriggerTransition(string sceneName)
+    public void TriggerTransition(string sceneName)
     {
         GameObject transitionCanvas = new GameObject("PersistentTransitionCanvas");
         DontDestroyOnLoad(transitionCanvas);

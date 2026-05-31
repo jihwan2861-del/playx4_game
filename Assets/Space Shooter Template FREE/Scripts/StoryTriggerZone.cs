@@ -45,16 +45,29 @@ public class StoryTriggerZone : MonoBehaviour
         if (hasTriggered && triggerOnlyOnce) return;
         if (!other.CompareTag("Player")) return;
 
-        // 대상 설정 체크 (비어있으면 플레이어로 대체)
-        GameObject finalTarget = targetObject != null ? targetObject : other.gameObject;
-
-        // 월드 스페이스 상에 말풍선 동적 생성
-        activeBubble = SpeechBubble.Create(finalTarget, dialogueText, themeColor);
-
-        // 시간 지정 자동 소멸 기믹 작동
-        if (autoCloseDelay > 0f && activeBubble != null)
+        // 플레이어 머리 위의 정적 말풍선 인스턴스를 직접 호출하여 활성화 및 대사 대입
+        if (SpeechBubble.playerBubbleInstance != null)
         {
-            activeBubble.Close(autoCloseDelay);
+            activeBubble = SpeechBubble.playerBubbleInstance;
+            activeBubble.Show(dialogueText);
+
+            if (autoCloseDelay > 0f)
+            {
+                activeBubble.Close(autoCloseDelay);
+            }
+        }
+        else
+        {
+            // 백업: 플레이어 내부에 꺼진 상태로 보관되어 있는 SpeechBubble 컴포넌트 자동 검색
+            activeBubble = other.GetComponentInChildren<SpeechBubble>(true);
+            if (activeBubble != null)
+            {
+                activeBubble.Show(dialogueText);
+                if (autoCloseDelay > 0f)
+                {
+                    activeBubble.Close(autoCloseDelay);
+                }
+            }
         }
 
         hasTriggered = true;
