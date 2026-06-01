@@ -43,11 +43,17 @@ public class PlayerAutoMove : MonoBehaviour
     private float moveSpeed;
     private Action onArrivedCallback;
     private bool isAutoMoving = false;
+    private bool isPaused = false; // ⏸️ 일시정지 상태 여부
 
     /// <summary>
     /// 현재 플레이어가 자동 이동 중인지 여부
     /// </summary>
     public bool IsAutoMoving => isAutoMoving;
+
+    /// <summary>
+    /// 현재 플레이어가 자동 주행 중 일시정지 상태인지 여부
+    /// </summary>
+    public bool IsPaused => isPaused;
 
     private void Awake()
     {
@@ -102,8 +108,33 @@ public class PlayerAutoMove : MonoBehaviour
         moveSpeed = speed;
         onArrivedCallback = onArrived;
         isAutoMoving = true;
+        isPaused = false; // 시작 시 리셋
 
         Debug.Log($"🏃 [PlayerAutoMove] 순차 자동 주행 개시! 총 경유지: {path.Count}개, 속도: {speed}");
+    }
+
+    /// <summary>
+    /// 자동 주행 중인 플레이어를 그 자리에 즉시 일시 정지시킵니다. (대사 출력 시 호출하기 좋음)
+    /// </summary>
+    public void PauseMove()
+    {
+        if (!isAutoMoving) return;
+        isPaused = true;
+        if (rb != null)
+        {
+            rb.velocity = Vector2.zero;
+        }
+        Debug.Log("⏸️ [PlayerAutoMove] 자동 주행을 일시 정지(Pause)했습니다.");
+    }
+
+    /// <summary>
+    /// 일시 정지되었던 자동 주행을 다시 해제하고 남은 경로로 주행을 이어갑니다.
+    /// </summary>
+    public void ResumeMove()
+    {
+        if (!isAutoMoving) return;
+        isPaused = false;
+        Debug.Log("▶️ [PlayerAutoMove] 일시 정지를 해제하고 주행을 재개(Resume)합니다.");
     }
 
     /// <summary>
@@ -112,6 +143,7 @@ public class PlayerAutoMove : MonoBehaviour
     public void Stop()
     {
         isAutoMoving = false;
+        isPaused = false;
         if (rb != null)
         {
             rb.velocity = Vector2.zero;
@@ -123,10 +155,16 @@ public class PlayerAutoMove : MonoBehaviour
     {
         if (!isAutoMoving || rb == null || movePath.Count == 0) return;
 
+        // ⏸️ 일시 정지 상태인 경우, 속도를 0으로 고정 유지하고 업데이트 대기
+        if (isPaused)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
+
         WaypointEvent currentWaypoint = movePath[currentPathIndex];
         if (currentWaypoint == null || currentWaypoint.targetTransform == null)
         {
-            // 예외 방지: 만약 경로 요소가 올바르지 않으면 다음으로 건너뜀
             HandleWaypointArrival();
             return;
         }
@@ -174,6 +212,7 @@ public class PlayerAutoMove : MonoBehaviour
             // 최종 목적지 도달 시 완전히 정지
             rb.velocity = Vector2.zero;
             isAutoMoving = false;
+            isPaused = false;
 
             Debug.Log("🏁 [PlayerAutoMove] 최종 목적지까지 완벽히 주행 완료!");
 

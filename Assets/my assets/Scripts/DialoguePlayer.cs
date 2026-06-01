@@ -16,6 +16,10 @@ public class DialoguePlayer : MonoBehaviour
     [Tooltip("한 대사의 타이핑이 완전히 끝난 후, 다음 대사로 넘어가기 전까지 쉬어갈 시간 (초)")]
     public float delayBetweenDialogues = 1.5f;
 
+    [Header("=== 자동 주행 연동 ===")]
+    [Tooltip("대사 재생 중에 PlayerAutoMove 자동 주행을 자동으로 일시정지 시킬지 여부")]
+    public bool pauseAutoMoveDuringDialogue = true;
+
     private Coroutine dialogueCoroutine;
 
     /// <summary>
@@ -52,6 +56,23 @@ public class DialoguePlayer : MonoBehaviour
             yield break;
         }
 
+        // ⏸️ [자동 정차 연동] 대사 시작 시 주행 일시 정지 호출
+        PlayerAutoMove autoMove = null;
+        if (pauseAutoMoveDuringDialogue)
+        {
+            autoMove = bubble.GetComponentInParent<PlayerAutoMove>();
+            if (autoMove == null)
+            {
+                GameObject player = GameObject.FindGameObjectWithTag("Player");
+                if (player != null) autoMove = player.GetComponent<PlayerAutoMove>();
+            }
+
+            if (autoMove != null)
+            {
+                autoMove.PauseMove();
+            }
+        }
+
         // 순차 출력 루프
         for (int i = 0; i < dialogues.Count; i++)
         {
@@ -78,5 +99,11 @@ public class DialoguePlayer : MonoBehaviour
         // defaultAutoCloseDelay가 설정되어 있으면 그 값을 따르고, 없다면 1.5초 후에 닫히도록 처리합니다.
         float finalCloseDelay = bubble.defaultAutoCloseDelay > 0f ? bubble.defaultAutoCloseDelay : 1.5f;
         bubble.Close(finalCloseDelay);
+
+        // ▶️ [자동 주행 재개 연동] 모든 대사가 끝나고 말풍선이 닫힐 때 주행 재개 호출
+        if (pauseAutoMoveDuringDialogue && autoMove != null)
+        {
+            autoMove.ResumeMove();
+        }
     }
 }
