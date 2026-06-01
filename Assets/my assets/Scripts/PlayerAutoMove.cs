@@ -1,28 +1,32 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 using UnityEngine.Events;
 
 /// <summary>
-/// 플레이어를 특정 목적지로 자동 이동시키는 시네마틱/이벤트용 연출 컴포넌트입니다.
+/// 플레이어를 여러 목적지(경유지)로 순차적 자동 이동시키는 시네마틱/이벤트용 연출 컴포넌트입니다.
 /// 수동 이동(PlayerMoving) 스크립트와의 물리적 충돌(경쟁 상태)을 차단하고,
 /// Rigidbody2D를 이용하여 부드럽고 안전하게 이동을 처리합니다.
 /// </summary>
 public class PlayerAutoMove : MonoBehaviour
 {
     [Header("=== 자동 시작 설정 ===")]
-    [Tooltip("게임 시작 시 자동으로 목적지로 주행을 시작할지 여부")]
+    [Tooltip("게임 시작 시 자동으로 목적지 경로로 주행을 시작할지 여부")]
     public bool autoStartOnPlay = false;
-    [Tooltip("자동 시작 시 목적지 (인스펙터에서 Checkpoint_01_Trigger 등 연결)")]
-    public Transform autoStartTarget;
+    
+    [Tooltip("순차적으로 거쳐 갈 목적지 경로 목록 (여러 개를 연결하여 구불구불한 주행 연출 가능)")]
+    public List<Transform> autoStartTargets = new List<Transform>();
+    
     [Tooltip("자동 주행 속도")]
     public float autoSpeed = 8.5f;
 
     [Header("=== 이벤트 설정 ===")]
-    [Tooltip("목적지에 도착했을 때 실행할 인스펙터 이벤트")]
+    [Tooltip("등록된 모든 목적지에 최종적으로 완료 도달했을 때 실행할 인스펙터 이벤트")]
     public UnityEvent onArrivedEvent;
 
     private Rigidbody2D rb;
-    private Vector3 targetPosition;
+    private List<Vector3> movePath = new List<Vector3>();
+    private int currentPathIndex = 0;
     private float moveSpeed;
     private Action onArrivedCallback;
     private bool isAutoMoving = false;
@@ -39,27 +43,44 @@ public class PlayerAutoMove : MonoBehaviour
 
     private void Start()
     {
-        // 인스펙터에서 자동 시작이 설정되어 있는 경우 주행 기동
-        if (autoStartOnPlay && autoStartTarget != null)
+        // 인스펙터에 등록된 다중 목적지 경로가 있다면 즉시 순차 이동 개시
+        if (autoStartOnPlay && autoStartTargets != null && autoStartTargets.Count > 0)
         {
-            MoveTo(autoStartTarget.position, autoSpeed, null);
+            List<Vector3> path = new List<Vector3>();
+            foreach (var target in autoStartTargets)
+            {
+                if (target != null) path.Add(target.position);
+            }
+            MoveToPath(path, autoSpeed, null);
         }
     }
 
     /// <summary>
-    /// 플레이어를 목적지까지 자동으로 이동시킵니다.
+    /// 단일 목적지로 자동 이동시킵니다. (이전 버전 스크립트들과의 호환성 완벽 유지)
     /// </summary>
-    /// <param name="destination">목적지 월드 좌표</param>
-    /// <param name="speed">이동 속도</param>
-    /// <param name="onArrived">도착 시 실행할 콜백 함수 (C# 델리게이트용)</param>
     public void MoveTo(Vector3 destination, float speed, Action onArrived)
     {
-        targetPosition = destination;
+        List<Vector3> singlePath = new List<Vector3> { destination };
+        MoveToPath(singlePath, speed, onArrived);
+    }
+
+    /// <summary>
+    /// 여러 목적지 좌표를 순차적으로 거쳐 이동하도록 만듭니다.
+    /// </summary>
+    /// <param name="path">이동할 월드 좌표 경로 목록</param>
+    /// <param name="speed">이동 속도</param>
+    /// <param name="onArrived">최종 목적지 도착 시 실행할 콜백</param>
+    public void MoveToPath(List<Vector3> path, float speed, Action onArrived)
+    {
+        if (path == null || path.Count == 0) return;
+
+        movePath = path;
+        currentPathIndex = 0;
         moveSpeed = speed;
         onArrivedCallback = onArrived;
         isAutoMoving = true;
-        
-        Debug.Log($"🏃 [PlayerAutoMove] 자동 이동을 시작합니다. 목적지: {destination}, 속도: {speed}");
+
+        Debug.Log($"🏃 [PlayerAutoMove] 순차 자동 주행 개시! 총 경유지: {path.Count}개, 속도: {speed}");
     }
 
     /// <summary>
@@ -77,26 +98,37 @@ public class PlayerAutoMove : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!isAutoMoving || rb == null) return;
+        if (!isAutoMoving || rb == null || movePath.Count == 0) return;
 
-        float distance = Vector3.Distance(transform.position, targetPosition);
-        
-        // 목표 지점에 매우 가깝게 도달했을 때 정차 처리
+        Vector3 targetPos = movePath[currentPathIndex];
+        float distance = Vector2.Distance(rb.position, targetPos); // Z축 좌표 어긋남을 원천 차단하기 위해 2D 거리 검사
+
+        // 현재 목표 경유지에 도달했는지 체크
         if (distance > 0.25f)
         {
-            Vector2 direction = ((Vector2)targetPosition - rb.position).normalized;
+            Vector2 direction = ((Vector2)targetPos - rb.position).normalized;
             rb.velocity = direction * moveSpeed;
         }
         else
         {
-            rb.velocity = Vector2.zero;
-            isAutoMoving = false;
-            
-            Debug.Log("🎯 [PlayerAutoMove] 자동 이동 목적지에 도착 완료!");
-            
-            // 도착 알림 콜백 및 유니티 이벤트 실행
-            onArrivedCallback?.Invoke();
-            onArrivedEvent?.Invoke();
+            // 다음 경유지가 더 남아있다면 다음 인덱스로 전환
+            if (currentPathIndex < movePath.Count - 1)
+            {
+                currentPathIndex++;
+                Debug.Log($"🎯 [PlayerAutoMove] 경유지 ({currentPathIndex}/{movePath.Count}) 통과! 다음 경유지로 선회: {movePath[currentPathIndex]}");
+            }
+            else
+            {
+                // 최종 목적지 도달 시 완전히 정지
+                rb.velocity = Vector2.zero;
+                isAutoMoving = false;
+
+                Debug.Log("🏁 [PlayerAutoMove] 최종 목적지까지 완벽히 주행 완료!");
+
+                // 최종 완료 콜백 및 이벤트 발동
+                onArrivedCallback?.Invoke();
+                onArrivedEvent?.Invoke();
+            }
         }
     }
 }
