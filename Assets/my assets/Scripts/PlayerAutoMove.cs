@@ -124,6 +124,14 @@ public class PlayerAutoMove : MonoBehaviour
         {
             rb.velocity = Vector2.zero;
         }
+        
+        // 🎬 정지 시 블렌드 트리 이동 활성화 꺼줌
+        Animator anim = GetComponentInChildren<Animator>();
+        if (anim != null)
+        {
+            anim.SetBool("isMoving", false);
+        }
+
         Debug.Log("⏸️ [PlayerAutoMove] 자동 주행을 일시 정지(Pause)했습니다.");
     }
 
@@ -148,6 +156,14 @@ public class PlayerAutoMove : MonoBehaviour
         {
             rb.velocity = Vector2.zero;
         }
+        
+        // 🎬 애니메이션 즉시 정지
+        Animator anim = GetComponentInChildren<Animator>();
+        if (anim != null)
+        {
+            anim.SetBool("isMoving", false);
+        }
+
         Debug.Log("🛑 [PlayerAutoMove] 자동 이동을 강제 중단했습니다.");
     }
 
@@ -159,6 +175,13 @@ public class PlayerAutoMove : MonoBehaviour
         if (isPaused)
         {
             rb.velocity = Vector2.zero;
+            
+            // 🎬 정지 상태를 블렌드 트리에 주입
+            Animator anim = GetComponentInChildren<Animator>();
+            if (anim != null)
+            {
+                anim.SetBool("isMoving", false);
+            }
             return;
         }
 
@@ -177,6 +200,15 @@ public class PlayerAutoMove : MonoBehaviour
         {
             Vector2 direction = ((Vector2)targetPos - rb.position).normalized;
             rb.velocity = direction * moveSpeed;
+
+            // 🎬 [8방향 블렌드 트리 실시간 방향값 동기화!]
+            Animator anim = GetComponentInChildren<Animator>();
+            if (anim != null)
+            {
+                anim.SetBool("isMoving", true);
+                anim.SetFloat("InputX", direction.x);
+                anim.SetFloat("InputY", direction.y);
+            }
         }
         else
         {
@@ -213,6 +245,13 @@ public class PlayerAutoMove : MonoBehaviour
             rb.velocity = Vector2.zero;
             isAutoMoving = false;
             isPaused = false;
+
+            // 🎬 완주 정지 상태를 블렌드 트리에 최종 적용
+            Animator anim = GetComponentInChildren<Animator>();
+            if (anim != null)
+            {
+                anim.SetBool("isMoving", false);
+            }
 
             Debug.Log("🏁 [PlayerAutoMove] 최종 목적지까지 완벽히 주행 완료!");
 

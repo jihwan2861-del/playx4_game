@@ -2639,6 +2639,39 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &86147666
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 86147667}
+  m_Layer: 0
+  m_Name: Checkpoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &86147667
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 86147666}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 34.009563, y: 18.659384, z: 0.05483757}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 420890587}
+  - {fileID: 1629738604}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &187762120
 GameObject:
   m_ObjectHideFlags: 0
@@ -125025,6 +125058,55 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &364196968
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 364196970}
+  - component: {fileID: 364196969}
+  m_Layer: 0
+  m_Name: Dialogue_Intro_01
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &364196969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364196968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4175e190653a5c45ae22eddbcb42d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialogues:
+  - "\uB610 \uC5F0\uB8CC \uD544\uD130\uAC00 \uB098\uAC14\uB124.."
+  - "\uC774\uBC88\uC5D4 \uC81C\uB300\uB85C \uB41C \uBD80\uD488\uC744 \uAD6C\uD574\uC57C\uACA0\uC5B4..."
+  - "\uC800\uBC88\uC5D0 \uC2A4\uCE94\uD574\uB454 \uAD6C\uC5ED\uC774 \uC774 \uADFC\uCC98\uC600\uB294\uB370.."
+  delayBetweenDialogues: 1.5
+--- !u!4 &364196970
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364196968}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 21.574387, y: 3.8344355, z: -0.18702304}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &420890584
 GameObject:
   m_ObjectHideFlags: 0
@@ -125104,12 +125186,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 420890584}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.86, y: 4.84, z: -0.06182073}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -25.149563, y: -13.819384, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 86147667}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &609658269
 GameObject:
@@ -125141,13 +125223,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1591966223}
-  firstCheckpoint: {fileID: 420890585}
-  firstCheckpointDialogs:
-  - "\uC5EC\uAE30\uAC00 \uCCAB \uBC88\uC9F8 \uAD6C\uC5ED\uC778\uAC00... \uC870\uC2EC\uD574\uC57C\uACA0\uAD70."
-  secondCheckpointTransform: {fileID: 0}
-  secondCheckpointDialogs:
-  - "\uC800\uAE30\uAC00 \uC5F0\uAD6C\uC18C \uC785\uAD6C\uC778\uAC00?"
-  - "\uC548\uC5D0 \uBB34\uC5B8\uAC00 \uC228\uACA8\uC838 \uC788\uC744 \uAC83 \uAC19\uAD70."
   currentPhase: 1
 --- !u!4 &609658271
 Transform:
@@ -247903,7 +247978,7 @@ RectTransform:
   m_GameObject: {fileID: 828616513}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.60986805, y: 1, z: 1}
+  m_LocalScale: {x: 0.7174918, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1286923484}
@@ -247961,10 +248036,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 72
+  m_fontSize: 36
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -248116,8 +248191,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: -100
-    m_Right: -100
+    m_Left: 0
+    m_Right: 0
     m_Top: 10
     m_Bottom: 10
   m_ChildAlignment: 4
@@ -250659,12 +250734,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoStartOnPlay: 1
-  autoStartTarget: {fileID: 420890587}
+  autoStartTargets:
+  - targetTransform: {fileID: 420890587}
+    onArrivedWaypoint:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 364196969}
+          m_TargetAssemblyTypeName: DialoguePlayer, Assembly-CSharp
+          m_MethodName: PlayDialogues
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - targetTransform: {fileID: 1629738604}
+    onArrivedWaypoint:
+      m_PersistentCalls:
+        m_Calls: []
   autoSpeed: 6
   onArrivedEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 609658269}
         m_TargetAssemblyTypeName: 
         m_MethodName: 
         m_Mode: 0
@@ -250731,6 +250826,7 @@ MonoBehaviour:
     minY: 0
     maxY: 0
   baseSpeed: 9
+  dialogueSpeedMultiplier: 0.187
   parryDuration: 0.25
   parryWhiffRecoveryDuration: 0.4
   parryCooldownDuration: 0.6
@@ -250758,6 +250854,91 @@ MonoBehaviour:
   energyRegenBonus: 0
   dashTextObj: {fileID: 0}
   warningTextObj: {fileID: 0}
+--- !u!1 &1629738603
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1629738604}
+  - component: {fileID: 1629738606}
+  - component: {fileID: 1629738605}
+  m_Layer: 0
+  m_Name: 'Checkpoint_02_Trigger '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1629738604
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629738603}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -11.099564, y: -5.9393835, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 86147667}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1629738605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629738603}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b628bc2691f53d46bd3a74d04ea409a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetObject: {fileID: 1591966216}
+  dialogueText: "\uC544\uD504\uB9AC\uCE74 \uAF2C\uBD88\uC18C"
+  themeColor: {r: 0, g: 0.8, b: 1, a: 1}
+  autoCloseDelay: 3
+  triggerOnlyOnce: 1
+--- !u!58 &1629738606
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629738603}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!1 &1713768614
 GameObject:
   m_ObjectHideFlags: 0
@@ -250785,7 +250966,7 @@ RectTransform:
   m_GameObject: {fileID: 1713768614}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.16218428, y: 0.65529, z: 0.65529}
+  m_LocalScale: {x: 0.18782967, y: 0.9583616, z: 0.65529}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1286923484}
@@ -250793,7 +250974,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 2.11, y: 0.89}
+  m_AnchoredPosition: {x: 0.872, y: 0.637}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &1713768616
@@ -250833,7 +251014,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textComponent: {fileID: 828616515}
   bubbleBackground: {fileID: 1286923484}
-  typeSpeed: 0.035
+  typeSpeed: 0.05
+  dotDelayMultiplier: 4.5
+  punctuationDelayMultiplier: 3
+  defaultAutoCloseDelay: 2
 --- !u!1 &1798086107
 GameObject:
   m_ObjectHideFlags: 0
@@ -251169,8 +251353,9 @@ SceneRoots:
   m_Roots:
   - {fileID: 187762123}
   - {fileID: 1343370003}
-  - {fileID: 420890587}
   - {fileID: 609658271}
   - {fileID: 2002616348}
   - {fileID: 1931240676}
   - {fileID: 755419922}
+  - {fileID: 86147667}
+  - {fileID: 364196970}
