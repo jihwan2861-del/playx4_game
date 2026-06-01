@@ -20,6 +20,10 @@ public class DialoguePlayer : MonoBehaviour
     [Tooltip("모든 대사 출력이 끝나고, 마지막 대사를 화면에 몇 초 동안 보여준 뒤 출발시킬지 지정 (0.8~1.0초 등 짧은 설정 추천)")]
     public float lastDialogueCloseDelay = 1.0f;
 
+    [Header("=== 수동 조작 연동 ===")]
+    [Tooltip("대사 재생 중에 플레이어가 수동(WASD)으로 움직이지 못하게 조작을 얼려둘지 여부 (체크 켜면 조작 불가, 체크 끄면 대화 중 자유 이동 가능)")]
+    public bool freezePlayerDuringDialogue = true;
+
     [Header("=== 자동 주행 연동 ===")]
     [Tooltip("대사 재생 중에 PlayerAutoMove 자동 주행을 자동으로 일시정지 시킬지 여부")]
     public bool pauseAutoMoveDuringDialogue = true;
@@ -58,6 +62,34 @@ public class DialoguePlayer : MonoBehaviour
         {
             Debug.LogError("⚠️ [DialoguePlayer] 화면에 띄울 SpeechBubble 인스턴스를 찾을 수 없습니다!");
             yield break;
+        }
+
+        // 🎮 [수동 조작 일시 정지 연동] 대화 중 플레이어 제어 얼리기 처리
+        PlayerMoving playerMoving = null;
+        if (freezePlayerDuringDialogue)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                playerMoving = player.GetComponent<PlayerMoving>();
+            }
+            
+            if (playerMoving != null)
+            {
+                playerMoving.enabled = false;
+                Rigidbody2D rb = playerMoving.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    rb.velocity = Vector2.zero;
+                }
+                
+                // 캐릭터가 가만히 멈춰 서도록 애니메이션 리셋
+                Animator anim = playerMoving.GetComponentInChildren<Animator>();
+                if (anim != null)
+                {
+                    anim.SetBool("isMoving", false);
+                }
+            }
         }
 
         // ⏸️ [자동 정차 연동] 대사 시작 시 주행 일시 정지 호출
@@ -106,6 +138,12 @@ public class DialoguePlayer : MonoBehaviour
         // ⏳ [말풍선 완전 소멸 타이밍 대기 연동]
         // 마지막 대사 유지 시간(lastDialogueCloseDelay) + 스케일 수축 여유 시간(0.3초)만큼 기다립니다.
         yield return new WaitForSeconds(lastDialogueCloseDelay + 0.3f);
+
+        // 🎮 [수동 조작 복원 연동] 모든 대사가 끝나고 말풍선이 완전히 닫혔을 때 조작 완전 해금!
+        if (freezePlayerDuringDialogue && playerMoving != null)
+        {
+            playerMoving.enabled = true;
+        }
 
         // ▶️ [자동 주행 재개 연동] 모든 대사가 끝나고 말풍선이 완전히 화면에서 사라진 순간에 주행 재개 호출
         if (pauseAutoMoveDuringDialogue && autoMove != null)
