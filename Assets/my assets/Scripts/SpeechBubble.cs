@@ -137,4 +137,12 @@ public class SpeechBubble : MonoBehaviour
 
         gameObject.SetActive(false);
     }
+
+    /// <summary>
+    /// 유니티 인스펙터 이벤트(UnityEvent) 슬롯에서 대사를 다이렉트로 입력해 띄우기 위한 전용 함수입니다.
+    /// </summary>
+    public void ShowDialogueInspector(string text)
+    {
+        Show(text, null);
+    }
 }

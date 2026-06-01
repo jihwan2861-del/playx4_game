@@ -4,6 +4,19 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 
 /// <summary>
+/// 각 목적지별 도달 이벤트를 인스펙터에서 설정할 수 있도록 돕는 경로 데이터 클래스입니다.
+/// </summary>
+[System.Serializable]
+public class WaypointEvent
+{
+    [Tooltip("이동할 목적지 좌표")]
+    public Transform targetTransform;
+    
+    [Tooltip("이 목적지에 도착했을 때 개별적으로 실행할 인스펙터 이벤트 (예: 말풍선 띄우기 등)")]
+    public UnityEvent onArrivedWaypoint;
+}
+
+/// <summary>
 /// 플레이어를 여러 목적지(경유지)로 순차적 자동 이동시키는 시네마틱/이벤트용 연출 컴포넌트입니다.
 /// 수동 이동(PlayerMoving) 스크립트와의 물리적 충돌(경쟁 상태)을 차단하고,
 /// Rigidbody2D를 이용하여 부드럽고 안전하게 이동을 처리합니다.
@@ -14,8 +27,8 @@ public class PlayerAutoMove : MonoBehaviour
     [Tooltip("게임 시작 시 자동으로 목적지 경로로 주행을 시작할지 여부")]
     public bool autoStartOnPlay = false;
     
-    [Tooltip("순차적으로 거쳐 갈 목적지 경로 목록 (여러 개를 연결하여 구불구불한 주행 연출 가능)")]
-    public List<Transform> autoStartTargets = new List<Transform>();
+    [Tooltip("순차적으로 거쳐 갈 목적지 경로 목록 (여러 개를 연결하여 구불구불한 주행 및 개별 연출 가능)")]
+    public List<WaypointEvent> autoStartTargets = new List<WaypointEvent>();
     
     [Tooltip("자동 주행 속도")]
     public float autoSpeed = 8.5f;
@@ -25,7 +38,7 @@ public class PlayerAutoMove : MonoBehaviour
     public UnityEvent onArrivedEvent;
 
     private Rigidbody2D rb;
-    private List<Vector3> movePath = new List<Vector3>();
+    private List<WaypointEvent> movePath = new List<WaypointEvent>();
     private int currentPathIndex = 0;
     private float moveSpeed;
     private Action onArrivedCallback;
@@ -46,12 +59,7 @@ public class PlayerAutoMove : MonoBehaviour
         // 인스펙터에 등록된 다중 목적지 경로가 있다면 즉시 순차 이동 개시
         if (autoStartOnPlay && autoStartTargets != null && autoStartTargets.Count > 0)
         {
-            List<Vector3> path = new List<Vector3>();
-            foreach (var target in autoStartTargets)
-            {
-                if (target != null) path.Add(target.position);
-            }
-            MoveToPath(path, autoSpeed, null);
+            MoveToPath(autoStartTargets, autoSpeed, null);
         }
     }
 
@@ -60,17 +68,32 @@ public class PlayerAutoMove : MonoBehaviour
     /// </summary>
     public void MoveTo(Vector3 destination, float speed, Action onArrived)
     {
-        List<Vector3> singlePath = new List<Vector3> { destination };
-        MoveToPath(singlePath, speed, onArrived);
+        // 호환용 더미 WaypointEvent 구성
+        GameObject dummyObj = new GameObject("DummyWaypoint");
+        dummyObj.transform.position = destination;
+        
+        WaypointEvent dummyWaypoint = new WaypointEvent
+        {
+            targetTransform = dummyObj.transform,
+            onArrivedWaypoint = new UnityEvent()
+        };
+        
+        List<WaypointEvent> singlePath = new List<WaypointEvent> { dummyWaypoint };
+        
+        // 이동 후에 더미 오브젝트 삭제되도록 바인딩
+        MoveToPath(singlePath, speed, () => {
+            onArrived?.Invoke();
+            Destroy(dummyObj);
+        });
     }
 
     /// <summary>
     /// 여러 목적지 좌표를 순차적으로 거쳐 이동하도록 만듭니다.
     /// </summary>
-    /// <param name="path">이동할 월드 좌표 경로 목록</param>
+    /// <param name="path">이동할 웨이포인트 이벤트 목록</param>
     /// <param name="speed">이동 속도</param>
     /// <param name="onArrived">최종 목적지 도착 시 실행할 콜백</param>
-    public void MoveToPath(List<Vector3> path, float speed, Action onArrived)
+    public void MoveToPath(List<WaypointEvent> path, float speed, Action onArrived)
     {
         if (path == null || path.Count == 0) return;
 
@@ -100,7 +123,15 @@ public class PlayerAutoMove : MonoBehaviour
     {
         if (!isAutoMoving || rb == null || movePath.Count == 0) return;
 
-        Vector3 targetPos = movePath[currentPathIndex];
+        WaypointEvent currentWaypoint = movePath[currentPathIndex];
+        if (currentWaypoint == null || currentWaypoint.targetTransform == null)
+        {
+            // 예외 방지: 만약 경로 요소가 올바르지 않으면 다음으로 건너뜀
+            HandleWaypointArrival();
+            return;
+        }
+
+        Vector3 targetPos = currentWaypoint.targetTransform.position;
         float distance = Vector2.Distance(rb.position, targetPos); // Z축 좌표 어긋남을 원천 차단하기 위해 2D 거리 검사
 
         // 현재 목표 경유지에 도달했는지 체크
@@ -111,24 +142,37 @@ public class PlayerAutoMove : MonoBehaviour
         }
         else
         {
-            // 다음 경유지가 더 남아있다면 다음 인덱스로 전환
-            if (currentPathIndex < movePath.Count - 1)
-            {
-                currentPathIndex++;
-                Debug.Log($"🎯 [PlayerAutoMove] 경유지 ({currentPathIndex}/{movePath.Count}) 통과! 다음 경유지로 선회: {movePath[currentPathIndex]}");
-            }
-            else
-            {
-                // 최종 목적지 도달 시 완전히 정지
-                rb.velocity = Vector2.zero;
-                isAutoMoving = false;
+            HandleWaypointArrival();
+        }
+    }
 
-                Debug.Log("🏁 [PlayerAutoMove] 최종 목적지까지 완벽히 주행 완료!");
+    private void HandleWaypointArrival()
+    {
+        // 1. 해당 웨이포인트 개별 이벤트 발동!
+        WaypointEvent currentWaypoint = movePath[currentPathIndex];
+        if (currentWaypoint != null && currentWaypoint.onArrivedWaypoint != null)
+        {
+            Debug.Log($"🎉 [PlayerAutoMove] 경유지 ({currentPathIndex + 1}/{movePath.Count}) 도착! 개별 이벤트 실행");
+            currentWaypoint.onArrivedWaypoint.Invoke();
+        }
 
-                // 최종 완료 콜백 및 이벤트 발동
-                onArrivedCallback?.Invoke();
-                onArrivedEvent?.Invoke();
-            }
+        // 2. 다음 경로로 스위칭하거나 완료 처리
+        if (currentPathIndex < movePath.Count - 1)
+        {
+            currentPathIndex++;
+            Debug.Log($"🎯 [PlayerAutoMove] 다음 경유지 ({currentPathIndex + 1}/{movePath.Count})로 선회: {movePath[currentPathIndex].targetTransform.name}");
+        }
+        else
+        {
+            // 최종 목적지 도달 시 완전히 정지
+            rb.velocity = Vector2.zero;
+            isAutoMoving = false;
+
+            Debug.Log("🏁 [PlayerAutoMove] 최종 목적지까지 완벽히 주행 완료!");
+
+            // 최종 완료 콜백 및 이벤트 발동
+            onArrivedCallback?.Invoke();
+            onArrivedEvent?.Invoke();
         }
     }
 }
