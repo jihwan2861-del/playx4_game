@@ -160,7 +160,14 @@ public class PlayerAutoMove : MonoBehaviour
         if (currentPathIndex < movePath.Count - 1)
         {
             currentPathIndex++;
-            Debug.Log($"🎯 [PlayerAutoMove] 다음 경유지 ({currentPathIndex + 1}/{movePath.Count})로 선회: {movePath[currentPathIndex].targetTransform.name}");
+            
+            // 안전 보강: 다음 타겟의 Transform과 이름 널체크 처리
+            string nextTargetName = "None";
+            if (movePath[currentPathIndex] != null && movePath[currentPathIndex].targetTransform != null)
+            {
+                nextTargetName = movePath[currentPathIndex].targetTransform.name;
+            }
+            Debug.Log($"🎯 [PlayerAutoMove] 다음 경유지 ({currentPathIndex + 1}/{movePath.Count})로 선회: {nextTargetName}");
         }
         else
         {
