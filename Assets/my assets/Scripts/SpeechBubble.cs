@@ -29,6 +29,10 @@ public class SpeechBubble : MonoBehaviour
     [Tooltip("쉼표 (,), 느낌표 (!), 물음표 (?)가 찍혔을 때 타이핑 대기 배율")]
     public float punctuationDelayMultiplier = 3.0f;
 
+    [Header("=== 자동 닫기 설정 ===")]
+    [Tooltip("ShowDialogueInspector로 대사를 띄웠을 때, 타이핑이 완료되고 몇 초 후에 자동으로 닫을지 지정 (0 이하이면 닫히지 않고 계속 유지됨)")]
+    public float defaultAutoCloseDelay = 2.0f;
+
     private Coroutine typingCoroutine;
     private Vector3 originalScale = Vector3.one;
 
@@ -140,9 +144,15 @@ public class SpeechBubble : MonoBehaviour
 
     /// <summary>
     /// 유니티 인스펙터 이벤트(UnityEvent) 슬롯에서 대사를 다이렉트로 입력해 띄우기 위한 전용 함수입니다.
+    /// 타이핑이 끝나면 설정해둔 defaultAutoCloseDelay 초 뒤에 자동으로 닫힙니다.
     /// </summary>
     public void ShowDialogueInspector(string text)
     {
-        Show(text, null);
+        Show(text, () => {
+            if (defaultAutoCloseDelay > 0f)
+            {
+                Close(defaultAutoCloseDelay);
+            }
+        });
     }
 }

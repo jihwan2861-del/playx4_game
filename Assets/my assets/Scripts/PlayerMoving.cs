@@ -25,6 +25,9 @@ public class PlayerMoving : MonoBehaviour {
 
     [Header("Movement Settings")]
     public float baseSpeed = 9f;
+    [Tooltip("말풍선 대사가 출력되는 동안 플레이어 기체의 이동속도 배율 (0이면 완전 멈춤, 1이면 일반 속도, 0.3이면 30% 감속 주행)")]
+    [Range(0f, 1f)]
+    public float dialogueSpeedMultiplier = 0.3f;
 
     [Header("Parry Settings (패링 설정)")]
     [Tooltip("패링 판정 유효 시간 (초)")]
@@ -322,7 +325,15 @@ public class PlayerMoving : MonoBehaviour {
                 // 자동 이동 중이 아닐 때만 수동 속도 덮어쓰기 적용
                 if (!isAutoMoving)
                 {
-                    rb.velocity = moveDirection * baseSpeed;
+                    float currentSpeed = baseSpeed;
+                    
+                    // 💬 말풍선 대사 출력 중 감속 배율 적용
+                    if (SpeechBubble.playerBubbleInstance != null && SpeechBubble.playerBubbleInstance.gameObject.activeSelf)
+                    {
+                        currentSpeed *= dialogueSpeedMultiplier;
+                    }
+
+                    rb.velocity = moveDirection * currentSpeed;
                 }
 
                 Vector2 clampedPos = new Vector2(
