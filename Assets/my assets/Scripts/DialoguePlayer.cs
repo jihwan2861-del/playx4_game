@@ -96,11 +96,14 @@ public class DialoguePlayer : MonoBehaviour
         }
 
         // 🏁 모든 대사 재생이 끝난 최종 완료 시점에 말풍선을 닫아줍니다.
-        // defaultAutoCloseDelay가 설정되어 있으면 그 값을 따르고, 없다면 1.5초 후에 닫히도록 처리합니다.
         float finalCloseDelay = bubble.defaultAutoCloseDelay > 0f ? bubble.defaultAutoCloseDelay : 1.5f;
         bubble.Close(finalCloseDelay);
 
-        // ▶️ [자동 주행 재개 연동] 모든 대사가 끝나고 말풍선이 닫힐 때 주행 재개 호출
+        // ⏳ [말풍선 완전 소멸 타이밍 대기 연동]
+        // 말풍선이 화면에 유지되는 시간(finalCloseDelay) + 스케일 수축 물리 애니메이션 여유 시간(0.3초)만큼 기다립니다.
+        yield return new WaitForSeconds(finalCloseDelay + 0.3f);
+
+        // ▶️ [자동 주행 재개 연동] 모든 대사가 끝나고 말풍선이 완전히 화면에서 사라진 순간에 주행 재개 호출
         if (pauseAutoMoveDuringDialogue && autoMove != null)
         {
             autoMove.ResumeMove();
