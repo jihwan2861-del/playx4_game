@@ -22,6 +22,13 @@ public class SpeechBubble : MonoBehaviour
     [Tooltip("글자당 출력 시간 (초)")]
     public float typeSpeed = 0.035f;
 
+    [Header("=== 타이핑 완급 조절 ===")]
+    [Tooltip("마침표 (.)가 찍혔을 때 타이핑 대기 배율 (기본속도의 N배 느려짐)")]
+    public float dotDelayMultiplier = 4.5f;
+
+    [Tooltip("쉼표 (,), 느낌표 (!), 물음표 (?)가 찍혔을 때 타이핑 대기 배율")]
+    public float punctuationDelayMultiplier = 3.0f;
+
     private Coroutine typingCoroutine;
     private Vector3 originalScale = Vector3.one;
 
@@ -88,9 +95,23 @@ public class SpeechBubble : MonoBehaviour
 
             for (int i = 0; i < characters.Length; i++)
             {
-                currentText += characters[i];
+                char c = characters[i];
+                currentText += c;
                 textComponent.text = currentText;
-                yield return new WaitForSecondsRealtime(typeSpeed);
+
+                float delay = typeSpeed;
+
+                // 문장 부호 완급 조절
+                if (c == '.')
+                {
+                    delay = typeSpeed * dotDelayMultiplier;
+                }
+                else if (c == ',' || c == '!' || c == '?')
+                {
+                    delay = typeSpeed * punctuationDelayMultiplier;
+                }
+
+                yield return new WaitForSecondsRealtime(delay);
             }
         }
         else
