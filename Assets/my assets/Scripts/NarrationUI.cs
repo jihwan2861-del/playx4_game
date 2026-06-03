@@ -91,7 +91,7 @@ public class NarrationUI : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime; // unscaledDeltaTime 적용
             SetTextAlpha(Mathf.Clamp01(elapsed / fadeDuration));
             yield return null;
         }
@@ -138,7 +138,7 @@ public class NarrationUI : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime; // unscaledDeltaTime 적용
             SetTextAlpha(Mathf.Clamp01(1f - (elapsed / fadeDuration)));
             yield return null;
         }

@@ -63,12 +63,29 @@ public class SpeechBubble : MonoBehaviour
     {
         gameObject.SetActive(true);
 
+        // 태그(<...>)를 제거한 순수 텍스트를 기준으로 괄호 여부를 똑똑하게 검사합니다.
+        string cleanText = System.Text.RegularExpressions.Regex.Replace(text, "<[^>]*>", "");
+        bool isEffectSound = cleanText.StartsWith("(") && cleanText.EndsWith(")");
+
+        if (bubbleBackground != null)
+        {
+            var bgImage = bubbleBackground.GetComponent<Image>();
+            if (bgImage != null)
+            {
+                bgImage.enabled = !isEffectSound;
+            }
+            else
+            {
+                bubbleBackground.gameObject.SetActive(!isEffectSound);
+            }
+        }
+
         if (typingCoroutine != null)
         {
             StopCoroutine(typingCoroutine);
         }
 
-        typingCoroutine = StartCoroutine(TypeTextRoutine(text, onComplete));
+        typingCoroutine = StartCoroutine(TypeTextRoutine(text, isEffectSound, onComplete));
     }
 
     /// <summary>
@@ -79,11 +96,23 @@ public class SpeechBubble : MonoBehaviour
         StartCoroutine(CloseRoutine(delay));
     }
 
-    private IEnumerator TypeTextRoutine(string fullText, System.Action onComplete)
+    private IEnumerator TypeTextRoutine(string fullText, bool isEffectSound, System.Action onComplete)
     {
         if (textComponent != null)
         {
-            textComponent.text = "";
+            if (isEffectSound)
+            {
+                // 효과음일 때는 태그 노출 방지를 위해 미리 텍스트를 채우고 글자 수만 제어합니다.
+                textComponent.text = fullText;
+                textComponent.maxVisibleCharacters = 0;
+                textComponent.ForceMeshUpdate();
+            }
+            else
+            {
+                // 일반 대사일 때는 말풍선 크기가 실시간으로 슥 늘어나도록 빈 텍스트로 시작합니다.
+                textComponent.text = "";
+                textComponent.maxVisibleCharacters = 9999; // 제한 해제
+            }
         }
 
         // 등장 이펙트(스케일 애니메이션)가 제거되어 즉시 원래 스케일 상태를 유지합니다.
@@ -94,28 +123,58 @@ public class SpeechBubble : MonoBehaviour
 
         if (textComponent != null)
         {
-            string currentText = "";
-            char[] characters = fullText.ToCharArray();
-
-            for (int i = 0; i < characters.Length; i++)
+            if (isEffectSound)
             {
-                char c = characters[i];
-                currentText += c;
-                textComponent.text = currentText;
+                // [효과음 모드] maxVisibleCharacters를 늘려가며 타이핑 (태그 미노출)
+                int totalVisibleCharacters = textComponent.textInfo.characterCount;
 
-                float delay = typeSpeed;
-
-                // 문장 부호 완급 조절
-                if (c == '.')
+                for (int i = 0; i <= totalVisibleCharacters; i++)
                 {
-                    delay = typeSpeed * dotDelayMultiplier;
-                }
-                else if (c == ',' || c == '!' || c == '?')
-                {
-                    delay = typeSpeed * punctuationDelayMultiplier;
-                }
+                    textComponent.maxVisibleCharacters = i;
 
-                yield return new WaitForSecondsRealtime(delay);
+                    float delay = typeSpeed;
+
+                    if (i > 0 && i - 1 < textComponent.textInfo.characterInfo.Length)
+                    {
+                        char c = textComponent.textInfo.characterInfo[i - 1].character;
+                        if (c == '.')
+                        {
+                            delay = typeSpeed * dotDelayMultiplier;
+                        }
+                        else if (c == ',' || c == '!' || c == '?')
+                        {
+                            delay = typeSpeed * punctuationDelayMultiplier;
+                        }
+                    }
+
+                    yield return new WaitForSecondsRealtime(delay);
+                }
+            }
+            else
+            {
+                // [일반 대사 모드] 한 글자씩 문자를 늘려가며 말풍선 동적 확장 연출 복원
+                string currentText = "";
+                char[] characters = fullText.ToCharArray();
+
+                for (int i = 0; i < characters.Length; i++)
+                {
+                    char c = characters[i];
+                    currentText += c;
+                    textComponent.text = currentText;
+
+                    float delay = typeSpeed;
+
+                    if (c == '.')
+                    {
+                        delay = typeSpeed * dotDelayMultiplier;
+                    }
+                    else if (c == ',' || c == '!' || c == '?')
+                    {
+                        delay = typeSpeed * punctuationDelayMultiplier;
+                    }
+
+                    yield return new WaitForSecondsRealtime(delay);
+                }
             }
         }
         else

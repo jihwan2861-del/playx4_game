@@ -497,15 +497,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58e138b70d39a5940b8ef1f40229596e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  upgradeChips: 0
-  gold: 0
-  speedLevel: 0
-  maxEnergyLevel: 0
-  energyRegenLevel: 0
-  dashCostLevel: 0
-  maxHpLevel: 0
-  tutorialCompleted: 0
-  currentStage: 1
 --- !u!4 &192346603
 Transform:
   m_ObjectHideFlags: 0
@@ -1629,11 +1620,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   garagePanel: {fileID: 1003872018}
-  hologramPanel: {fileID: 446490804}
-  workshopPanel: {fileID: 1495746084}
-  hubMissionPanel: {fileID: 1698238769}
-  hubMissionText: {fileID: 254056890}
-  hologramDialogueText: {fileID: 1404555400}
+  hologramPanel: {fileID: 0}
+  workshopPanel: {fileID: 0}
+  hubMissionPanel: {fileID: 0}
+  hubMissionText: {fileID: 0}
+  hologramDialogueText: {fileID: 0}
   acceptMissionButton: {fileID: 0}
   hologramMissions:
   - missionId: Tutorial
@@ -1642,17 +1633,14 @@ MonoBehaviour:
       \uD1B5\uD574 \uCD9C\uACA9\uD558\uC5EC, \uB354\uBBF8 \uBD07\uC758 \uBC29\uC5B4\uB9DD\uC744
       \uD574\uD0B9\uD558\uACE0 \uC870\uC791\uBC95\uC744 \uC644\uC804\uD788 \uB9C8\uC2A4\uD130\uD558\uAC8C\uB098."
     rewardChips: 5
-    category: "\uC791\uC804"
-    subGoal: "\uBAA9\uD45C\uB97C \uB2EC\uC131\uD558\uC138\uC694."
+    category: "\uC774\uBCA4\uD2B8"
+    subGoal: "\uC774\uC544\uC2A4\uC758 \uC0C8\uB85C\uC6B4 \u300C\uC815\uBCF4\u300D
+      \uB4E3\uAE30"
     missionBanner: {fileID: 0}
     isAccepted: 0
     isCompleted: 0
     isRewardClaimed: 0
-    rewards:
-    - type: 0
-      amount: 5
-    - type: 1
-      amount: 500
+    rewards: []
   - missionId: Stage1
     title: "\uBC14\uC774\uB7EC\uC2A4 \uCF54\uC5B4 \uD30C\uAD34 \uACF5\uC791"
     description: "\uAC10\uC5FC \uB2E8\uACC4 1\uAD6C\uC5ED\uC73C\uB85C \uC9C4\uC785\uD558\uC5EC
@@ -1660,16 +1648,44 @@ MonoBehaviour:
       \uBC14\uC774\uB7EC\uC2A4 \uCF54\uC5B4 \uBCF4\uC2A4\uB97C \uC644\uBCBD\uD558\uAC8C
       \uBB34\uB825\uD654\uC2DC\uD0A4\uAC8C\uB098."
     rewardChips: 15
-    category: "\uC791\uC804"
-    subGoal: "\uBAA9\uD45C\uB97C \uB2EC\uC131\uD558\uC138\uC694."
+    category: "\uBA54\uC778 \uCC55\uD130"
+    subGoal: "\uC81C3\uC7A5 \uC704\uD5D8\uD55C \uAC74\uBB3C\uC5D0\uC11C\uC758 \uC218\uC0C9"
     missionBanner: {fileID: 0}
     isAccepted: 0
     isCompleted: 0
     isRewardClaimed: 0
     rewards: []
-  holoMissionTitleText: {fileID: 2089849041}
-  holoMissionRewardText: {fileID: 233372000}
-  holoAcceptButtonText: {fileID: 1078530312}
+  - missionId: Stage2
+    title: "\uC554\uD751 \uB370\uC774\uD130 \uC13C\uD130 \uB3CC\uD30C"
+    description: "\uAC10\uC5FC \uB2E8\uACC4 2\uAD6C\uC5ED\uC758 \uBA54\uC778 \uD504\uB808\uC784\uC744
+      \uC810\uAC70\uD558\uACE0 \uC788\uB294 \uBCF4\uC2A4 2(\uD0C0\uC774\uD0C4 \uD06C\uB7EC\uC154)\uB97C
+      \uACA9\uD1F4\uD558\uACE0 \uB370\uC774\uD130 \uBCF5\uAD6C\uB97C \uC644\uB8CC\uD558\uAC8C\uB098."
+    rewardChips: 25
+    category: "\uBA54\uC778 \uCC55\uD130"
+    subGoal: "Stage 2 \uBCF4\uC2A4 \uACA9\uD1F4 \uBC0F \uC2DC\uC2A4\uD15C \uBCF5\uAD6C"
+    missionBanner: {fileID: 0}
+    isAccepted: 0
+    isCompleted: 0
+    isRewardClaimed: 0
+    rewards: []
+  - missionId: Stage3
+    title: "\uB124\uD2B8\uC6CC\uD06C \uC911\uC559 \uC2EC\uBD80 \uCE68\uD22C"
+    description: "\uAC10\uC5FC \uCD5C\uACE0\uC870 \uC0C1\uD0DC\uC778 3\uAD6C\uC5ED
+      \uC911\uC2EC\uBD80\uC5D0 \uC9C4\uC785\uD558\uC5EC, \uBAA8\uB4E0 \uBC29\uC5B4
+      \uC7A5\uCE58\uB97C \uB3CC\uD30C\uD558\uACE0 \uB124\uD2B8\uC6CC\uD06C \uBC14\uC774\uB7EC\uC2A4
+      \uBA54\uC778 \uCEF4\uD4E8\uD130\uB97C \uC815\uD654\uC2DC\uCF1C \uC8FC\uAC8C\uB098."
+    rewardChips: 30
+    category: "\uBA54\uC778 \uCC55\uD130"
+    subGoal: "Stage 3 \uCD5C\uC885 \uBCF4\uC2A4 \uACA9\uD1F4 \uBC0F \uC2DC\uC2A4\uD15C
+      \uC815\uD654"
+    missionBanner: {fileID: 0}
+    isAccepted: 0
+    isCompleted: 0
+    isRewardClaimed: 0
+    rewards: []
+  holoMissionTitleText: {fileID: 0}
+  holoMissionRewardText: {fileID: 0}
+  holoAcceptButtonText: {fileID: 0}
   prevMissionButton: {fileID: 0}
   nextMissionButton: {fileID: 0}
   holoMissionBannerImage: {fileID: 0}
@@ -1682,16 +1698,16 @@ MonoBehaviour:
   zzzTrackButtonText: {fileID: 0}
   zzzMissionListContainer: {fileID: 0}
   zzzMissionListItemPrefab: {fileID: 0}
-  chipCountText: {fileID: 1389630710}
-  goldCountText: {fileID: 1452306987}
-  speedLevelText: {fileID: 2003973215}
-  energyLevelText: {fileID: 1007466790}
-  regenLevelText: {fileID: 1601243745}
-  dashCostLevelText: {fileID: 81503519}
-  hpLevelText: {fileID: 1544075764}
-  chipCostPerLevel: 0
+  chipCountText: {fileID: 0}
+  goldCountText: {fileID: 0}
+  speedLevelText: {fileID: 0}
+  energyLevelText: {fileID: 0}
+  regenLevelText: {fileID: 0}
+  dashCostLevelText: {fileID: 0}
+  hpLevelText: {fileID: 0}
+  chipCostPerLevel: 3
   playerMovement: {fileID: 0}
-  buttonClickSFX: {fileID: 8300000, guid: 798f633b2cc993440af86f9cbe567bc6, type: 3}
+  buttonClickSFX: {fileID: 0}
 --- !u!4 &345817674
 Transform:
   m_ObjectHideFlags: 0
@@ -2275,7 +2291,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &446490805
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3739,11 +3755,11 @@ EdgeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
   m_Points:
-  - {x: 7.934641, y: 0.34805632}
+  - {x: 3.0294847, y: -0.81647706}
   - {x: 4.0155115, y: -1.9009422}
-  - {x: 8.33611, y: -4.4675064}
-  - {x: 7.2496643, y: -5.250456}
-  - {x: 6.7882195, y: -5.2712097}
+  - {x: 4.136732, y: -1.9972839}
+  - {x: 4.2148194, y: -1.8274331}
+  - {x: 2.8358638, y: -2.553965}
   - {x: 2.640376, y: -2.476853}
   - {x: -0.9937389, y: -4.6071696}
   - {x: -1.2982996, y: -5.809674}
@@ -3759,8 +3775,8 @@ EdgeCollider2D:
   - {x: -2.2823138, y: 0.4799366}
   - {x: -0.87683153, y: 1.2029772}
   - {x: 2.7516065, y: -0.78025556}
-  - {x: 6.0885797, y: 1.2742295}
-  - {x: 7.9574065, y: 0.31652844}
+  - {x: 2.983157, y: -0.80781484}
+  - {x: 3.9697623, y: -1.8360938}
   m_AdjacentStartPoint: {x: 0, y: 0}
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0
@@ -4009,7 +4025,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1003872019
 RectTransform:
   m_ObjectHideFlags: 0
@@ -50924,7 +50940,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1698238770
 RectTransform:
   m_ObjectHideFlags: 0

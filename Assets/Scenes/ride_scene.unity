@@ -125666,9 +125666,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogues:
-  - "\uB610 \uC5F0\uB8CC \uD544\uD130\uAC00 \uB098\uAC14\uB124.."
-  - "\uC774\uBC88\uC5D4 \uC81C\uB300\uB85C \uB41C \uBD80\uD488\uC744 \uAD6C\uD574\uC57C\uACA0\uC5B4..."
-  - "\uC800\uBC88\uC5D0 \uC2A4\uCE94\uD574\uB454 \uAD6C\uC5ED\uC774 \uC774 \uADFC\uCC98\uC600\uB294\uB370.."
+  - "\uC778\uB958 \uBB38\uBA85\uC774 \uBB34\uB108\uC9C0\uACE0 \uD669\uBB34\uC9C0\uAC00
+    \uB41C \uC9C0\uB3C4 \uBC8C\uC368 \uC218\uC2ED \uB144..."
+  - "\uC774 \uD669\uD3D0\uD574\uC9C4 \uD3D0\uD5C8 \uC18D\uC5D0\uC11C \uC4F8\uB9CC\uD55C
+    \uBD80\uD488\uC744 \uCC3E\uC544 \uC5F0\uBA85\uD558\uB294 \uAC83\uB3C4 \uC2AC\uC2AC
+    \uD55C\uACC4\uAD70."
+  - "\uC624\uB298\uB3C4 \uADF8\uC800 \uADF8\uB7F0 \uACE0\uCCA0 \uBD80\uD488\uC774\uB098
+    \uC8FC\uC6B0\uB7EC \uAC00\uBCFC\uAE4C..."
+  - "\uC774\uB7F0 \uAC70\uB300\uD55C \uC5D0\uB108\uC9C0 \uBC18\uC751\uC774 \uC9C0\uAE08\uAE4C\uC9C0
+    \uC548 \uC7A1\uD614\uB2E4\uACE0?"
+  - "\uD655\uC778\uD574\uBCFC \uAC00\uCE58\uAC00 \uC788\uACA0\uC5B4. \uC2E0\uD638\uC758
+    \uBC1C\uC2E0\uC9C0\uB294... \uC774 \uC544\uB798\uC778\uAC00?"
   delayBetweenDialogues: 1
   lastDialogueCloseDelay: 1
   useNarrationMode: 0
@@ -125765,6 +125773,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 478045127}
+  - component: {fileID: 478045128}
   m_Layer: 0
   m_Name: Dialogue_Player_Talk_1
   m_TagString: Untagged
@@ -125787,6 +125796,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 217217364}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &478045128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 478045126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4175e190653a5c45ae22eddbcb42d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialogues:
+  - "<color=red>(\uC090- \uC090-! \uB808\uC774\uB354 \uC774\uC0C1 \uC2E0\uD638 \uBC1C\uC0DD)"
+  - "\uC751? \uB808\uC774\uB354\uC5D0 \uACBD\uACE0\uC74C...? \uBB50\uC9C0?"
+  - "\uC751? \uB808\uC774\uB354\uC5D0 \uACBD\uACE0\uC74C...? \uBB50\uC9C0?"
+  - "\uC774 \uAD6C\uC5ED\uC740 \uBA87 \uBC88\uC774\uB098 \uC0C5\uC0C5\uC774 \uC2A4\uCE94\uD588\uB294\uB370...."
+  delayBetweenDialogues: 1.5
+  lastDialogueCloseDelay: 1
+  useNarrationMode: 1
+  freezePlayerDuringDialogue: 1
+  pauseAutoMoveDuringDialogue: 1
 --- !u!1 &609658269
 GameObject:
   m_ObjectHideFlags: 0
@@ -248423,6 +248454,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 772515045}
+  - component: {fileID: 772515046}
   m_Layer: 0
   m_Name: Dialogue_Player_Talk_2
   m_TagString: Untagged
@@ -248445,6 +248477,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 217217364}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &772515046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772515044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4175e190653a5c45ae22eddbcb42d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialogues:
+  - "\uC774 \uC815\uB3C4 \uCD9C\uB825\uC774\uBA74 \uC18C\uD615 \uBC1C\uC804\uC18C\uAE09\uC774\uC796\uC544..."
+  - "\uC774\uB7F0 \uAC70\uB300\uD55C \uC5D0\uB108\uC9C0 \uBC18\uC751\uC774 \uC9C0\uAE08\uAE4C\uC9C0
+    \uC548 \uC7A1\uD614\uB2E4\uACE0?"
+  - "\u314E..\u314E\u314E....\uC5D4\uC9C0\uB2C8\uC5B4\uB85C\uC11C \uC774\uAC74 \uADF8\uB0E5
+    \uC9C0\uB098\uCE60 \uC218 \uC5C6\uC5B4.."
+  - "\uD655\uC778\uD574\uBCFC \uAC00\uCE58\uAC00 \uC788\uACA0\uC5B4. \uC2E0\uD638\uC758
+    \uBC1C\uC2E0\uC9C0\uB294... \uC774 \uC544\uB798\uC778\uAC00?"
+  delayBetweenDialogues: 1.5
+  lastDialogueCloseDelay: 1
+  useNarrationMode: 0
+  freezePlayerDuringDialogue: 1
+  pauseAutoMoveDuringDialogue: 1
 --- !u!1 &817374673
 GameObject:
   m_ObjectHideFlags: 0
@@ -252123,11 +252180,35 @@ MonoBehaviour:
   - targetTransform: {fileID: 1629738604}
     onArrivedWaypoint:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 478045128}
+          m_TargetAssemblyTypeName: DialoguePlayer, Assembly-CSharp
+          m_MethodName: PlayDialogues
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   - targetTransform: {fileID: 936296063}
     onArrivedWaypoint:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 772515046}
+          m_TargetAssemblyTypeName: DialoguePlayer, Assembly-CSharp
+          m_MethodName: PlayDialogues
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   autoSpeed: 6
   onArrivedEvent:
     m_PersistentCalls:
