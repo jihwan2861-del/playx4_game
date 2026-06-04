@@ -9,6 +9,8 @@ public class BossHealthUI : MonoBehaviour
     public GameObject uiPanel;      // 보스 출현 시 켜질 패널
     public Image healthBarFill;     // 체력바 (Image Type: Filled)
     public GameObject healthPercentageTextObj; // 퍼센트 글자가 들어갈 텍스트 오브젝트 (TMP 지원)
+    [Tooltip("보스의 이름을 표시할 텍스트 오브젝트 (선택 사항)")]
+    public GameObject bossNameTextObj;
 
     void Start()
     {
@@ -48,6 +50,18 @@ public class BossHealthUI : MonoBehaviour
             if (healthBarFill != null) healthBarFill.fillAmount = percent / 100f;
             Color textColor = boss.isHacking ? Color.cyan : Color.white;
             SetTextAndColor(healthPercentageTextObj, $"{percent}%", textColor);
+
+            // 🌟 [보스 이름 동적 적용]
+            // 현재 진행 중인 스테이지 씬 명칭을 감지하여 보스 이름(Hodge, Mass Gap)을 UI에 동적 출력합니다.
+            if (bossNameTextObj != null)
+            {
+                string activeSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+                string bossName = "UNKNOWN BOSS";
+                if (activeSceneName == "game_Scene") bossName = "HODGE";
+                else if (activeSceneName == "Stage2_Scene") bossName = "MASS GAP";
+                
+                SetTextAndColor(bossNameTextObj, bossName, textColor);
+            }
         }
         else if (dummy != null && dummy.isHackingMode)
         {
@@ -73,6 +87,11 @@ public class BossHealthUI : MonoBehaviour
             Color textColor = isBeingHacked ? Color.cyan : Color.white;
 
             SetTextAndColor(healthPercentageTextObj, $"{percent}%", textColor);
+
+            if (bossNameTextObj != null)
+            {
+                SetTextAndColor(bossNameTextObj, "TUTORIAL BOT", textColor);
+            }
         }
         else
         {
@@ -95,6 +114,10 @@ public class BossHealthUI : MonoBehaviour
         if (healthBarFill != null && healthBarFill.gameObject.activeSelf != isActive)
         {
             healthBarFill.gameObject.SetActive(isActive);
+        }
+        if (bossNameTextObj != null && bossNameTextObj.activeSelf != isActive)
+        {
+            bossNameTextObj.SetActive(isActive);
         }
     }
 

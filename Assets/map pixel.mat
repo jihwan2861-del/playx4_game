@@ -15,6 +15,8 @@ Material:
   - GLOW_ON
   - HSV_ON
   - INNEROUTLINE_ON
+  - OUTBASE_ON
+  - PIXELATE_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -113,7 +115,7 @@ Material:
     - _AlphaOutlineBlend: 1
     - _AlphaOutlineGlow: 5
     - _AlphaOutlineMinAlpha: 0
-    - _AlphaOutlinePower: 1
+    - _AlphaOutlinePower: 0.24
     - _AlphaRoundThreshold: 0.5
     - _BillboardY: 0
     - _BlurHD: 0
@@ -160,7 +162,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Glow: 0.4
+    - _Glow: 2
     - _GlowTexUsed: 0
     - _GradBlend: 1
     - _GradBoostX: 1.2
@@ -259,7 +261,7 @@ Material:
     - _WaveX: 0
     - _WaveY: 0.5
     - _ZTestMode: 4
-    - _ZWrite: 1
+    - _ZWrite: 0
     - _ZoomUvAmount: 0.5
     m_Colors:
     - _AlphaOutlineColor: {r: 1, g: 1, b: 1, a: 1}
@@ -275,7 +277,7 @@ Material:
     - _ColorSwapRed: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FadeBurnColor: {r: 1, g: 1, b: 0, a: 1}
-    - _GlowColor: {r: 1, g: 1, b: 1, a: 1}
+    - _GlowColor: {r: 1, g: 0.9545427, b: 0.5801887, a: 1}
     - _GradBotLeftCol: {r: 0, g: 0, b: 1, a: 1}
     - _GradBotRightCol: {r: 0, g: 0, b: 1, a: 1}
     - _GradTopLeftCol: {r: 1, g: 0, b: 0, a: 1}
@@ -283,8 +285,8 @@ Material:
     - _GreyscaleTintColor: {r: 1, g: 1, b: 1, a: 1}
     - _HitEffectColor: {r: 1, g: 1, b: 1, a: 1}
     - _HologramStripeColor: {r: 0, g: 1, b: 1, a: 1}
-    - _InnerOutlineColor: {r: 0.03644534, g: 0.41628993, b: 0.8584906, a: 1}
-    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _InnerOutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _OverlayColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0, g: 0, b: 0, a: 1}
     - _ShineColor: {r: 1, g: 1, b: 1, a: 1}

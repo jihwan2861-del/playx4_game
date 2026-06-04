@@ -160,14 +160,15 @@ public class IntroDialogueManager : MonoBehaviour
         SetupSpeakerLayout(line);
 
         // 2. 텍스트 타이핑 효과 시작
-        fullMessage = line.message;
+        List<int> shakeIndices;
+        fullMessage = ProcessShakeTags(line.message, out shakeIndices);
         if (typingCoroutine != null)
         {
             StopCoroutine(typingCoroutine);
         }
         if (messageText != null) messageText.text = "";
         if (messageTextTMP != null) messageTextTMP.text = "";
-        typingCoroutine = StartCoroutine(TypeText(line.message));
+        typingCoroutine = StartCoroutine(TypeText(fullMessage, shakeIndices));
     }
 
     private void SetupSpeakerLayout(DialogueLine line)
@@ -244,7 +245,7 @@ public class IntroDialogueManager : MonoBehaviour
         }
     }
 
-    private IEnumerator TypeText(string textToType)
+    private IEnumerator TypeText(string textToType, List<int> shakeIndices)
     {
         isTyping = true;
         if (nextIndicator != null)
@@ -253,9 +254,15 @@ public class IntroDialogueManager : MonoBehaviour
         }
 
         string currentText = "";
-        foreach (char c in textToType.ToCharArray())
+        char[] characters = textToType.ToCharArray();
+        for (int i = 0; i < characters.Length; i++)
         {
-            currentText += c;
+            if (shakeIndices != null && shakeIndices.Contains(i))
+            {
+                TriggerCameraShake();
+            }
+
+            currentText += characters[i];
             if (messageText != null) messageText.text = currentText;
             if (messageTextTMP != null) messageTextTMP.text = currentText;
             yield return new WaitForSecondsRealtime(typingSpeed);
@@ -275,8 +282,8 @@ public class IntroDialogueManager : MonoBehaviour
             StopCoroutine(typingCoroutine);
         }
         
-        if (messageText != null) messageText.text = lines[currentLineIndex].message;
-        if (messageTextTMP != null) messageTextTMP.text = lines[currentLineIndex].message;
+        if (messageText != null) messageText.text = fullMessage;
+        if (messageTextTMP != null) messageTextTMP.text = fullMessage;
         
         isTyping = false;
         if (nextIndicator != null)
@@ -320,6 +327,33 @@ public class IntroDialogueManager : MonoBehaviour
         if (clip != null)
         {
             AudioSource.PlayClipAtPoint(clip, Camera.main != null ? Camera.main.transform.position : transform.position);
+        }
+    }
+
+    private string ProcessShakeTags(string originalText, out List<int> shakeIndices)
+    {
+        shakeIndices = new List<int>();
+        if (string.IsNullOrEmpty(originalText)) return originalText;
+
+        string processed = originalText;
+        int index;
+        while ((index = processed.IndexOf("#@$")) != -1)
+        {
+            shakeIndices.Add(index);
+            processed = processed.Remove(index, 3); // Remove "#@$"
+        }
+        return processed;
+    }
+
+    private void TriggerCameraShake()
+    {
+        if (Camera.main != null)
+        {
+            CameraFollow camFollow = Camera.main.GetComponent<CameraFollow>();
+            if (camFollow != null)
+            {
+                camFollow.Shake(0.5f, 0.35f);
+            }
         }
     }
 }

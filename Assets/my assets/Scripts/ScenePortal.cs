@@ -28,6 +28,33 @@ public class ScenePortal : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        // 🔄 [스테이지 2개 단축 연동]
+        // 캠페인 진행 단계 (게임시작-라이드-폐연구실-허브-스테이지1-스테이지2)에 맞춰 포탈 타겟을 강제 연쇄시킵니다.
+        string activeScene = SceneManager.GetActiveScene().name;
+        if (activeScene == "ride_scene" && (targetSceneName == "game_Scene" || targetSceneName == "Stage2_Scene"))
+        {
+            targetSceneName = "Lab_scene";
+            Debug.Log($"🔄 [ScenePortal] 스테이지 연쇄: {activeScene} ➔ 'Lab_scene'으로 강제 보정 완료.");
+        }
+        else if (activeScene == "Lab_scene" && (targetSceneName == "Stage2_Scene" || targetSceneName == "Stage3_Scene" || targetSceneName == "game_Scene"))
+        {
+            targetSceneName = "Hub_Scene";
+            Debug.Log($"🔄 [ScenePortal] 스테이지 연쇄: {activeScene} 완료 ➔ 'Hub_Scene'으로 강제 보정 완료.");
+        }
+        else if (activeScene == "game_Scene" && targetSceneName == "Stage3_Scene")
+        {
+            targetSceneName = "Stage2_Scene";
+            Debug.Log($"🔄 [ScenePortal] 스테이지 연쇄: {activeScene} 완료 ➔ 'Stage2_Scene'으로 강제 보정 완료.");
+        }
+        else if (activeScene == "Stage2_Scene" && (targetSceneName == "Stage3_Scene" || targetSceneName == "game_Scene"))
+        {
+            targetSceneName = "Hub_Scene";
+            Debug.Log($"🔄 [ScenePortal] 스테이지 연쇄: {activeScene} 완료 ➔ 'Hub_Scene' 복귀로 강제 보정 완료.");
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!triggerOnTouch || isTransitioning) return;
