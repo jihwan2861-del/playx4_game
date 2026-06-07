@@ -5,7 +5,7 @@ public class MainMenuManager : MonoBehaviour
 {
     [Header("이동할 씬 이름")]
     [Tooltip("게임이 시작되자마자 즉시 넘어갈 대상 씬의 정확한 이름입니다. (기본값: Hub_Scene)")]
-    public string gameSceneName = "Hub_Scene";
+    public string gameSceneName = "ride_scene";
 
     private void Start()
     {

@@ -213,37 +213,7 @@ Tilemap:
   m_GameObject: {fileID: 69660035}
   m_Enabled: 1
   m_Tiles:
-  - first: {x: 71, y: -38, z: 0}
-    second:
-      serializedVersion: 2
-      m_TileIndex: 0
-      m_TileSpriteIndex: 0
-      m_TileMatrixIndex: 0
-      m_TileColorIndex: 0
-      m_TileObjectToInstantiateIndex: 65535
-      dummyAlignment: 0
-      m_AllTileFlags: 1073741825
-  - first: {x: 34, y: -37, z: 0}
-    second:
-      serializedVersion: 2
-      m_TileIndex: 0
-      m_TileSpriteIndex: 0
-      m_TileMatrixIndex: 0
-      m_TileColorIndex: 0
-      m_TileObjectToInstantiateIndex: 65535
-      dummyAlignment: 0
-      m_AllTileFlags: 1073741825
   - first: {x: 53, y: -34, z: 0}
-    second:
-      serializedVersion: 2
-      m_TileIndex: 0
-      m_TileSpriteIndex: 0
-      m_TileMatrixIndex: 0
-      m_TileColorIndex: 0
-      m_TileObjectToInstantiateIndex: 65535
-      dummyAlignment: 0
-      m_AllTileFlags: 1073741825
-  - first: {x: 83, y: -31, z: 0}
     second:
       serializedVersion: 2
       m_TileIndex: 0
@@ -278,6 +248,26 @@ Tilemap:
       serializedVersion: 2
       m_TileIndex: 5
       m_TileSpriteIndex: 3
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741825
+  - first: {x: 35, y: -28, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741825
+  - first: {x: 60, y: -27, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
       m_TileMatrixIndex: 0
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
@@ -548,6 +538,16 @@ Tilemap:
       serializedVersion: 2
       m_TileIndex: 2
       m_TileSpriteIndex: 4
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741825
+  - first: {x: 80, y: -17, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
       m_TileMatrixIndex: 0
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
@@ -2824,16 +2824,16 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 86147666}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 43.1, y: 23.64, z: 0.05483757}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -7.71819, y: -2.631796, z: 0.034369543}
+  m_LocalScale: {x: 0.6729023, y: 0.7476692, z: 0.6729023}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2001061894}
   - {fileID: 420890587}
   - {fileID: 1629738604}
   - {fileID: 936296063}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1343370003}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &174561155
 GameObject:
@@ -128351,8 +128351,9 @@ MonoBehaviour:
     \uD55C\uACC4\uAD70."
   - "\uC800\uBC88\uC5D0 \uC2A4\uCE94\uC5D0\uC11C \uC774\uC0C1\uD55C \uBC18\uC751\uC774
     \uB5B3\uC5C8\uB294\uB370..."
+  detailedDialogues: []
   delayBetweenDialogues: 1
-  lastDialogueCloseDelay: 1
+  lastDialogueCloseDelay: 2
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
@@ -128421,8 +128422,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textComponent: {fileID: 670563183}
-  fadeDuration: 0.5
-  typeSpeed: 0.05
+  fadeDuration: 0.7
+  typeSpeed: 0.07
   dotDelayMultiplier: 4.5
   punctuationDelayMultiplier: 3
 --- !u!1 &420890584
@@ -128486,7 +128487,7 @@ Transform:
   m_GameObject: {fileID: 420890584}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 13.1, y: 7.3, z: 0}
+  m_LocalPosition: {x: 23.2, y: 13.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -128537,11 +128538,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogues:
-  - "<color=red>(\uC090- \uC090-! \uB808\uC774\uB354 \uC774\uC0C1 \uC2E0\uD638 \uBC1C\uC0DD)"
+  - "<color=red>#@$(\uC090- \uC090-! \uB808\uC774\uB354 \uC774\uC0C1 \uC2E0\uD638
+    \uBC1C\uC0DD)"
   - "\uC751? \uB808\uC774\uB354\uC5D0 \uACBD\uACE0\uC74C...? \uBB50\uC9C0?"
   - "\uC774 \uAD6C\uC5ED\uC740 \uBA87 \uBC88\uC774\uB098 \uC0C5\uC0C5\uC774 \uC2A4\uCE94\uD588\uB294\uB370...."
+  detailedDialogues: []
   delayBetweenDialogues: 1.5
-  lastDialogueCloseDelay: 1
+  lastDialogueCloseDelay: 2
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
@@ -250826,8 +250829,9 @@ MonoBehaviour:
     \uC9C0\uB098\uCE60 \uC218 \uC5C6\uC5B4.."
   - "\uD655\uC778\uD574\uBCFC \uAC00\uCE58\uAC00 \uC788\uACA0\uC5B4. \uC2E0\uD638\uC758
     \uBC1C\uC2E0\uC9C0\uB294... \uC774 \uC544\uB798\uC778\uAC00?"
+  detailedDialogues: []
   delayBetweenDialogues: 1.5
-  lastDialogueCloseDelay: 1
+  lastDialogueCloseDelay: 2
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
@@ -251276,7 +251280,7 @@ Transform:
   m_GameObject: {fileID: 936296062}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 72, y: 40.6, z: 0}
+  m_LocalPosition: {x: 72.48, y: 40.76, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -251494,7 +251498,7 @@ Transform:
   m_GameObject: {fileID: 1284293583}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -44.73, y: -27.99, z: 0}
+  m_LocalPosition: {x: -55.4, y: -34.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -251894,10 +251898,11 @@ Transform:
   m_GameObject: {fileID: 1343370002}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 54.57, y: 27.16, z: 0.0037609916}
+  m_LocalPosition: {x: 76.7, y: 39.9, z: 0.0037609916}
   m_LocalScale: {x: 1.4861, y: 1.33749, z: 1.4861}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 86147667}
   - {fileID: 1798086109}
   - {fileID: 765253134}
   - {fileID: 1817702967}
@@ -255011,7 +255016,7 @@ Transform:
   m_GameObject: {fileID: 1629738603}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 43.4, y: 24.7, z: 0}
+  m_LocalPosition: {x: 53.500008, y: 30.900002, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -377674,8 +377679,9 @@ MonoBehaviour:
     \uAC11\uC791\uC2A4\uB7EC\uC6B4 \uBC18\uB780...."
   - "\uBB38\uBA85\uC740 \uC21C\uC2DD\uAC04\uC5D0 \uBD95\uAD34\uD588\uACE0, \uC9C0\uAD6C\uB294
     \uAC70\uB300\uD55C \uD3D0\uD5C8\uC640 \uD669\uBB34\uC9C0\uB85C \uBCC0\uD574\uBC84\uB838\uB2E4..."
+  detailedDialogues: []
   delayBetweenDialogues: 1.5
-  lastDialogueCloseDelay: 1
+  lastDialogueCloseDelay: 2
   useNarrationMode: 1
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 0
@@ -377705,7 +377711,7 @@ Transform:
   m_GameObject: {fileID: 2001061893}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -42.76, y: -23.24, z: 0}
+  m_LocalPosition: {x: -58.2, y: -32.2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -377921,6 +377927,5 @@ SceneRoots:
   - {fileID: 755419922}
   - {fileID: 956238038}
   - {fileID: 1952288751}
-  - {fileID: 86147667}
   - {fileID: 174561156}
   - {fileID: 971363375}

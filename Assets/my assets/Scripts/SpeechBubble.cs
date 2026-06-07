@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro; // TextMeshPro 네임스페이스 추가
 
 /// <summary>
@@ -63,8 +64,11 @@ public class SpeechBubble : MonoBehaviour
     {
         gameObject.SetActive(true);
 
+        List<int> shakeIndices;
+        string processedText = ProcessShakeTags(text, out shakeIndices);
+
         // 태그(<...>)를 제거한 순수 텍스트를 기준으로 괄호 여부를 똑똑하게 검사합니다.
-        string cleanText = System.Text.RegularExpressions.Regex.Replace(text, "<[^>]*>", "");
+        string cleanText = System.Text.RegularExpressions.Regex.Replace(processedText, "<[^>]*>", "");
         bool isEffectSound = cleanText.StartsWith("(") && cleanText.EndsWith(")");
 
         if (bubbleBackground != null)
@@ -85,7 +89,7 @@ public class SpeechBubble : MonoBehaviour
             StopCoroutine(typingCoroutine);
         }
 
-        typingCoroutine = StartCoroutine(TypeTextRoutine(text, isEffectSound, onComplete));
+        typingCoroutine = StartCoroutine(TypeTextRoutine(processedText, isEffectSound, shakeIndices, onComplete));
     }
 
     /// <summary>
@@ -96,7 +100,7 @@ public class SpeechBubble : MonoBehaviour
         StartCoroutine(CloseRoutine(delay));
     }
 
-    private IEnumerator TypeTextRoutine(string fullText, bool isEffectSound, System.Action onComplete)
+    private IEnumerator TypeTextRoutine(string fullText, bool isEffectSound, List<int> shakeIndices, System.Action onComplete)
     {
         if (textComponent != null)
         {
@@ -130,6 +134,11 @@ public class SpeechBubble : MonoBehaviour
 
                 for (int i = 0; i <= totalVisibleCharacters; i++)
                 {
+                    if (i > 0 && shakeIndices != null && shakeIndices.Contains(i - 1))
+                    {
+                        TriggerCameraShake();
+                    }
+
                     textComponent.maxVisibleCharacters = i;
 
                     float delay = typeSpeed;
@@ -158,6 +167,11 @@ public class SpeechBubble : MonoBehaviour
 
                 for (int i = 0; i < characters.Length; i++)
                 {
+                    if (shakeIndices != null && shakeIndices.Contains(i))
+                    {
+                        TriggerCameraShake();
+                    }
+
                     char c = characters[i];
                     currentText += c;
                     textComponent.text = currentText;
@@ -213,5 +227,32 @@ public class SpeechBubble : MonoBehaviour
                 Close(defaultAutoCloseDelay);
             }
         });
+    }
+
+    private string ProcessShakeTags(string originalText, out List<int> shakeIndices)
+    {
+        shakeIndices = new List<int>();
+        if (string.IsNullOrEmpty(originalText)) return originalText;
+
+        string processed = originalText;
+        int index;
+        while ((index = processed.IndexOf("#@$")) != -1)
+        {
+            shakeIndices.Add(index);
+            processed = processed.Remove(index, 3); // Remove "#@$"
+        }
+        return processed;
+    }
+
+    private void TriggerCameraShake()
+    {
+        if (Camera.main != null)
+        {
+            CameraFollow camFollow = Camera.main.GetComponent<CameraFollow>();
+            if (camFollow != null)
+            {
+                camFollow.Shake(0.5f, 0.35f);
+            }
+        }
     }
 }

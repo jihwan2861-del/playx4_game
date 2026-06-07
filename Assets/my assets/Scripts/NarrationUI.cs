@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 
 /// <summary>
@@ -98,11 +99,19 @@ public class NarrationUI : MonoBehaviour
         SetTextAlpha(1f);
 
         // 3. 타이핑 효과 적용 (SpeechBubble과 일치하는 문장부호 완급조절 탑재)
+        List<int> shakeIndices;
+        string processedText = ProcessShakeTags(fullText, out shakeIndices);
+
         string currentText = "";
-        char[] characters = fullText.ToCharArray();
+        char[] characters = processedText.ToCharArray();
 
         for (int i = 0; i < characters.Length; i++)
         {
+            if (shakeIndices != null && shakeIndices.Contains(i))
+            {
+                TriggerCameraShake();
+            }
+
             char c = characters[i];
             currentText += c;
             textComponent.text = currentText;
@@ -150,9 +159,36 @@ public class NarrationUI : MonoBehaviour
     {
         if (textComponent != null)
         {
-            Color c = originalColor;
+            Color c = textComponent.color;
             c.a = alpha;
             textComponent.color = c;
+        }
+    }
+
+    private string ProcessShakeTags(string originalText, out List<int> shakeIndices)
+    {
+        shakeIndices = new List<int>();
+        if (string.IsNullOrEmpty(originalText)) return originalText;
+
+        string processed = originalText;
+        int index;
+        while ((index = processed.IndexOf("#@$")) != -1)
+        {
+            shakeIndices.Add(index);
+            processed = processed.Remove(index, 3); // Remove "#@$"
+        }
+        return processed;
+    }
+
+    private void TriggerCameraShake()
+    {
+        if (Camera.main != null)
+        {
+            CameraFollow camFollow = Camera.main.GetComponent<CameraFollow>();
+            if (camFollow != null)
+            {
+                camFollow.Shake(0.5f, 0.35f);
+            }
         }
     }
 }

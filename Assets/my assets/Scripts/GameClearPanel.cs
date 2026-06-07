@@ -48,9 +48,27 @@ public class GameClearPanel : MonoBehaviour
         float elapsedTime = 0f;
         canvasGroup.alpha = 0f;
 
+        // 🌟 [세계관 스토리 반영 동적 클리어 연출]
+        // 난제를 파괴하는 것이 아니라 '해결(Resolve)'하는 세계관 설정을 반영하여,
+        // 보스 스테이지 클리어 시 보스이름 + RESOLVED 문구를 동적으로 출력합니다!
+        string activeSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        string titleText = "STAGE CLEAR";
+        string subText = "MISSION COMPLETE!\nSAFE ZONE REACHED";
+
+        if (activeSceneName == "game_Scene")
+        {
+            titleText = "HODGE RESOLVED";
+            subText = "PROJECT MILLENNIUM\nENTITY RESOLVED. STATUS: STABLE";
+        }
+        else if (activeSceneName == "Stage2_Scene")
+        {
+            titleText = "MASS GAP RESOLVED";
+            subText = "PROJECT MILLENNIUM\nENTITY RESOLVED. STATUS: STABLE";
+        }
+
         // 텍스트 내용 주입 (일반 Text 와 TextMeshPro(TMP) 모두에 대응 가능하도록 안전 보조 처리)
-        SetTextSafe(clearTitleObject, "STAGE CLEAR");
-        SetTextSafe(clearSubObject, "MISSION COMPLETE!\nSAFE ZONE REACHED");
+        SetTextSafe(clearTitleObject, titleText);
+        SetTextSafe(clearSubObject, subText);
 
         // 지정된 시간 동안 알파 값을 0에서 1로 부드럽게 증가시킴
         while (elapsedTime < fadeDuration)
@@ -74,11 +92,7 @@ public class GameClearPanel : MonoBehaviour
         Text normalText = targetObj.GetComponent<Text>();
         if (normalText != null)
         {
-            // 비어 있거나 기본 설정인 경우에만 덮어씀
-            if (string.IsNullOrEmpty(normalText.text) || normalText.text == "New Text" || normalText.text == "Text")
-            {
-                normalText.text = textValue;
-            }
+            normalText.text = textValue;
             return;
         }
 
@@ -86,10 +100,7 @@ public class GameClearPanel : MonoBehaviour
         var tmpText = targetObj.GetComponent<TMPro.TMP_Text>();
         if (tmpText != null)
         {
-            if (string.IsNullOrEmpty(tmpText.text) || tmpText.text == "New Text" || tmpText.text == "Text")
-            {
-                tmpText.text = textValue;
-            }
+            tmpText.text = textValue;
             return;
         }
     }
