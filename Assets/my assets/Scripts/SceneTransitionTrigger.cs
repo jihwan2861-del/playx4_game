@@ -53,6 +53,21 @@ public class SceneTransitionTrigger : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// UnityEvent(예: PlayerAutoMove의 OnArrivedWaypoint)에서 
+    /// 직접 호출하여 안전하게 지정된 씬으로 전환시킬 수 있는 public 함수입니다.
+    /// </summary>
+    public void TriggerTransition()
+    {
+        if (resetTimeScale)
+        {
+            Time.timeScale = 1f;
+        }
+
+        Debug.Log($"🎬 [SceneTransitionTrigger] TriggerTransition() 호출! '{sceneToLoad}' 씬을 로드합니다.");
+        SceneManager.LoadScene(sceneToLoad);
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         // 진입한 오브젝트가 플레이어인지 태그 검사

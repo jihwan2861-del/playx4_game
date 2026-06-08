@@ -13,9 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - GLOW_ON
-  - HSV_ON
   - INNEROUTLINE_ON
-  - OUTBASE_ON
   - PIXELATE_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -277,7 +275,7 @@ Material:
     - _ColorSwapRed: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FadeBurnColor: {r: 1, g: 1, b: 0, a: 1}
-    - _GlowColor: {r: 1, g: 0.9545427, b: 0.5801887, a: 1}
+    - _GlowColor: {r: 0.3018868, g: 0.28799286, b: 0.17799929, a: 1}
     - _GradBotLeftCol: {r: 0, g: 0, b: 1, a: 1}
     - _GradBotRightCol: {r: 0, g: 0, b: 1, a: 1}
     - _GradTopLeftCol: {r: 1, g: 0, b: 0, a: 1}

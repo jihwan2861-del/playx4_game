@@ -32,6 +32,13 @@ public class Projectile : MonoBehaviour {
             {
                 enemy.GetDamage(damage);
             }
+
+            // 부숴지는 오브젝트(BreakableObject)에도 데미지 적용
+            BreakableObject breakable = collision.GetComponent<BreakableObject>();
+            if (breakable != null)
+            {
+                breakable.TakeDamage(damage);
+            }
             
             if (destroyedByCollision)
                 Destruction();
