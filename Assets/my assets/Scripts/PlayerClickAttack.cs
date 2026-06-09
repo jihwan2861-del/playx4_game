@@ -1,65 +1,46 @@
-using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// 마우스 좌클릭으로 적(Enemy)이나 부숴지는 오브젝트(BreakableObject)를 클릭하면
-/// 롤(League of Legends) 스타일로 해킹 펄스 투사체가 대상을 향해 발사되는 공격 시스템입니다.
+/// 좌클릭으로 적을 타겟 지정하면 자동으로 연사하는 MOBA 스타일 공격 시스템입니다.
+/// - 좌클릭 적 위: 타겟 지정, 자동 연사 시작
+/// - 좌클릭 다른 적: 타겟 변경
+/// - 좌클릭 빈 공간: 타겟 해제, 연사 중단
 /// Player 오브젝트에 부착하여 사용합니다.
 /// </summary>
 public class PlayerClickAttack : MonoBehaviour
 {
-    [Header("Attack Settings (공격 설정)")]
-    [Tooltip("공격 간격 (초). 낮을수록 연사가 빠름")]
+    [Header("발사 설정")]
+    [Tooltip("공격 간격 (초)")]
     public float attackCooldown = 0.3f;
 
-    [Tooltip("최대 공격 사거리 (유닛)")]
-    public float attackRange = 15f;
+    [Tooltip("투사체 프리팹 (여기에 넣으세요! 비워두면 PlayerShooting의 것을 사용)")]
+    public GameObject projectilePrefab;
 
-    [Tooltip("클릭 공격 기본 데미지")]
+    [Tooltip("투사체 속도")]
+    public float projectileSpeed = 20f;
+
+    [Tooltip("투사체 데미지")]
     public int attackDamage = 5;
 
-    [Tooltip("투사체 이동 속도")]
-    public float projectileSpeed = 25f;
+    [Header("타겟팅 설정")]
+    [Tooltip("타겟 감지 반경 (클릭 정밀도)")]
+    public float clickDetectRadius = 0.5f;
 
-    [Header("Visual Settings (비주얼 설정)")]
-    [Tooltip("투사체 색상")]
-    public Color projectileColor = new Color(0f, 0.8f, 1f, 1f); // 네온 시안
+    [Header("타겟 표시 설정")]
+    [Tooltip("타겟 지정 시 적 밑에 표시할 이펙트 프리팹 (비워두면 기본 원 표시)")]
+    public GameObject targetIndicatorPrefab;
 
-    [Tooltip("투사체 크기 배율")]
-    public float projectileScale = 1.2f;
-
-    [Tooltip("발사 시 총구 이펙트 크기")]
-    public float muzzleFlashScale = 0.8f;
-
-    [Header("Cursor Feedback (커서 피드백)")]
-    [Tooltip("적 위에 호버 시 사용할 커서 텍스처 (비워두면 기본 색상 변경)")]
-    public Texture2D attackCursorTexture;
-
-    [Tooltip("공격 불가 상태 (사거리 밖/쿨다운) 커서 텍스처")]
-    public Texture2D disabledCursorTexture;
-
-    [Header("Sound Effects (사운드)")]
-    [Tooltip("공격 발사 시 사운드")]
-    public AudioClip attackFireSFX;
-    [Range(0f, 1f)]
-    public float attackFireVolume = 0.5f;
-
-    [Tooltip("공격 적중 시 사운드")]
-    public AudioClip attackHitSFX;
-    [Range(0f, 1f)]
-    public float attackHitVolume = 0.6f;
-
-    // 내부 상태
+    // 현재 타겟
+    [HideInInspector] public GameObject currentTarget;
+    private GameObject currentIndicator;
     private float lastAttackTime = -999f;
     private Camera mainCamera;
-    private bool cursorOverTarget = false;
 
     public static PlayerClickAttack instance;
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
+        if (instance == null) instance = this;
     }
 
     private void Start()
@@ -72,262 +53,168 @@ public class PlayerClickAttack : MonoBehaviour
         if (mainCamera == null) mainCamera = Camera.main;
         if (mainCamera == null) return;
 
-        // 플레이어가 조작 불가 상태인지 확인
-        if (!CanAttack())
-        {
+        // 패리 경직 / 넉백 중이면 공격 불가
+        if (PlayerMoving.instance != null &&
+            (PlayerMoving.instance.isParryRecovery || PlayerMoving.instance.isKnockedBack))
             return;
-        }
 
-        // --- 커서 호버 피드백 ---
-        UpdateCursorFeedback();
-
-        // --- 마우스 좌클릭 공격 ---
+        // 좌클릭 — 타겟 지정 / 변경 / 해제
         if (Input.GetMouseButtonDown(0))
         {
-            TryAttack();
-        }
-    }
+            Vector3 mouseWorld = GetMouseWorldPosition();
+            GameObject clicked = FindEnemyAtPosition(mouseWorld);
 
-    /// <summary>
-    /// 현재 공격이 가능한 상태인지 확인합니다.
-    /// </summary>
-    private bool CanAttack()
-    {
-        // 패리 경직 중
-        if (PlayerMoving.instance != null && PlayerMoving.instance.isParryRecovery)
-            return false;
-
-        // 넉백 중
-        if (PlayerMoving.instance != null && PlayerMoving.instance.isKnockedBack)
-            return false;
-
-        return true;
-    }
-
-    /// <summary>
-    /// 마우스 위치의 대상을 감지하고 커서를 업데이트합니다.
-    /// </summary>
-    private void UpdateCursorFeedback()
-    {
-        Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = 0f;
-
-        // 마우스 위치에서 공격 가능한 대상이 있는지 확인
-        GameObject target = FindTargetAtPosition(mouseWorldPos);
-
-        if (target != null)
-        {
-            float distance = Vector2.Distance(transform.position, target.transform.position);
-
-            if (distance <= attackRange && !IsOnCooldown())
+            if (clicked != null)
             {
-                // 공격 가능 — 공격 커서 표시
-                if (!cursorOverTarget)
+                if (currentTarget == clicked)
                 {
-                    cursorOverTarget = true;
-                    if (attackCursorTexture != null)
-                    {
-                        Cursor.SetCursor(attackCursorTexture, new Vector2(attackCursorTexture.width / 2f, attackCursorTexture.height / 2f), CursorMode.Auto);
-                    }
+                    SetTarget(null);
+                }
+                else
+                {
+                    SetTarget(clicked);
                 }
             }
             else
             {
-                // 사거리 밖 또는 쿨다운 — 비활성 커서
-                if (cursorOverTarget)
-                {
-                    cursorOverTarget = false;
-                    if (disabledCursorTexture != null)
-                    {
-                        Cursor.SetCursor(disabledCursorTexture, new Vector2(disabledCursorTexture.width / 2f, disabledCursorTexture.height / 2f), CursorMode.Auto);
-                    }
-                    else
-                    {
-                        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-                    }
-                }
+                SetTarget(null);
             }
         }
-        else
+
+        // 타겟이 죽었으면 해제
+        if (currentTarget != null && !currentTarget.activeInHierarchy)
         {
-            // 대상 없음 — 기본 커서 복원
-            if (cursorOverTarget)
+            SetTarget(null);
+        }
+
+        // 타겟의 스케일에 영향받지 않기 위해 부모 관계를 맺지 않고, 매 프레임 위치만 동기화합니다.
+        if (currentIndicator != null && currentTarget != null)
+        {
+            currentIndicator.transform.position = currentTarget.transform.position;
+        }
+
+        // 타겟이 있으면 자동 연사
+        if (currentTarget != null)
+        {
+            if (Time.time - lastAttackTime >= attackCooldown)
             {
-                cursorOverTarget = false;
-                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+                lastAttackTime = Time.time;
+                Shoot(currentTarget.transform.position);
+            }
+        }
+    }
+
+    private Vector3 GetMouseWorldPosition()
+    {
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = -mainCamera.transform.position.z;
+        Vector3 worldPos = mainCamera.ScreenToWorldPoint(mousePos);
+        worldPos.z = 0f;
+        return worldPos;
+    }
+
+    /// <summary>
+    /// 타겟을 지정/해제하고 인디케이터를 관리합니다.
+    /// </summary>
+    private void SetTarget(GameObject newTarget)
+    {
+        // 기존 인디케이터 제거
+        if (currentIndicator != null)
+            Destroy(currentIndicator);
+
+        currentTarget = newTarget;
+
+        // 새 타겟이 있으면 인디케이터 생성
+        if (currentTarget != null)
+        {
+            if (targetIndicatorPrefab != null)
+            {
+                // Inspector에 넣은 프리팹 사용 (부모 관계를 맺지 않고 월드 상에 생성)
+                currentIndicator = Instantiate(targetIndicatorPrefab, currentTarget.transform.position, Quaternion.identity);
+            }
+            else
+            {
+                // 기본: 빨간 원 표시 (부모 관계를 맺지 않고 월드 상에 생성)
+                currentIndicator = new GameObject("TargetIndicator");
+                currentIndicator.transform.position = currentTarget.transform.position;
+
+                SpriteRenderer sr = currentIndicator.AddComponent<SpriteRenderer>();
+                sr.sprite = CreateCircleSprite(64);
+                sr.color = new Color(1f, 0.2f, 0.2f, 0.4f);
+                sr.sortingLayerName = "Default";
+                sr.sortingOrder = -1;
+                currentIndicator.transform.localScale = Vector3.one * 2f;
             }
         }
     }
 
     /// <summary>
-    /// 클릭 시 공격을 시도합니다.
+    /// 클릭 위치에서 Enemy 태그를 가진 오브젝트를 찾습니다.
     /// </summary>
-    private void TryAttack()
+    private GameObject FindEnemyAtPosition(Vector3 worldPos)
     {
-        // 쿨다운 확인
-        if (IsOnCooldown()) return;
-
-        // 마우스 → 월드 좌표 변환
-        Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = 0f;
-
-        // 클릭 지점에서 대상 탐색
-        GameObject target = FindTargetAtPosition(mouseWorldPos);
-        if (target == null) return;
-
-        // 사거리 확인
-        float distance = Vector2.Distance(transform.position, target.transform.position);
-        if (distance > attackRange) return;
-
-        // 공격 실행!
-        PerformAttack(target);
-    }
-
-    /// <summary>
-    /// 주어진 월드 좌표에서 공격 가능한 대상을 탐색합니다.
-    /// Enemy 태그 또는 BreakableObject 컴포넌트가 있는 오브젝트를 반환합니다.
-    /// </summary>
-    private GameObject FindTargetAtPosition(Vector3 worldPos)
-    {
-        // 넓은 범위로 감지 (클릭 정밀도 향상을 위해 작은 원형 영역 사용)
-        Collider2D[] hits = Physics2D.OverlapCircleAll(worldPos, 0.5f);
-
-        GameObject bestTarget = null;
-        float bestDistance = float.MaxValue;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(worldPos, clickDetectRadius);
+        GameObject best = null;
+        float bestDist = float.MaxValue;
 
         foreach (var hit in hits)
         {
-            if (hit == null) continue;
-            if (!hit.gameObject.activeInHierarchy) continue;
+            if (hit == null || !hit.gameObject.activeInHierarchy) continue;
+            if (!hit.CompareTag("Enemy")) continue;
 
-            bool isValidTarget = false;
-
-            // Enemy 태그 확인
-            if (hit.CompareTag("Enemy"))
+            float dist = Vector2.Distance(worldPos, hit.transform.position);
+            if (dist < bestDist)
             {
-                isValidTarget = true;
-            }
-
-            // BreakableObject 컴포넌트 확인
-            if (!isValidTarget)
-            {
-                BreakableObject breakable = hit.GetComponent<BreakableObject>();
-                if (breakable != null)
-                {
-                    isValidTarget = true;
-                }
-            }
-
-            if (isValidTarget)
-            {
-                float dist = Vector2.Distance(worldPos, hit.transform.position);
-                if (dist < bestDistance)
-                {
-                    bestDistance = dist;
-                    bestTarget = hit.gameObject;
-                }
+                bestDist = dist;
+                best = hit.gameObject;
             }
         }
-
-        return bestTarget;
+        return best;
     }
 
-    /// <summary>
-    /// 대상을 향해 해킹 펄스 투사체를 발사합니다.
-    /// </summary>
-    private void PerformAttack(GameObject target)
+    private void Shoot(Vector3 targetPos)
     {
-        lastAttackTime = Time.time;
+        Vector2 direction = ((Vector2)targetPos - (Vector2)transform.position).normalized;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
 
-        // 1. 발사 이펙트 (작은 총구 플래시)
-        SpawnMuzzleFlash();
-
-        // 2. 사운드
-        if (attackFireSFX != null)
+        GameObject prefab = projectilePrefab;
+        if (prefab == null && PlayerShooting.instance != null)
+            prefab = PlayerShooting.instance.projectileObject;
+        if (prefab == null)
         {
-            AudioSource.PlayClipAtPoint(attackFireSFX, transform.position, attackFireVolume);
+            Debug.LogWarning("⚠️ [PlayerClickAttack] 투사체 프리팹이 비어있습니다! Inspector에서 Projectile Prefab 칸에 총알 프리팹을 넣어주세요.");
+            return;
         }
 
-        // 3. 해킹 펄스 투사체 생성
-        SpawnHackPulse(target);
+        GameObject bullet = Instantiate(prefab, transform.position, Quaternion.Euler(0, 0, angle));
 
-        // 4. 약한 히트스톱 (발사감)
-        if (HitStop.instance != null)
+        Projectile proj = bullet.GetComponent<Projectile>();
+        if (proj != null)
         {
-            HitStop.instance.Do(0.03f);
+            proj.enemyBullet = false;
+            proj.damage = attackDamage;
+            proj.destroyedByCollision = true;
         }
 
-        Debug.Log($"⚡ [클릭 공격] 대상: {target.name} 방향으로 해킹 펄스 발사!");
-    }
-
-    /// <summary>
-    /// 해킹 펄스 투사체를 생성하고 대상을 향해 발사합니다.
-    /// </summary>
-    private void SpawnHackPulse(GameObject target)
-    {
-        GameObject pulseObj = new GameObject("HackPulse");
-        pulseObj.transform.position = transform.position;
-
-        // HackPulseProjectile 컴포넌트 추가 및 설정
-        HackPulseProjectile pulse = pulseObj.AddComponent<HackPulseProjectile>();
-        pulse.target = target.transform;
-        pulse.damage = attackDamage;
-        pulse.speed = projectileSpeed;
-        pulse.color = projectileColor;
-        pulse.scale = projectileScale;
-        pulse.hitSFX = attackHitSFX;
-        pulse.hitSFXVolume = attackHitVolume;
-    }
-
-    /// <summary>
-    /// 플레이어 위치에서 작은 발사 이펙트를 생성합니다.
-    /// </summary>
-    private void SpawnMuzzleFlash()
-    {
-        StartCoroutine(MuzzleFlashRoutine());
-    }
-
-    private IEnumerator MuzzleFlashRoutine()
-    {
-        GameObject flashObj = new GameObject("MuzzleFlash");
-        flashObj.transform.position = transform.position;
-
-        SpriteRenderer sr = flashObj.AddComponent<SpriteRenderer>();
-        sr.sprite = CreateCircleSprite(32);
-        sr.sortingLayerName = "Default";
-        sr.sortingOrder = 55;
-        sr.color = new Color(projectileColor.r, projectileColor.g, projectileColor.b, 0.9f);
-        flashObj.transform.localScale = Vector3.one * muzzleFlashScale;
-
-        // 빠르게 확장 후 소멸
-        float elapsed = 0f;
-        float duration = 0.1f;
-
-        while (elapsed < duration)
+        DirectMoving dm = bullet.GetComponent<DirectMoving>();
+        if (dm != null)
         {
-            elapsed += Time.unscaledDeltaTime;
-            float t = elapsed / duration;
-
-            float scale = muzzleFlashScale * (1f + t * 1.5f);
-            flashObj.transform.localScale = new Vector3(scale, scale, 1f);
-
-            Color c = sr.color;
-            c.a = Mathf.Lerp(0.9f, 0f, t);
-            sr.color = c;
-
-            yield return null;
+            dm.speed = projectileSpeed;
+            dm.isHoming = false;
+            dm.homingTargetEnemy = false;
+            dm.aimAtPlayerOnStart = false;
+            dm.visualAngleOffset = 0f;
         }
 
-        Destroy(flashObj);
-    }
+        bullet.tag = "Projectile";
 
-    private bool IsOnCooldown()
-    {
-        return (Time.time - lastAttackTime) < attackCooldown;
+        // 타겟 지점에 도달하면 소멸
+        float distance = Vector2.Distance(transform.position, targetPos);
+        Destroy(bullet, distance / projectileSpeed);
     }
 
     /// <summary>
-    /// 절차적으로 원형 스프라이트를 생성합니다. (외부 에셋 불필요)
+    /// 절차적으로 원형 스프라이트를 생성합니다.
     /// </summary>
     public static Sprite CreateCircleSprite(int size)
     {
@@ -344,9 +231,8 @@ public class PlayerClickAttack : MonoBehaviour
                 float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
                 if (dist <= maxRadius)
                 {
-                    // 중심이 밝고 가장자리가 투명한 부드러운 원
                     float alpha = 1f - (dist / maxRadius);
-                    alpha = alpha * alpha; // 제곱으로 더 부드러운 페이드
+                    alpha = alpha * alpha;
                     texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
                 }
                 else
@@ -357,14 +243,5 @@ public class PlayerClickAttack : MonoBehaviour
         }
         texture.Apply();
         return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
-    }
-
-    /// <summary>
-    /// 에디터에서 사거리를 시각화합니다.
-    /// </summary>
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = new Color(0f, 0.8f, 1f, 0.15f);
-        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

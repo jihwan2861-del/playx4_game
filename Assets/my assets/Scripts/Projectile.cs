@@ -28,6 +28,11 @@ public class Projectile : MonoBehaviour {
         else if (!enemyBullet && collision.tag == "Enemy")
         {
             Enemy enemy = collision.GetComponent<Enemy>();
+            if (enemy == null)
+            {
+                enemy = collision.GetComponentInParent<Enemy>();
+            }
+
             if (enemy != null)
             {
                 enemy.GetDamage(damage);
@@ -35,6 +40,10 @@ public class Projectile : MonoBehaviour {
 
             // 부숴지는 오브젝트(BreakableObject)에도 데미지 적용
             BreakableObject breakable = collision.GetComponent<BreakableObject>();
+            if (breakable == null)
+            {
+                breakable = collision.GetComponentInParent<BreakableObject>();
+            }
             if (breakable != null)
             {
                 breakable.TakeDamage(damage);

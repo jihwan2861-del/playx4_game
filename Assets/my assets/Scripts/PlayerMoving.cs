@@ -245,8 +245,8 @@ public class PlayerMoving : MonoBehaviour {
                 UpdateEnergyUI();
             }
 
-            // 패링 발동 입력 받기 (스페이스바 또는 마우스 우클릭)
-            bool parryPressed = Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(1);
+            // 패링 발동 입력 받기 (스페이스바)
+            bool parryPressed = Input.GetKeyDown(KeyCode.Space);
 
             if (parryPressed && !isParryActive && !isParryCooldown && !isParryRecovery)
             {
@@ -469,6 +469,12 @@ public class PlayerMoving : MonoBehaviour {
         SpawnCounterProjectiles();
 
         Debug.Log("🛡️ [패링 성공!] 탄막 제거, 유도 미사일 5발 반격, 에너지 회복!");
+
+        if (ParryCounterTrigger.instance != null && ParryCounterTrigger.instance.enabled)
+        {
+            ParryCounterTrigger.instance.OnParrySuccess();
+        }
+
         return true;
     }
 
