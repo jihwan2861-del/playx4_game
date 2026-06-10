@@ -36,11 +36,35 @@ public class PlayerClickAttack : MonoBehaviour
     private float lastAttackTime = -999f;
     private Camera mainCamera;
 
+    [Header("=== 효과음 설정 (Sound Effects) ===")]
+    [Tooltip("발사 시 재생할 효과음")]
+    public AudioClip shootSound;
+    [Tooltip("소리 재생용 오디오 소스 (비워두면 자동으로 찾거나 생성합니다)")]
+    public AudioSource audioSource;
+    [Range(0f, 1f)]
+    [Tooltip("발사 효과음 볼륨")]
+    public float shootVolume = 0.5f;
+
     public static PlayerClickAttack instance;
 
     private void Awake()
     {
         if (instance == null) instance = this;
+
+        // AudioSource 자동 캐싱 및 기본 세팅
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+        }
+        if (audioSource != null)
+        {
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
+        }
     }
 
     private void Start()
@@ -174,6 +198,12 @@ public class PlayerClickAttack : MonoBehaviour
 
     private void Shoot(Vector3 targetPos)
     {
+        // 🔊 투사체 발사 효과음 재생
+        if (shootSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(shootSound, shootVolume);
+        }
+
         Vector2 direction = ((Vector2)targetPos - (Vector2)transform.position).normalized;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
 

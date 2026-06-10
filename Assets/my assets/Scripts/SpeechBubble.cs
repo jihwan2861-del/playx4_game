@@ -34,6 +34,18 @@ public class SpeechBubble : MonoBehaviour
     [Tooltip("ShowDialogueInspector로 대사를 띄웠을 때, 타이핑이 완료되고 몇 초 후에 자동으로 닫을지 지정 (0 이하이면 닫히지 않고 계속 유지됨)")]
     public float defaultAutoCloseDelay = 2.0f;
 
+    [Header("=== 타이핑 효과음 (Typing SFX) ===")]
+    [Tooltip("글자가 타이핑될 때 재생할 효과음 클립")]
+    public AudioClip typingSound;
+    [Tooltip("효과음 재생용 오디오 소스 (비워두면 컴포넌트에서 자동으로 찾거나 생성합니다)")]
+    public AudioSource audioSource;
+    [Range(0f, 1f)]
+    [Tooltip("타이핑 효과음 볼륨")]
+    public float typingVolume = 0.5f;
+    [Range(1, 5)]
+    [Tooltip("소리가 너무 촘촘하게 나는 것을 방지하기 위해 몇 글자마다 소리를 낼지 지정 (기본값: 2 = 두 글자마다)")]
+    public int soundInterval = 2;
+
     private Coroutine typingCoroutine;
     private Vector3 originalScale = Vector3.one;
 
@@ -49,6 +61,21 @@ public class SpeechBubble : MonoBehaviour
         if (bubbleBackground != null)
         {
             originalScale = bubbleBackground.localScale;
+        }
+
+        // AudioSource 자동 캐싱 및 셋업
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+        }
+        if (audioSource != null)
+        {
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
         }
 
         // 시작할 때는 보이지 않게 꺼둠
@@ -146,6 +173,16 @@ public class SpeechBubble : MonoBehaviour
                     if (i > 0 && i - 1 < textComponent.textInfo.characterInfo.Length)
                     {
                         char c = textComponent.textInfo.characterInfo[i - 1].character;
+                        
+                        // 타이핑 효과음 재생 (공백 제외 및 글자 간격 체크)
+                        if (typingSound != null && audioSource != null && c != ' ' && c != '\n' && c != '\r')
+                        {
+                            if (i % soundInterval == 0)
+                            {
+                                audioSource.PlayOneShot(typingSound, typingVolume);
+                            }
+                        }
+
                         if (c == '.')
                         {
                             delay = typeSpeed * dotDelayMultiplier;
@@ -175,6 +212,15 @@ public class SpeechBubble : MonoBehaviour
                     char c = characters[i];
                     currentText += c;
                     textComponent.text = currentText;
+
+                    // 타이핑 효과음 재생 (공백 제외 및 글자 간격 체크)
+                    if (typingSound != null && audioSource != null && c != ' ' && c != '\n' && c != '\r')
+                    {
+                        if (i % soundInterval == 0)
+                        {
+                            audioSource.PlayOneShot(typingSound, typingVolume);
+                        }
+                    }
 
                     float delay = typeSpeed;
 

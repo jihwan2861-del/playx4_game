@@ -231,8 +231,8 @@ Material:
     - _ColorChangeTarget2: {r: 1, g: 0, b: 0, a: 1}
     - _ColorChangeTarget3: {r: 1, g: 0, b: 0, a: 1}
     - _ColorSwapBlue: {r: 0, g: 0.42489317, b: 0.5754717, a: 1}
-    - _ColorSwapGreen: {r: 0.14578143, g: 0.7924528, b: 0.2497967, a: 1}
-    - _ColorSwapRed: {r: 0.6509434, g: 0.027634379, b: 0.027634379, a: 1}
+    - _ColorSwapGreen: {r: 0.41509432, g: 0.30696204, b: 0.2956568, a: 1}
+    - _ColorSwapRed: {r: 0.21729289, g: 0.6792453, b: 0.13777146, a: 1}
     - _FadeBurnColor: {r: 1, g: 1, b: 1, a: 1}
     - _GlowColor: {r: 0, g: 0, b: 0, a: 1}
     - _GradBotLeftCol: {r: 0, g: 0, b: 1, a: 1}

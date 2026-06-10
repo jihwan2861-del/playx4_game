@@ -28,6 +28,18 @@ public class NarrationUI : MonoBehaviour
     [Tooltip("쉼표 (,), 느낌표 (!), 물음표 (?)가 찍혔을 때 타이핑 대기 배율")]
     public float punctuationDelayMultiplier = 3.0f;
 
+    [Header("=== 타이핑 효과음 (Typing SFX) ===")]
+    [Tooltip("글자가 타이핑될 때 재생할 효과음 클립")]
+    public AudioClip typingSound;
+    [Tooltip("효과음 재생용 오디오 소스 (비워두면 컴포넌트에서 자동으로 찾거나 생성합니다)")]
+    public AudioSource audioSource;
+    [Range(0f, 1f)]
+    [Tooltip("타이핑 효과음 볼륨")]
+    public float typingVolume = 0.5f;
+    [Range(1, 5)]
+    [Tooltip("소리가 너무 촘촘하게 나는 것을 방지하기 위해 몇 글자마다 소리를 낼지 지정 (기본값: 2 = 두 글자마다)")]
+    public int soundInterval = 2;
+
     private Coroutine activeCoroutine;
     private Color originalColor;
 
@@ -49,6 +61,21 @@ public class NarrationUI : MonoBehaviour
             // 시작할 때는 완전히 안 보이게 투명하게 설정
             SetTextAlpha(0f);
             textComponent.text = "";
+        }
+
+        // AudioSource 자동 캐싱 및 셋업
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+        }
+        if (audioSource != null)
+        {
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
         }
     }
 
@@ -115,6 +142,15 @@ public class NarrationUI : MonoBehaviour
             char c = characters[i];
             currentText += c;
             textComponent.text = currentText;
+
+            // 타이핑 효과음 재생 (공백 제외 및 글자 간격 체크)
+            if (typingSound != null && audioSource != null && c != ' ' && c != '\n' && c != '\r')
+            {
+                if (i % soundInterval == 0)
+                {
+                    audioSource.PlayOneShot(typingSound, typingVolume);
+                }
+            }
 
             float delay = typeSpeed;
             if (c == '.')

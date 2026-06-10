@@ -66,6 +66,10 @@ public class DialoguePlayer : MonoBehaviour
     [Tooltip("대사 재생 중에 PlayerAutoMove 자동 주행을 자동으로 일시정지 시킬지 여부")]
     public bool pauseAutoMoveDuringDialogue = true;
 
+    [Header("=== 대화 완료 이벤트 ===")]
+    [Tooltip("모든 대사 시퀀스가 종료되고 UI가 완전히 꺼진 직후 실행할 인스펙터 이벤트")]
+    public UnityEngine.Events.UnityEvent onDialogueFinished;
+
     private Coroutine dialogueCoroutine;
 
     /// <summary>
@@ -254,5 +258,8 @@ public class DialoguePlayer : MonoBehaviour
         {
             autoMove.ResumeMove();
         }
+
+        // 🏁 대화 완료 이벤트 호출
+        onDialogueFinished?.Invoke();
     }
 }

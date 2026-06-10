@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ClickCursorChanger : MonoBehaviour
 {
-    // ½Ì±ÛÅæ ÀÎ½ºÅÏ½º (¾îµğ¼­µç Á¢±Ù °¡´É)
+    // ì‹±ê¸€í†¤ ì¸ìŠ¤í„´ìŠ¤ (ì–´ë””ì„œë“  ì ‘ê·¼ ê°€ëŠ¥)
     public static ClickCursorChanger instance;
 
     [Header("Cursor Textures")]
@@ -17,15 +17,15 @@ public class ClickCursorChanger : MonoBehaviour
 
     void Awake()
     {
-        // ¾ÀÀ» ÀÌµ¿ÇØµµ ¸¶¿ì½º ¸Å´ÏÀú°¡ ÆÄ±«µÇÁö ¾Ê°í °è¼Ó À¯ÁöµÇµµ·Ï ¼³Á¤
+        // ì”¬ì„ ì´ë™í•´ë„ ë§ˆìš°ìŠ¤ ë§¤ë‹ˆì €ê°€ íŒŒê´´ë˜ì§€ ì•Šê³  ê³„ì† ìœ ì§€ë˜ë„ë¡ ì„¤ì •
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject); // ÀÌ ¿ÀºêÁ§Æ®¸¦ ¿µ±¸ º¸Á¸
+            DontDestroyOnLoad(gameObject); // ì´ ì˜¤ë¸Œì íŠ¸ë¥¼ ì˜êµ¬ ë³´ì¡´
         }
         else
         {
-            Destroy(gameObject); // ÀÌ¹Ì ¸¶¿ì½º ¸Å´ÏÀú°¡ ´Ù¸¥ ¾À¿¡¼­ ³Ñ¾î¿Ô´Ù¸é, Áßº¹ »ı¼ºÀ» ¸·±â À§ÇØ ½º½º·Î ÆÄ±«
+            Destroy(gameObject); // ì´ë¯¸ ë§ˆìš°ìŠ¤ ë§¤ë‹ˆì €ê°€ ë‹¤ë¥¸ ì”¬ì—ì„œ ë„˜ì–´ì™”ë‹¤ë©´, ì¤‘ë³µ ìƒì„±ì„ ë§‰ê¸° ìœ„í•´ ìŠ¤ìŠ¤ë¡œ íŒŒê´´
             return;
         }
     }
@@ -38,7 +38,7 @@ public class ClickCursorChanger : MonoBehaviour
 
     void Update()
     {
-        // ¸Å ¾À¸¶´Ù ¸ŞÀÎ Ä«¸Ş¶ó°¡ ¹Ù²ğ ¼ö ÀÖÀ¸¹Ç·Î °»½ÅÇØ Áİ´Ï´Ù.
+        // ë§¤ ì”¬ë§ˆë‹¤ ë©”ì¸ ì¹´ë©”ë¼ê°€ ë°”ë€” ìˆ˜ ìˆìœ¼ë¯€ë¡œ ê°±ì‹ í•´ ì¤ë‹ˆë‹¤.
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
@@ -86,11 +86,16 @@ public class ClickCursorChanger : MonoBehaviour
         return false;
     }
 
+    private Texture2D lastSetTexture = null;
+
     private void SetCursorTexture(Texture2D tex)
     {
-        if (tex != null)
-        {
-            Cursor.SetCursor(tex, hotSpot, CursorMode.Auto);
-        }
+        if (tex == null) return;
+
+        // ğŸš€ ì„±ëŠ¥ ìµœì í™”: ì´ì „ í”„ë ˆì„ê³¼ ë™ì¼í•œ í…ìŠ¤ì²˜ë¼ë©´ ì¤‘ë³µ ì„¸íŒ…ì„ ê±´ë„ˆëœë‹ˆë‹¤.
+        if (lastSetTexture == tex) return;
+
+        Cursor.SetCursor(tex, hotSpot, CursorMode.Auto);
+        lastSetTexture = tex;
     }
 }

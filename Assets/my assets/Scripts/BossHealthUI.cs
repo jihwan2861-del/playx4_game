@@ -63,39 +63,9 @@ public class BossHealthUI : MonoBehaviour
                 SetTextAndColor(bossNameTextObj, bossName, textColor);
             }
         }
-        else if (dummy != null && dummy.isHackingMode)
-        {
-            float current = dummy.currentHealth;
-            float max = dummy.maxHealth;
-            float ratio = Mathf.Clamp01(current / max);
-            int percent = Mathf.CeilToInt(ratio * 100);
-
-            // 체력이 0 이하가 되면 즉시 UI 모두 숨기기
-            if (percent <= 0)
-            {
-                SetUIActive(false);
-                return;
-            }
-
-            // 튜토리얼 더미가 해킹 모드라면 똑같이 UI 켜기!
-            SetUIActive(true);
-
-            if (healthBarFill != null) healthBarFill.fillAmount = percent / 100f;
-            
-            // 더미 쪽에서 해킹 중일 때는 체력이 깎이고 있을 테니 초록색이나 민트색으로 표시
-            bool isBeingHacked = Vector3.Distance(dummy.transform.position, Player.instance.transform.position) <= dummy.hackingRadius;
-            Color textColor = isBeingHacked ? Color.cyan : Color.white;
-
-            SetTextAndColor(healthPercentageTextObj, $"{percent}%", textColor);
-
-            if (bossNameTextObj != null)
-            {
-                SetTextAndColor(bossNameTextObj, "TUTORIAL BOT", textColor);
-            }
-        }
         else
         {
-            // 보스도 없고 해킹용 더미도 없으면 UI 숨김
+            // 보스가 없으면 UI 숨김
             SetUIActive(false);
         }
     }

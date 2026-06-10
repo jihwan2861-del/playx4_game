@@ -23,6 +23,15 @@ public class WaypointEvent
 /// </summary>
 public class PlayerAutoMove : MonoBehaviour
 {
+    [Header("=== 자동 주행 효과음 (Auto Move SFX) ===")]
+    [Tooltip("자동 주행 중에 재생할 오토바이/탈것 소리 클립")]
+    public AudioClip autoMoveSound;
+    [Tooltip("소리 재생용 오디오 소스 (비워두면 자동으로 찾거나 생성합니다)")]
+    public AudioSource audioSource;
+    [Range(0f, 1f)]
+    [Tooltip("효과음 볼륨")]
+    public float soundVolume = 0.5f;
+
     [Header("=== 자동 시작 설정 ===")]
     [Tooltip("게임 시작 시 자동으로 목적지 경로로 주행을 시작할지 여부")]
     public bool autoStartOnPlay = false;
@@ -58,6 +67,21 @@ public class PlayerAutoMove : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        // AudioSource 자동 캐싱 및 기본 셋업
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+        }
+        if (audioSource != null)
+        {
+            audioSource.playOnAwake = false;
+            audioSource.loop = true;
+        }
     }
 
     private void Start()
@@ -258,6 +282,42 @@ public class PlayerAutoMove : MonoBehaviour
             // 최종 완료 콜백 및 이벤트 발동
             onArrivedCallback?.Invoke();
             onArrivedEvent?.Invoke();
+        }
+    }
+
+    private void Update()
+    {
+        HandleAutoMoveSound();
+    }
+
+    private void HandleAutoMoveSound()
+    {
+        if (audioSource == null || autoMoveSound == null) return;
+
+        // 오직 자동 주행 중이고 일시 정지 상태가 아닐 때만 소리 재생
+        bool shouldPlay = isAutoMoving && !isPaused;
+
+        if (shouldPlay)
+        {
+            if (audioSource.clip != autoMoveSound)
+            {
+                audioSource.clip = autoMoveSound;
+            }
+            
+            if (!audioSource.isPlaying)
+            {
+                audioSource.volume = soundVolume;
+                audioSource.Play();
+                Debug.Log("🏍️ [PlayerAutoMove] 자동 주행 오토바이 소리 시작");
+            }
+        }
+        else
+        {
+            if (audioSource.isPlaying)
+            {
+                audioSource.Stop();
+                Debug.Log("🛑 [PlayerAutoMove] 자동 주행 멈춤 - 오토바이 소리 즉시 정지");
+            }
         }
     }
 }

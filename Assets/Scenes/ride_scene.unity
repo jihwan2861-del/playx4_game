@@ -2879,6 +2879,7 @@ GameObject:
   - component: {fileID: 187762122}
   - component: {fileID: 187762121}
   - component: {fileID: 187762124}
+  - component: {fileID: 187762125}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2977,6 +2978,102 @@ MonoBehaviour:
   offset: {x: 0, y: 0, z: 0}
   followXOnly: 0
   followYOnly: 0
+--- !u!82 &187762125
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187762120}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &217217363
 GameObject:
   m_ObjectHideFlags: 0
@@ -128352,8 +128449,8 @@ MonoBehaviour:
   - "\uC800\uBC88\uC5D0 \uC2A4\uCE94\uC5D0\uC11C \uC774\uC0C1\uD55C \uBC18\uC751\uC774
     \uB5B3\uC5C8\uB294\uB370..."
   detailedDialogues: []
-  delayBetweenDialogues: 1
-  lastDialogueCloseDelay: 2
+  delayBetweenDialogues: 2
+  lastDialogueCloseDelay: 3
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
@@ -128426,6 +128523,10 @@ MonoBehaviour:
   typeSpeed: 0.07
   dotDelayMultiplier: 4.5
   punctuationDelayMultiplier: 3
+  typingSound: {fileID: 8300000, guid: 58f2e1e781bb7284989d20f5380ee671, type: 3}
+  audioSource: {fileID: 0}
+  typingVolume: 0.5
+  soundInterval: 1
 --- !u!1 &420890584
 GameObject:
   m_ObjectHideFlags: 0
@@ -128543,8 +128644,8 @@ MonoBehaviour:
   - "\uC751? \uB808\uC774\uB354\uC5D0 \uACBD\uACE0\uC74C...? \uBB50\uC9C0?"
   - "\uC774 \uAD6C\uC5ED\uC740 \uBA87 \uBC88\uC774\uB098 \uC0C5\uC0C5\uC774 \uC2A4\uCE94\uD588\uB294\uB370...."
   detailedDialogues: []
-  delayBetweenDialogues: 1.5
-  lastDialogueCloseDelay: 2
+  delayBetweenDialogues: 2
+  lastDialogueCloseDelay: 3
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
@@ -250832,8 +250933,8 @@ MonoBehaviour:
   - "\uD655\uC778\uD574\uBCFC \uAC00\uCE58\uAC00 \uC788\uACA0\uC5B4. \uC2E0\uD638\uC758
     \uBC1C\uC2E0\uC9C0\uB294... \uC774 \uC544\uB798\uC778\uAC00?"
   detailedDialogues: []
-  delayBetweenDialogues: 1.5
-  lastDialogueCloseDelay: 2
+  delayBetweenDialogues: 2
+  lastDialogueCloseDelay: 3
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
@@ -254779,6 +254880,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54648ee4a683e7a4c921c05eaae194f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  autoMoveSound: {fileID: 8300000, guid: df9eed0e2a127c147a1a6d8bae19cbc1, type: 3}
+  audioSource: {fileID: 0}
+  soundVolume: 0.257
   autoStartOnPlay: 1
   autoStartTargets:
   - targetTransform: {fileID: 2001061894}
@@ -255102,10 +255206,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textComponent: {fileID: 828616515}
   bubbleBackground: {fileID: 1286923484}
-  typeSpeed: 0.05
+  typeSpeed: 0.07
   dotDelayMultiplier: 4.5
   punctuationDelayMultiplier: 3
-  defaultAutoCloseDelay: 2
+  defaultAutoCloseDelay: 3
+  typingSound: {fileID: 8300000, guid: 58f2e1e781bb7284989d20f5380ee671, type: 3}
+  audioSource: {fileID: 0}
+  typingVolume: 0.5
+  soundInterval: 1
 --- !u!1 &1798086107
 GameObject:
   m_ObjectHideFlags: 0
@@ -377650,8 +377758,8 @@ MonoBehaviour:
   - "\uBB38\uBA85\uC740 \uC21C\uC2DD\uAC04\uC5D0 \uBD95\uAD34\uD588\uACE0, \uC9C0\uAD6C\uB294
     \uAC70\uB300\uD55C \uD3D0\uD5C8\uC640 \uD669\uBB34\uC9C0\uB85C \uBCC0\uD574\uBC84\uB838\uB2E4..."
   detailedDialogues: []
-  delayBetweenDialogues: 1.5
-  lastDialogueCloseDelay: 2
+  delayBetweenDialogues: 2
+  lastDialogueCloseDelay: 3
   useNarrationMode: 1
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 0
