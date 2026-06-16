@@ -43,7 +43,14 @@ public class TutorialController : MonoBehaviour
     {
         Debug.Log($"🎬 [TutorialController] 씬 전환을 시도합니다: -> {sceneName}");
         Time.timeScale = 1f;
-        SceneManager.LoadScene(sceneName);
+        if (GameTransitionManager.instance != null)
+        {
+            GameTransitionManager.instance.TriggerTransition(sceneName);
+        }
+        else
+        {
+            SceneManager.LoadScene(sceneName);
+        }
     }
 
     /// <summary>

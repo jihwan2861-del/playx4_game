@@ -65,7 +65,14 @@ public class SceneTransitionTrigger : MonoBehaviour
         }
 
         Debug.Log($"🎬 [SceneTransitionTrigger] TriggerTransition() 호출! '{sceneToLoad}' 씬을 로드합니다.");
-        SceneManager.LoadScene(sceneToLoad);
+        if (GameTransitionManager.instance != null)
+        {
+            GameTransitionManager.instance.TriggerTransition(sceneToLoad);
+        }
+        else
+        {
+            SceneManager.LoadScene(sceneToLoad);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -79,7 +86,14 @@ public class SceneTransitionTrigger : MonoBehaviour
             }
 
             Debug.Log($"🎬 [SceneTransitionTrigger] 플레이어 감지! '{sceneToLoad}' 씬을 로드합니다.");
-            SceneManager.LoadScene(sceneToLoad);
+            if (GameTransitionManager.instance != null)
+            {
+                GameTransitionManager.instance.TriggerTransition(sceneToLoad);
+            }
+            else
+            {
+                SceneManager.LoadScene(sceneToLoad);
+            }
         }
     }
 }

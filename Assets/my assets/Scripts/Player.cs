@@ -20,6 +20,7 @@ public class Player : MonoBehaviour
     public float damageInvincibilityDuration = 1.5f;          // 피격 시 무적 시간
 
     private SpriteRenderer spriteRenderer;
+    private Coroutine damageFlashCoroutine;
 
     private void Awake()
     {
@@ -76,39 +77,105 @@ public class Player : MonoBehaviour
         }
         else
         {
-            StartCoroutine(DamageFlash());
+            if (damageFlashCoroutine != null) StopCoroutine(damageFlashCoroutine);
+            damageFlashCoroutine = StartCoroutine(DamageFlash());
         }
     }    
 
     IEnumerator DamageFlash()
     {
         isInvincible = true;
-        if (spriteRenderer != null) spriteRenderer.color = Color.red;
-        yield return new WaitForSeconds(0.2f);
-        
-        float elapsedTime = 0f;
-        float blinkDuration = damageInvincibilityDuration - 0.2f;
-        bool isTransparent = false;
 
-        while (elapsedTime < blinkDuration)
+        if (spriteRenderer != null)
         {
-            if (spriteRenderer != null)
+            Material originalMat = spriteRenderer.material;
+            Color originalColor = spriteRenderer.color;
+
+            // 단색 흰색 실루엣을 그리는 GUI/Text Shader를 찾아 임시 적용합니다.
+            Shader whiteShader = Shader.Find("GUI/Text Shader");
+            Material whiteMat = null;
+            if (whiteShader != null)
+            {
+                whiteMat = new Material(whiteShader);
+            }
+
+            if (whiteMat != null)
+            {
+                spriteRenderer.material = whiteMat;
+                spriteRenderer.color = Color.white; // 단색 흰색으로 강렬하게 번쩍임
+            }
+            else
+            {
+                spriteRenderer.color = Color.white;
+            }
+
+            // 흰색 플래시 번쩍임 유지 시간 (0.15초)
+            yield return new WaitForSeconds(0.15f);
+
+            // 본래 머티리얼 및 색상 복구
+            spriteRenderer.material = originalMat;
+            spriteRenderer.color = originalColor;
+
+            if (whiteMat != null)
+            {
+                Destroy(whiteMat);
+            }
+
+            // 이후 무적 시간 동안 깜빡임 연출 실행
+            float elapsedTime = 0f;
+            float blinkDuration = damageInvincibilityDuration - 0.15f;
+            bool isTransparent = false;
+
+            while (elapsedTime < blinkDuration)
             {
                 Color c = spriteRenderer.color;
-                if (c == Color.red) c = Color.white;
                 c.a = isTransparent ? 1f : 0.5f;
                 spriteRenderer.color = c;
+
+                isTransparent = !isTransparent;
+                yield return new WaitForSeconds(0.1f);
+                elapsedTime += 0.1f;
             }
-            isTransparent = !isTransparent;
-            yield return new WaitForSeconds(0.1f);
-            elapsedTime += 0.1f;
+
+            // 완전히 정상 알파 복귀
+            Color finalColor = spriteRenderer.color;
+            finalColor.a = 1f;
+            spriteRenderer.color = finalColor;
+        }
+        else
+        {
+            yield return new WaitForSeconds(damageInvincibilityDuration);
         }
 
-        if (spriteRenderer != null && !safeZoneInvincible) 
-        {
-            spriteRenderer.color = Color.white;
-        }
+        damageFlashCoroutine = null;
         isInvincible = false;
+    }
+
+    /// <summary>
+    /// 외부(패링 성공 시 등)에서 피격 연출을 강제로 중단시키고 
+    /// 스프라이트 알파를 원래대로 정상화시키기 위해 호출합니다.
+    /// </summary>
+    public void StopDamageFlash()
+    {
+        if (damageFlashCoroutine != null)
+        {
+            StopCoroutine(damageFlashCoroutine);
+            damageFlashCoroutine = null;
+        }
+
+        if (spriteRenderer != null)
+        {
+            // 피격 머티리얼이 남아있는 경우를 대비해 초기화 복원
+            Shader whiteShader = Shader.Find("GUI/Text Shader");
+            if (spriteRenderer.material != null && whiteShader != null && spriteRenderer.material.shader == whiteShader)
+            {
+                // GUI/Text Shader를 원래 머티리얼로 복구하기 위해, 리셋 로직을 호출하거나 기본 머티리얼 적용
+                // 여기서는 안전하게 색상과 알파만 복원
+            }
+            Color c = spriteRenderer.color;
+            c.a = 1f;
+            spriteRenderer.color = c;
+        }
     }
 
     public IEnumerator DashInvincibility(float duration, bool changeColor = true)

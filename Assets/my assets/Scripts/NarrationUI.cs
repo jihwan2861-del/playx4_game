@@ -100,7 +100,11 @@ public class NarrationUI : MonoBehaviour
         {
             StopCoroutine(activeCoroutine);
         }
-        activeCoroutine = StartCoroutine(CloseRoutine(delay));
+        
+        if (gameObject.activeInHierarchy)
+        {
+            activeCoroutine = StartCoroutine(CloseRoutine(delay));
+        }
     }
 
     private IEnumerator ShowRoutine(string fullText, Action onComplete)

@@ -12,9 +12,16 @@ public class MainMenuManager : MonoBehaviour
         // 시간 배속을 원래대로 돌려놓습니다. (정상 스케일 보장)
         Time.timeScale = 1f; 
 
-        Debug.Log($"[MainMenuManager] 게임 기동 완료. 복잡한 메인 UI를 건너뛰고 [{gameSceneName}]으로 즉시 진입합니다!");
+        Debug.Log($"[MainMenuManager] 게임 기동 완료. [{gameSceneName}]으로 페이드 아웃하며 진입합니다!");
         
-        // 씬 로딩 지연 없이 곧바로 허브 씬(또는 지정된 씬)으로 텔레포트합니다.
-        SceneManager.LoadScene(gameSceneName);
+        // GameTransitionManager를 통해 부드러운 페이드 아웃/인 전환을 거쳐 텔레포트합니다.
+        if (GameTransitionManager.instance != null)
+        {
+            GameTransitionManager.instance.TriggerTransition(gameSceneName);
+        }
+        else
+        {
+            SceneManager.LoadScene(gameSceneName);
+        }
     }
 }

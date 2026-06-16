@@ -124,7 +124,10 @@ public class SpeechBubble : MonoBehaviour
     /// </summary>
     public void Close(float delay = 0f)
     {
-        StartCoroutine(CloseRoutine(delay));
+        if (gameObject.activeInHierarchy)
+        {
+            StartCoroutine(CloseRoutine(delay));
+        }
     }
 
     private IEnumerator TypeTextRoutine(string fullText, bool isEffectSound, List<int> shakeIndices, System.Action onComplete)

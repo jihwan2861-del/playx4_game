@@ -19,13 +19,50 @@ public class DeveloperSpeedController : MonoBehaviour
 
     private void Update()
     {
+        // 🤖 T 키를 누르면 씬 상에 존재하는 모든 TutorialDummy 오브젝트를 즉시 제거
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            TutorialDummy[] dummies = FindObjectsOfType<TutorialDummy>();
+            foreach (var dummy in dummies)
+            {
+                if (dummy != null)
+                {
+                    Destroy(dummy.gameObject);
+                }
+            }
+            Debug.Log($"🛠️ [개발자 치트] T 키 입력 - {dummies.Length}개의 더미봇을 제거했습니다.");
+        }
+
         // 🚀 숫자 1 키를 누르면 타임스케일을 1배속으로 원복하고 game_Scene 씬으로 즉시 전환
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Time.timeScale = 1.0f;
             Time.fixedDeltaTime = 0.02f;
-            SceneManager.LoadScene("game_Scene");
+            if (GameTransitionManager.instance != null)
+            {
+                GameTransitionManager.instance.TriggerTransition("game_Scene");
+            }
+            else
+            {
+                SceneManager.LoadScene("game_Scene");
+            }
             Debug.Log("🔄 [개발자 치트] 1번 키 입력 - game_Scene 씬으로 즉시 이동합니다.");
+        }
+
+        // 🔄 H 키를 누르면 타임스케일을 1배속으로 원복하고 Hub_Scene 씬으로 즉시 전환
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            Time.timeScale = 1.0f;
+            Time.fixedDeltaTime = 0.02f;
+            if (GameTransitionManager.instance != null)
+            {
+                GameTransitionManager.instance.TriggerTransition("Hub_Scene");
+            }
+            else
+            {
+                SceneManager.LoadScene("Hub_Scene");
+            }
+            Debug.Log("🔄 [개발자 치트] H번 키 입력 - Hub_Scene 씬으로 즉시 이동합니다.");
         }
 
         // F1~F4 키를 눌러 타임스케일(배속) 조절

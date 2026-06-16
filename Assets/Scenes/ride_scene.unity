@@ -128443,17 +128443,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogues:
-  - "\uC774 \uD669\uD3D0\uD574\uC9C4 \uD3D0\uD5C8 \uC18D\uC5D0\uC11C \uC4F8\uB9CC\uD55C
-    \uBD80\uD488\uC744 \uCC3E\uC544 \uC5F0\uBA85\uD558\uB294 \uAC83\uB3C4 \uC2AC\uC2AC
-    \uD55C\uACC4\uAD70."
-  - "\uC800\uBC88\uC5D0 \uC2A4\uCE94\uC5D0\uC11C \uC774\uC0C1\uD55C \uBC18\uC751\uC774
-    \uB5B3\uC5C8\uB294\uB370..."
+  - "\uC9D1\uC5D0\uC11C \uBD24\uC744\uB550 \uBD84\uBA85\uD788 \uBB54\uAC00 \uC2E0\uD638\uAC00
+    \uC788\uC5C8\uB294\uB370...."
+  - "\uC774\uB7F0 \uD669\uD398\uD55C\uACF3\uC5D0 \uBB50\uAC00 \uC788\uAE34\uD55C\uAC78\uAE4C?...."
   detailedDialogues: []
   delayBetweenDialogues: 2
   lastDialogueCloseDelay: 3
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
+  onDialogueFinished:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &364196970
 Transform:
   m_ObjectHideFlags: 0
@@ -128642,13 +128643,17 @@ MonoBehaviour:
   - "<color=red>#@$(\uC090- \uC090-! \uB808\uC774\uB354 \uC774\uC0C1 \uC2E0\uD638
     \uBC1C\uC0DD)"
   - "\uC751? \uB808\uC774\uB354\uC5D0 \uACBD\uACE0\uC74C...? \uBB50\uC9C0?"
-  - "\uC774 \uAD6C\uC5ED\uC740 \uBA87 \uBC88\uC774\uB098 \uC0C5\uC0C5\uC774 \uC2A4\uCE94\uD588\uB294\uB370...."
+  - "\uC800\uBC88\uC5D0 \uBD24\uB358 \uADF8 \uC774\uC0C1\uC5D0\uB108\uC9C0\uC796\uC544?
+    \uBC29\uD5A5\uC740 \uC774\uCABD\uC778\uAC00"
   detailedDialogues: []
   delayBetweenDialogues: 2
   lastDialogueCloseDelay: 3
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
+  onDialogueFinished:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &609658269
 GameObject:
   m_ObjectHideFlags: 0
@@ -250925,9 +250930,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogues:
-  - "\uC774 \uC815\uB3C4 \uCD9C\uB825\uC774\uBA74 \uC18C\uD615 \uBC1C\uC804\uC18C\uAE09\uC774\uC796\uC544..."
-  - "\uC774\uB7F0 \uAC70\uB300\uD55C \uC5D0\uB108\uC9C0 \uBC18\uC751\uC774 \uC9C0\uAE08\uAE4C\uC9C0
-    \uC548 \uC7A1\uD614\uB2E4\uACE0?"
+  - "\uB2E4 \uBB34\uB108\uC838\uAC00\uB294\uACF3\uC5D0\uC11C \uC774\uB7F0 \uAC70\uB300\uD55C
+    \uC5D0\uB108\uC9C0\uB77C\uB2C8... \uAD49\uC7A5\uD788 \uC218\uC0C1\uD55C\uB370..."
+  - "\uB204\uAD70\uAC00\uAC00 \uC2E0\uD638\uB97C \uBCF4\uB0B4\uACE0 \uC788\uB294\uAC74\uAC00...?"
   - "\u314E..\u314E\u314E....\uC5D4\uC9C0\uB2C8\uC5B4\uB85C\uC11C \uC774\uAC74 \uADF8\uB0E5
     \uC9C0\uB098\uCE60 \uC218 \uC5C6\uC5B4.."
   - "\uD655\uC778\uD574\uBCFC \uAC00\uCE58\uAC00 \uC788\uACA0\uC5B4. \uC2E0\uD638\uC758
@@ -250938,6 +250943,9 @@ MonoBehaviour:
   useNarrationMode: 0
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 1
+  onDialogueFinished:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &817374673
 GameObject:
   m_ObjectHideFlags: 0
@@ -377763,6 +377771,9 @@ MonoBehaviour:
   useNarrationMode: 1
   freezePlayerDuringDialogue: 1
   pauseAutoMoveDuringDialogue: 0
+  onDialogueFinished:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2001061893
 GameObject:
   m_ObjectHideFlags: 0

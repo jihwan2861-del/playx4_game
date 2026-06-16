@@ -458,6 +458,7 @@ public class PlayerMoving : MonoBehaviour {
         // 4. 안전 무적 판정 부여 (0.8초) 및 시각적 홀로그램 효과(하늘색) 적용
         if (Player.instance != null)
         {
+            Player.instance.StopDamageFlash(); // 버그 방지: 피격 연출 코루틴이 돌고 있다면 즉시 정지
             StartCoroutine(Player.instance.DashInvincibility(parrySuccessInvincibility, false));
             StartCoroutine(InvincibilityVisualRoutine(parrySuccessInvincibility));
         }
@@ -606,12 +607,12 @@ public class PlayerMoving : MonoBehaviour {
             if (whiteMat != null)
             {
                 playerSr.material = whiteMat;
-                playerSr.color = Color.white; // GUI/Text Shader는 흰색일 때 완전한 단색 흰색 실루엣으로 빛납니다.
+                playerSr.color = new Color(0f, 0.8f, 1f, 1f); // 밝은 네온 파란색으로 번쩍임
             }
             else
             {
-                // 폴백: 셰이더를 찾지 못한 경우 일반 색상을 백색으로 강제 조정
-                playerSr.color = Color.white;
+                // 폴백: 셰이더를 찾지 못한 경우 일반 색상을 밝은 파란색으로 조정
+                playerSr.color = new Color(0f, 0.8f, 1f, 1f);
             }
 
             // 하얗게 강렬하게 번쩍이는 효과 시간 (0.15초)
@@ -641,7 +642,9 @@ public class PlayerMoving : MonoBehaviour {
             // 원상 복구
             if (playerSr != null)
             {
-                playerSr.color = originalColor;
+                Color c = originalColor;
+                c.a = 1f; // 버그 원천 차단: 알파값은 무조건 완전 불투명(1.0f)으로 복구
+                playerSr.color = c;
             }
 
             if (whiteMat != null)
