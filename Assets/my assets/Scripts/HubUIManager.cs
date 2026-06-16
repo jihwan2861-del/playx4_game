@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 [System.Serializable]
 public enum RewardType
@@ -65,6 +66,28 @@ public class HubUIManager : MonoBehaviour
     public GameObject garagePanel;       // 차고 (출격/스테이지 선택)
     public GameObject hologramPanel;     // 홀로그램 (스토리/통신)
     public GameObject workshopPanel;     // 작업실 (업그레이드)
+
+    [Header("=== 월드맵 출격 시스템 ===")]
+    [Tooltip("월드맵 메인 패널")]
+    public GameObject worldMapPanel;
+    [Tooltip("월드맵 상의 거점 노드 버튼들 (0: Tutorial, 1: Stage 1, 2: Stage 2, 3: Stage 3)")]
+    public Button[] stageNodes;
+    [Tooltip("각 거점의 잠금(Lock) 표시 오브젝트들")]
+    public GameObject[] stageNodeLocks;
+    [Tooltip("각 거점의 완료(Check) 표시 오브젝트들")]
+    public GameObject[] stageNodeChecks;
+
+    [Header("=== 월드맵 상세 브리핑창 ===")]
+    [Tooltip("브리핑 창의 메인 제목 Text (TMP)")]
+    public TextMeshProUGUI briefingTitleText;
+    [Tooltip("브리핑 창의 상세 설명 Text (TMP)")]
+    public TextMeshProUGUI briefingDescText;
+    [Tooltip("브리핑 창의 보상 표시 Text (TMP)")]
+    public TextMeshProUGUI briefingRewardText;
+    [Tooltip("월드맵 행동 버튼 (수락 / 출격 / 보상수령 / 완료됨)")]
+    public Button worldMapActionButton;
+    [Tooltip("행동 버튼의 텍스트 컴포넌트 (TMP)")]
+    public TextMeshProUGUI worldMapActionButtonText;
     
     [Header("=== 우측 미션 HUD ===")]
     [Tooltip("우측 화면에 띄울 미션 알림판 패널")]
@@ -981,6 +1004,7 @@ public class HubUIManager : MonoBehaviour
         if (garagePanel != null) garagePanel.SetActive(false);
         if (hologramPanel != null) hologramPanel.SetActive(false);
         if (workshopPanel != null) workshopPanel.SetActive(false);
+        if (worldMapPanel != null) worldMapPanel.SetActive(false);
         SetPlayerControl(true);
     }
 
@@ -996,29 +1020,29 @@ public class HubUIManager : MonoBehaviour
     public void StartTutorial()
     {
         PlaySFX(buttonClickSFX);
-        Debug.Log("📖 튜토리얼 시작!");
-        SceneManager.LoadScene("1st_scene");
+        Debug.Log("📖 튜토리얼 시작 (페이드 아웃)!");
+        TriggerFadeTransition("1st_scene");
     }
 
     public void StartStageOne()
     {
         PlaySFX(buttonClickSFX);
-        Debug.Log("🚀 1스테이지로 출격!");
-        SceneManager.LoadScene("game_Scene");
+        Debug.Log("🚀 1스테이지로 출격 (페이드 아웃)!");
+        TriggerFadeTransition("game_Scene");
     }
 
     public void StartStageTwo()
     {
         PlaySFX(buttonClickSFX);
-        Debug.Log("🚀 2스테이지로 출격!");
-        SceneManager.LoadScene("Stage2_Scene");
+        Debug.Log("🚀 2스테이지로 출격 (페이드 아웃)!");
+        TriggerFadeTransition("Stage2_Scene");
     }
 
     public void StartStageThree()
     {
         PlaySFX(buttonClickSFX);
-        Debug.Log("🚀 3스테이지로 출격!");
-        SceneManager.LoadScene("Stage3_Scene");
+        Debug.Log("🚀 3스테이지로 출격 (페이드 아웃)!");
+        TriggerFadeTransition("Stage3_Scene");
     }
 
     // ========== [ 작업실 - 업그레이드 ] ==========
@@ -1219,5 +1243,331 @@ public class HubUIManager : MonoBehaviour
                 return;
             }
         }
+    }
+
+    // =========================================================================
+    // [ 월드맵 출격 시스템 구현 영역 ]
+    // =========================================================================
+
+    private int currentSelectedStageIndex = -1;
+
+    /// <summary>
+    /// 차고나 터미널에서 상호작용 시 월드맵 패널을 엽니다.
+    /// </summary>
+    public void OpenWorldMap()
+    {
+        PlaySFX(buttonClickSFX);
+        CloseAllPanels();
+        
+        if (worldMapPanel != null)
+        {
+            worldMapPanel.SetActive(true);
+        }
+        
+        SetPlayerControl(false);
+        LoadMissionStates(); // 로컬 세이브/미션 상태 연동
+        RefreshWorldMapNodes(); // 월드맵 상의 노드 UI 업데이트
+        
+        // 기본 선택 스테이지 지정
+        SelectDefaultStage();
+    }
+
+    private void SelectDefaultStage()
+    {
+        if (hologramMissions == null || hologramMissions.Count == 0) return;
+
+        // 잠금 해제되어 있으며 아직 최종 보상을 수령하지 않은 첫 번째 미션 노드를 디폴트로 선택합니다.
+        for (int i = 0; i < hologramMissions.Count; i++)
+        {
+            if (IsStageUnlocked(i) && !hologramMissions[i].isRewardClaimed)
+            {
+                SelectStageNode(i);
+                return;
+            }
+        }
+        
+        // 만약 모든 보상을 수령했다면 가장 마지막 노드 선택
+        SelectStageNode(hologramMissions.Count - 1);
+    }
+
+    /// <summary>
+    /// 특정 인덱스의 스테이지가 해제(Unlock)되었는지 반환합니다.
+    /// </summary>
+    public bool IsStageUnlocked(int stageIndex)
+    {
+        if (stageIndex <= 0) return true; // 첫 번째(Tutorial)는 언제나 해제 상태
+        if (hologramMissions == null || stageIndex >= hologramMissions.Count) return false;
+
+        // 이전 스테이지의 보상까지 최종 수령(isRewardClaimed)했을 때 다음 스테이지가 잠금 해제됩니다.
+        return hologramMissions[stageIndex - 1].isRewardClaimed;
+    }
+
+    /// <summary>
+    /// 지도상의 스테이지 거점 마커 노드를 클릭했을 때 호출됩니다.
+    /// </summary>
+    public void SelectStageNode(int stageIndex)
+    {
+        if (hologramMissions == null || stageIndex < 0 || stageIndex >= hologramMissions.Count) return;
+        
+        PlaySFX(buttonClickSFX);
+        currentSelectedStageIndex = stageIndex;
+        HologramMission mission = hologramMissions[stageIndex];
+
+        // 1. 브리핑 텍스트 갱신
+        if (briefingTitleText != null) briefingTitleText.text = mission.title;
+        if (briefingDescText != null) briefingDescText.text = mission.description;
+        if (briefingRewardText != null) briefingRewardText.text = $"보상: <color=#FFD700>{GetRewardText(mission)}</color>";
+
+        // 2. 전체 노드 상태 새로고침
+        RefreshWorldMapNodes();
+    }
+
+    /// <summary>
+    /// 전체 거점 마크(잠금, 완료 여부) 및 브리핑창 우측 행동 버튼의 상태를 실시간으로 새로고침합니다.
+    /// </summary>
+    public void RefreshWorldMapNodes()
+    {
+        if (hologramMissions == null || hologramMissions.Count == 0) return;
+
+        // 1. 지도 위 노드들(버튼 상호작용, 잠금 열쇠, 완료 체크 마크) 제어
+        for (int i = 0; i < stageNodes.Length; i++)
+        {
+            if (i >= hologramMissions.Count) break;
+            if (stageNodes[i] == null) continue;
+
+            HologramMission mission = hologramMissions[i];
+            bool unlocked = IsStageUnlocked(i);
+
+            // 잠긴 노드는 클릭 비활성화
+            stageNodes[i].interactable = unlocked;
+
+            // 자식 오브젝트의 잠금 자물쇠 아이콘 토글
+            if (stageNodeLocks != null && i < stageNodeLocks.Length && stageNodeLocks[i] != null)
+            {
+                stageNodeLocks[i].SetActive(!unlocked);
+            }
+
+            // 자식 오브젝트의 최종 클리어 녹색 체크마크 토글 (보상 수령 완료 시 완료 체크 마크 활성화)
+            if (stageNodeChecks != null && i < stageNodeChecks.Length && stageNodeChecks[i] != null)
+            {
+                stageNodeChecks[i].SetActive(mission.isRewardClaimed);
+            }
+        }
+
+        // 2. 브리핑 상세창 우측 하단의 통합 작동 버튼 상태 제어
+        if (currentSelectedStageIndex != -1 && worldMapActionButton != null)
+        {
+            HologramMission selectedMission = hologramMissions[currentSelectedStageIndex];
+            bool isUnlocked = IsStageUnlocked(currentSelectedStageIndex);
+
+            worldMapActionButton.gameObject.SetActive(true);
+
+            if (!isUnlocked)
+            {
+                SetActionButtonState("잠김", false);
+            }
+            else if (!selectedMission.isAccepted && !selectedMission.isCompleted)
+            {
+                SetActionButtonState("의뢰 수락", true);
+            }
+            else if (selectedMission.isAccepted && !selectedMission.isCompleted)
+            {
+                SetActionButtonState("출격하기", true);
+            }
+            else if (selectedMission.isCompleted && !selectedMission.isRewardClaimed)
+            {
+                SetActionButtonState("보상 수령", true);
+            }
+            else if (selectedMission.isRewardClaimed)
+            {
+                SetActionButtonState("작전 완료", false);
+            }
+        }
+        else if (worldMapActionButton != null)
+        {
+            worldMapActionButton.gameObject.SetActive(false);
+        }
+    }
+
+    private void SetActionButtonState(string label, bool interactable)
+    {
+        if (worldMapActionButton != null)
+        {
+            worldMapActionButton.interactable = interactable;
+        }
+        
+        if (worldMapActionButtonText != null)
+        {
+            worldMapActionButtonText.text = label;
+        }
+    }
+
+    /// <summary>
+    /// 월드맵 브리핑 상세창의 실행 버튼 클릭 시 호출됩니다. (의뢰 수락 ➔ 출격 ➔ 보상 수령 순환)
+    /// </summary>
+    public void ExecuteWorldMapAction()
+    {
+        if (currentSelectedStageIndex == -1 || hologramMissions == null) return;
+        if (currentSelectedStageIndex >= hologramMissions.Count) return;
+
+        PlaySFX(buttonClickSFX);
+        HologramMission mission = hologramMissions[currentSelectedStageIndex];
+
+        // ① 미션 수락
+        if (!mission.isAccepted && !mission.isCompleted)
+        {
+            mission.isAccepted = true;
+            hasAcceptedMission = true;
+
+            // 우측 HUD 보드 활성화
+            if (hubMissionPanel != null) hubMissionPanel.SetActive(true);
+            if (hubMissionText != null)
+            {
+                SetText(hubMissionText, $"<color=#FFFF00>[진행 중인 임무]</color>\n<color=#FFFFFF>[ ]</color> {mission.title}");
+            }
+
+            Debug.Log($"🎯 [월드맵 임무 수락] {mission.title}");
+            SaveMissionStates();
+            RefreshWorldMapNodes();
+        }
+        // ② 전투 씬 출격
+        else if (mission.isAccepted && !mission.isCompleted)
+        {
+            Debug.Log($"🏍️ [월드맵 출격 실행] {mission.title} (ID: {mission.missionId})");
+            CloseAllPanels();
+
+            if (mission.missionId == "Tutorial")
+            {
+                StartTutorial();
+            }
+            else if (mission.missionId == "Stage1")
+            {
+                StartStageOne();
+            }
+            else if (mission.missionId == "Stage2")
+            {
+                StartStageTwo();
+            }
+            else if (mission.missionId == "Stage3")
+            {
+                StartStageThree();
+            }
+        }
+        // ③ 보상 수령
+        else if (mission.isCompleted && !mission.isRewardClaimed)
+        {
+            if (PlayerDataManager.instance != null)
+            {
+                mission.isRewardClaimed = true;
+
+                // 보상 처리
+                if (mission.rewards != null && mission.rewards.Count > 0)
+                {
+                    foreach (var reward in mission.rewards)
+                    {
+                        if (reward.type == RewardType.Chips)
+                            PlayerDataManager.instance.AddChips(reward.amount);
+                        else if (reward.type == RewardType.Gold)
+                            PlayerDataManager.instance.AddGold(reward.amount);
+                    }
+                }
+                else
+                {
+                    PlayerDataManager.instance.AddChips(mission.rewardChips);
+                }
+
+                // 우측 HUD 완료 처리
+                if (hubMissionText != null)
+                {
+                    SetText(hubMissionText, $"<color=#50FF50>[V] {mission.title} (수령 완료)</color>");
+                }
+
+                Debug.Log($"🎉 [월드맵 보상 지급] {mission.title} 클리어 보상 칩 {mission.rewardChips}개 지급 완료!");
+                SaveMissionStates();
+                RefreshWorldMapNodes();
+            }
+            else
+            {
+                Debug.LogError("⚠️ [시스템 에러] PlayerDataManager가 씬에 존재하지 않아 보상을 줄 수 없습니다!");
+            }
+        }
+    }
+
+    // 지정한 씬으로 페이드아웃 연출을 거쳐 로드합니다.
+    public void TriggerFadeTransition(string sceneName)
+    {
+        GameObject transitionCanvas = new GameObject("HubFadeTransitionCanvas");
+        DontDestroyOnLoad(transitionCanvas);
+        
+        var runner = transitionCanvas.AddComponent<HubTransitionRunner>();
+        runner.StartCoroutine(runner.Run(sceneName));
+    }
+}
+
+// 씬 전환 도중 파괴되지 않고 화면을 부드럽게 페이드 아웃/인 해주는 도우미 컴포넌트
+public class HubTransitionRunner : MonoBehaviour
+{
+    public System.Collections.IEnumerator Run(string sceneName)
+    {
+        Time.timeScale = 1f;
+
+        Canvas canvas = gameObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 9999;
+
+        var scaler = gameObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+        scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+
+        GameObject blackImageObj = new GameObject("BlackImage");
+        blackImageObj.transform.SetParent(transform, false);
+        UnityEngine.UI.Image blackImg = blackImageObj.AddComponent<UnityEngine.UI.Image>();
+        blackImg.color = new Color(0f, 0f, 0f, 0f);
+
+        RectTransform rect = blackImg.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.one;
+
+        // 1.0초 동안 페이드 아웃 (화면이 서서히 검어짐)
+        float timer = 0f;
+        float fadeDuration = 1.0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(0f, 1f, timer / fadeDuration);
+            if (blackImg != null) blackImg.color = new Color(0f, 0f, 0f, alpha);
+            yield return null;
+        }
+        if (blackImg != null) blackImg.color = new Color(0f, 0f, 0f, 1f);
+
+        // 비동기로 다음 씬 로드
+        AsyncOperation asyncLoad = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName);
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+
+        // 새로운 씬에 자체 페이드 효과 담당자(GameTransitionManager)가 있는지 체크
+        GameTransitionManager newSceneManager = FindObjectOfType<GameTransitionManager>();
+        if (newSceneManager != null)
+        {
+            // 새 씬 매니저가 직접 페이드인 연출을 진행하도록 맡기고 소멸
+            Destroy(gameObject);
+            yield break;
+        }
+
+        // 자체 페이드 효과가 없는 씬일 경우 직접 1초간 페이드인 진행
+        timer = 0f;
+        while (timer < fadeDuration)
+        {
+            if (blackImg == null) break;
+            timer += Time.unscaledDeltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
+            blackImg.color = new Color(0f, 0f, 0f, alpha);
+            yield return null;
+        }
+
+        Destroy(gameObject);
     }
 }

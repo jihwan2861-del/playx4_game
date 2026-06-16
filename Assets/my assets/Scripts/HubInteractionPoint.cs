@@ -176,9 +176,9 @@ public class HubInteractionPoint : MonoBehaviour
         string labelText = "";
         switch (pointType)
         {
-            case PointType.Garage: labelText = "차고 진입 <color=#FFD700>(출격)</color>"; break;
-            case PointType.Hologram: labelText = "통신 연결 <color=#FFD700>(대화)</color>"; break;
-            case PointType.Workshop: labelText = "기체 개조 <color=#FFD700>(강화)</color>"; break;
+            case PointType.Garage: labelText = "차고 진입 <color=#FFD700>(스테이지 선택)</color>"; break;
+            case PointType.Hologram: labelText = "월드맵 확인 <color=#FFD700>(지역 선택)</color>"; break;
+            case PointType.Workshop: labelText = "기체 개조 <color=#FFD700>(부품 강화)</color>"; break;
         }
         actionText.text = labelText;
         actionText.font = customFont != null ? customFont : GetBuiltinFont();
@@ -260,13 +260,13 @@ public class HubInteractionPoint : MonoBehaviour
         switch (pointType)
         {
             case PointType.Garage:
-                Debug.Log("🏍️ [차고] 출격 준비!");
+                Debug.Log("🏍️ [차고] 스테이지 선택 패널 오픈");
                 hub.OpenStageSelect();
                 break;
 
             case PointType.Hologram:
-                Debug.Log("📡 [홀로그램] 통신 연결...");
-                hub.OpenHologram();
+                Debug.Log("📡 [홀로그램/터미널] 월드맵 오픈...");
+                hub.OpenWorldMap();
                 break;
 
             case PointType.Workshop:
