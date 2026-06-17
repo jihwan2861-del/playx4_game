@@ -29,6 +29,8 @@ public class PathGuideLine : MonoBehaviour
     [Header("=== 흐름 효과 애니메이션 ===")]
     [Tooltip("선에 들어갈 화살표나 점선 텍스처가 흐르는 속도 (음수면 목적지 방향으로 전진)")]
     public float scrollSpeed = -2.0f;
+    [Tooltip("점선으로 표시하기 위한 텍스처 (Assets/my assets/Sprites/dot_line.png를 권장합니다)")]
+    public Texture2D dotLineTexture;
 
     private LineRenderer lineRenderer;
     private Transform playerTransform;
@@ -83,6 +85,14 @@ public class PathGuideLine : MonoBehaviour
         if (defaultShader != null)
         {
             lineMaterial = new Material(defaultShader);
+            
+            // 점선 텍스처 적용 및 타일(반복) 렌더링 모드 설정
+            if (dotLineTexture != null)
+            {
+                lineMaterial.mainTexture = dotLineTexture;
+                lineRenderer.textureMode = LineTextureMode.Tile;
+            }
+            
             lineRenderer.material = lineMaterial;
         }
     }

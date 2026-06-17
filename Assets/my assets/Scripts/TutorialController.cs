@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections; // 🌟 코루틴 IEnumerator 사용을 위해 추가
 using TMPro;
 
 /// <summary>
@@ -21,6 +22,22 @@ public class TutorialController : MonoBehaviour
     public GameObject guidePanel;
     [Tooltip("안내 가이드 텍스트 컴포넌트")]
     public TextMeshProUGUI guideText;
+
+    [Header("=== 패럴만 변신 설정 ===")]
+    [Tooltip("패럴만 캐릭터의 스프라이트")]
+    public Sprite paralmanSprite;
+    [Tooltip("패럴만 캐릭터의 애니메이터 컨트롤러")]
+    public RuntimeAnimatorController paralmanAnimator;
+    [Tooltip("기존 주인공 기체를 옆에 소환할 프리팹 (비워두면 현재 기체 이미지를 자동 복사하여 껍데기 더미로 생성합니다)")]
+    public GameObject originalPlayerDummyPrefab;
+    [Tooltip("기존 주인공 기체의 앞을 바라보는 스프라이트 (더미 소환 시 적용됩니다)")]
+    public Sprite originalPlayerFrontSprite;
+
+    [Header("=== UI 제어 설정 (변신 연출 연동) ===")]
+    [Tooltip("플레이어 체력/에너지 UI 캔버스 오브젝트")]
+    public GameObject playerCanvas;
+    [Tooltip("보스 체력/시간 UI 캔버스 오브젝트")]
+    public GameObject bossCanvas;
 
     private void Awake()
     {
@@ -161,6 +178,159 @@ public class TutorialController : MonoBehaviour
     }
 
     /// <summary>
+    /// 페이드 아웃 연출과 함께 기존 기체를 플레이어 옆에 스폰하고, 조종 캐릭터를 패럴만으로 변경하는 전체 연출을 시작합니다.
+    /// 유니티 UnityEvent(트리거)에서 직접 호출하기 적합합니다.
+    /// </summary>
+    public void ChangeToParalmanWithFade()
+    {
+        StartCoroutine(ParalmanTransitionRoutine());
+    }
+
+    private IEnumerator ParalmanTransitionRoutine()
+    {
+        // 1. 임시 페이드용 블랙 캔버스 동적 생성 (씬 UI 의존성 제거)
+        GameObject transitionCanvas = new GameObject("TemporaryFadeCanvas");
+        Canvas canvas = transitionCanvas.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 9999;
+        
+        var scaler = transitionCanvas.AddComponent<UnityEngine.UI.CanvasScaler>();
+        scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+
+        GameObject blackImageObj = new GameObject("BlackImage");
+        blackImageObj.transform.SetParent(transitionCanvas.transform, false);
+        UnityEngine.UI.Image blackImg = blackImageObj.AddComponent<UnityEngine.UI.Image>();
+        blackImg.color = new Color(0f, 0f, 0f, 0f); // 투명 상태로 시작
+
+        RectTransform rect = blackImg.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        // 2. 플레이어 조작 차단 및 UI 끄기 (연출 몰입도 향상)
+        FreezePlayer(true);
+        SetGameUIsActive(false);
+
+        // 3. 페이드 아웃 (화면 어두워짐)
+        float elapsed = 0f;
+        float fadeDuration = 0.8f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            blackImg.color = new Color(0f, 0f, 0f, Mathf.Clamp01(elapsed / fadeDuration));
+            yield return null;
+        }
+        blackImg.color = new Color(0f, 0f, 0f, 1f);
+
+        // 암전 상태에서 0.3초 대기
+        yield return new WaitForSecondsRealtime(0.3f);
+
+        // 4. 기존 주인공 기체 옆에 스폰
+        if (player != null)
+        {
+            // 플레이어 왼쪽 1.3미터 지점 계산
+            Vector3 spawnPos = player.transform.position + new Vector3(-1.3f, 0f, 0f);
+            GameObject dummyInstance = null;
+            
+            if (originalPlayerDummyPrefab != null)
+            {
+                // 프리팹을 쓸 경우 앞을 바르게 보도록 회전 없이(Quaternion.identity) 생성
+                dummyInstance = Instantiate(originalPlayerDummyPrefab, spawnPos, Quaternion.identity);
+            }
+            else
+            {
+                // 프리팹을 비워둔 경우: 새로운 빈 오브젝트 생성
+                dummyInstance = new GameObject("OriginalPlayer_Vehicle");
+                dummyInstance.transform.position = spawnPos;
+                dummyInstance.transform.rotation = Quaternion.identity; // 앞을 똑바로 바라보도록 회전 세팅
+                
+                SpriteRenderer dummySr = dummyInstance.AddComponent<SpriteRenderer>();
+                SpriteRenderer playerSr = player.GetComponentInChildren<SpriteRenderer>();
+                
+                // 지정된 앞모습 스프라이트가 있으면 쓰고, 없으면 현재 플레이어 스프라이트를 씀
+                if (originalPlayerFrontSprite != null)
+                {
+                    dummySr.sprite = originalPlayerFrontSprite;
+                }
+                else if (playerSr != null)
+                {
+                    dummySr.sprite = playerSr.sprite;
+                }
+
+                if (playerSr != null)
+                {
+                    dummySr.color = playerSr.color;
+                    dummySr.sortingLayerID = playerSr.sortingLayerID;
+                    dummySr.sortingOrder = playerSr.sortingOrder;
+                }
+            }
+
+            // ⚠️ 플레이어와 충돌해서 밀려나지 않도록 물리 및 충돌체 완벽 차단 및 고정
+            if (dummyInstance != null)
+            {
+                // 1) 리지드바디가 있다면 물리 반응 차단 및 Static 고정
+                Rigidbody2D dummyRb = dummyInstance.GetComponent<Rigidbody2D>();
+                if (dummyRb != null)
+                {
+                    dummyRb.bodyType = RigidbodyType2D.Static;
+                    dummyRb.simulated = false;
+                }
+
+                // 2) 콜라이더가 있다면 모두 끔 (밀려남 방지)
+                Collider2D[] dummyColliders = dummyInstance.GetComponentsInChildren<Collider2D>();
+                foreach (var col in dummyColliders)
+                {
+                    if (col != null)
+                    {
+                        col.enabled = false;
+                    }
+                }
+            }
+            Debug.Log("🤖 [Paralman Transition] 기존 주인공 기체를 제자리에 물리적으로 고정하여 앞모습으로 스폰 완료.");
+        }
+
+        // 5. 플레이어를 패럴만으로 변신 (스프라이트/애니메이터 교체)
+        ChangePlayerToParalman();
+
+        // 세팅 완료 후 0.2초 대기
+        yield return new WaitForSecondsRealtime(0.2f);
+
+        // 🌟 [추가] 페이드인 직전 UI를 다시 켭니다.
+        SetGameUIsActive(true);
+
+        // 6. 페이드 인 (화면 밝아짐)
+        elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            blackImg.color = new Color(0f, 0f, 0f, Mathf.Clamp01(1f - (elapsed / fadeDuration)));
+            yield return null;
+        }
+
+        // 7. 조작 해제 및 캔버스 소멸
+        FreezePlayer(false);
+        Destroy(transitionCanvas);
+        Debug.Log("✨ [Paralman Transition] 패럴만 탑승/조종 연출 완료!");
+    }
+
+    /// <summary>
+    /// 인스펙터에 미리 세팅해 둔 스프라이트와 애니메이터로 플레이어를 패럴만으로 변경합니다.
+    /// 매개변수가 없어 유니티 UnityEvent(트리거)에서 직접 호출하기 적합합니다.
+    /// </summary>
+    public void ChangePlayerToParalman()
+    {
+        if (paralmanSprite != null && paralmanAnimator != null)
+        {
+            ChangePlayerToParalman(paralmanSprite, paralmanAnimator);
+        }
+        else
+        {
+            Debug.LogError("⚠️ [TutorialController] 패럴만 Sprite 또는 AnimatorController가 인스펙터에 등록되지 않았습니다!");
+        }
+    }
+
+    /// <summary>
     /// 플레이어 캐릭터의 외형(Sprite)과 애니메이터(Animator Controller)를 패럴만 사양으로 교체합니다.
     /// </summary>
     public void ChangePlayerToParalman(Sprite paralmanSprite, RuntimeAnimatorController paralmanAnimator)
@@ -201,6 +371,23 @@ public class TutorialController : MonoBehaviour
     }
 
     /// <summary>
+    /// 플레이어 UI와 보스 UI의 캔버스 오브젝트를 한번에 켜고 끕니다.
+    /// </summary>
+    public void SetGameUIsActive(bool active)
+    {
+        if (playerCanvas != null)
+        {
+            playerCanvas.SetActive(active);
+            Debug.Log($"🖥️ [TutorialController] 플레이어 UI 상태 변경: {active}");
+        }
+        if (bossCanvas != null)
+        {
+            bossCanvas.SetActive(active);
+            Debug.Log($"🖥️ [TutorialController] 보스 UI 상태 변경: {active}");
+        }
+    }
+
+    /// <summary>
     /// 화면의 타임스케일을 강제로 느리게(슬로우 모션) 만들거나 원래 속도로 리셋합니다.
     /// </summary>
     /// <param name="active">true이면 20% 속도 슬로우, false이면 100% 정상 속도</param>
@@ -217,6 +404,25 @@ public class TutorialController : MonoBehaviour
             Time.timeScale = 1f;
             Time.fixedDeltaTime = 0.02f;
             Debug.Log("⏳ [TutorialController] 슬로우 모션 해제 (TimeScale = 1.0)");
+        }
+    }
+
+    /// <summary>
+    /// 지정된 게임 오브젝트의 활성화(SetActive) 상태를 껐다 켰다 토글합니다.
+    /// 유니티 인스펙터의 UnityEvent에서 트리거용으로 등록하여 사용하기 편리합니다.
+    /// </summary>
+    /// <param name="target">토글할 대상 게임 오브젝트</param>
+    public void ToggleGameObject(GameObject target)
+    {
+        if (target != null)
+        {
+            bool isCurrentlyActive = target.activeSelf;
+            target.SetActive(!isCurrentlyActive);
+            Debug.Log($"🔌 [TutorialController] 오브젝트 '{target.name}'의 상태를 토글했습니다: {isCurrentlyActive} -> {!isCurrentlyActive}");
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ [TutorialController] 토글하려는 대상 GameObject가 null입니다.");
         }
     }
 }

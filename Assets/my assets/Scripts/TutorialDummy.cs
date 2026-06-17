@@ -16,17 +16,24 @@ public class TutorialDummy : MonoBehaviour
     private Color originalColor;
     private Coroutine shootCoroutine;
 
-    private void Start()
+    private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
             originalColor = spriteRenderer.color;
         }
+    }
 
-        // 활성화되는 즉시 사격 코루틴을 시작합니다.
+    private void OnEnable()
+    {
+        // 🤖 꺼졌다 다시 켜질 때(활성화 시)마다 사격 코루틴을 완벽하게 재시작합니다.
         if (bulletPrefab != null)
         {
+            if (shootCoroutine != null)
+            {
+                StopCoroutine(shootCoroutine);
+            }
             shootCoroutine = StartCoroutine(ShootRoutine());
         }
     }
