@@ -69962,6 +69962,7 @@ MonoBehaviour:
   - {fileID: 1526850564}
   - {fileID: 1579481582}
   cooldownDuration: 1.2
+  slowMotionTimeScale: 0.02
   parryCount: 0
 --- !u!4 &1419071871
 Transform:
@@ -70113,6 +70114,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7572511088838718628, guid: b3e34cd149de5f444b84449051e43850,
+        type: 3}
+      propertyPath: maxHealth
+      value: 450
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -70397,7 +70403,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogues:
-  - "\uBB50\uC57C \uC774\uB7F0 \uAC15\uB825\uD55C \uAE30\uCCB4\uAC00 \uC5EC\uAE30
+  - "\uBB50\uC57C..!!!\uC774\uB7F0 \uAC15\uB825\uD55C \uAE30\uCCB4\uAC00 \uC5EC\uAE30
     \uC65C \uC788\uC5B4!!"
   - "\uC774\uB7EC\uB2E4\uAC04 \uD328\uB9C1 \uBCF4\uD638\uB9C9 \uC5D0\uB108\uC9C0\uB97C
     \uB2E4 \uC4F0\uACE0\uB9D0\uAC70\uC57C..."
@@ -70607,6 +70613,10 @@ MonoBehaviour:
   offset: {x: 0, y: 0, z: 0}
   followXOnly: 0
   followYOnly: 0
+  isIntroCinematic: 0
+  zoomInDuration: 0.8
+  zoomHoldDuration: 0.4
+  zoomOutDuration: 0.8
 --- !u!82 &1661693065
 AudioSource:
   m_ObjectHideFlags: 0
@@ -70742,7 +70752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 100
+  health: 450
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -71159,6 +71169,16 @@ PrefabInstance:
       propertyPath: baseSpeed
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: parryCooldownDuration
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114660646102788534, guid: 8e33fda0c220936498f5288af83d7450,
+        type: 3}
+      propertyPath: parryWhiffRecoveryDuration
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 212419850576164182, guid: 8e33fda0c220936498f5288af83d7450,
         type: 3}
       propertyPath: m_Sprite
@@ -71489,6 +71509,7 @@ MonoBehaviour:
     type: 3}
   playerCanvas: {fileID: 0}
   bossCanvas: {fileID: 0}
+  isParalman: 0
 --- !u!4 &1993548047
 Transform:
   m_ObjectHideFlags: 0

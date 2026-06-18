@@ -17,11 +17,20 @@ public class GameTransitionManager : MonoBehaviour
     public float fadeOutTime = 2f;      // 서서히 밝아지는 시간
     public float deathFadeTime = 2f;    // 죽었을 때 서서히 어두워지는 시간
 
+    [Header("인트로 연출 설정")]
+    [Tooltip("인트로 시네마틱 연출에서 줌인해서 보여줄 대상 캐릭터입니다. 비워두면 씬 내의 보스(BossPatternController)를 자동으로 찾아 비춥니다.")]
+    public Transform introZoomTarget;
+
     public static GameTransitionManager instance;
 
     private void Awake()
     {
         if (instance == null) instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
     }
 
     private void Start()
@@ -56,9 +65,48 @@ public class GameTransitionManager : MonoBehaviour
             yield return null;
         }
 
-        // 4. 연출이 끝나면 게임 시간 정상화
+        if (fadeImage != null)
+        {
+            fadeImage.color = new Color(0, 0, 0, 0);
+            fadeImage.gameObject.SetActive(false);
+        }
+
+        // 🌟 [추가] 화면이 완전히 밝아진 상태에서 카메라를 보스 혹은 지정된 캐릭터 쪽으로 줌인했다 복귀시킵니다. (글로벌 타임 정지 상태 유지)
+        CameraFollow camFollow = null;
+        if (Camera.main != null)
+        {
+            camFollow = Camera.main.GetComponent<CameraFollow>();
+        }
+
+        if (camFollow != null)
+        {
+            Transform targetTransform = introZoomTarget;
+
+            // 인스펙터에 지정되지 않았다면 씬에서 보스(BossPatternController)를 자동 검색
+            if (targetTransform == null)
+            {
+                BossPatternController boss = FindObjectOfType<BossPatternController>();
+                if (boss != null)
+                {
+                    targetTransform = boss.transform;
+                }
+            }
+
+            if (targetTransform != null)
+            {
+                // 지정된 캐릭터 줌인 연출 실행 (이동 0.8s + 대기 0.4s + 복귀 0.8s = 총 2.0s)
+                camFollow.StartIntroCinematic(targetTransform);
+
+                // 카메라 연출이 끝나서 플레이어로 복귀할 때까지 루틴 대기 (글로벌 타임 정지 유지)
+                while (camFollow.isIntroCinematic)
+                {
+                    yield return null;
+                }
+            }
+        }
+
+        // 4. 모든 연출이 끝나면 그제서야 게임 시간 정상화하여 플레이 개시!
         Time.timeScale = 1f;
-        if (fadeImage != null) fadeImage.gameObject.SetActive(false);
     }
 
     // 플레이어 스크립트에서 죽었을 때 이 함수를 호출함

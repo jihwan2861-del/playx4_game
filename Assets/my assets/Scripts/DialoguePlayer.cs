@@ -80,11 +80,34 @@ public class DialoguePlayer : MonoBehaviour
     {
         if ((dialogues == null || dialogues.Count == 0) && (detailedDialogues == null || detailedDialogues.Count == 0)) return;
 
+        // 🌟 [안전 장치] 이전 대화 코루틴이 강제 종료되면서 조작이 영구 동결되는 문제를 방지하기 위해 
+        // 새로운 대사를 재생하기 직전 기존 동결 상태를 무조건 강제 해제합니다.
+        ForceReleasePlayerDialogueLock();
+
         if (dialogueCoroutine != null)
         {
             StopCoroutine(dialogueCoroutine);
         }
         dialogueCoroutine = StartCoroutine(PlayDialoguesRoutine());
+    }
+
+    private void OnDisable()
+    {
+        // 오브젝트가 비활성화되거나 씬이 끊길 때도 조작 락을 확실하게 풀어줍니다.
+        ForceReleasePlayerDialogueLock();
+    }
+
+    private void ForceReleasePlayerDialogueLock()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            PlayerMoving pm = player.GetComponent<PlayerMoving>();
+            if (pm != null)
+            {
+                pm.isDialogueFrozen = false;
+            }
+        }
     }
 
     private IEnumerator PlayDialoguesRoutine()
@@ -138,7 +161,7 @@ public class DialoguePlayer : MonoBehaviour
             
             if (playerMoving != null)
             {
-                playerMoving.enabled = false;
+                playerMoving.isDialogueFrozen = true;
                 Rigidbody2D rb = playerMoving.GetComponent<Rigidbody2D>();
                 if (rb != null)
                 {
@@ -229,7 +252,7 @@ public class DialoguePlayer : MonoBehaviour
             // 마지막 대사가 아니라면, 지정된 지연시간만큼 대기 후 다음 대사로 전환
             if (i < linesToPlay.Count - 1)
             {
-                yield return new WaitForSeconds(delayBetweenDialogues);
+                yield return new WaitForSecondsRealtime(delayBetweenDialogues);
             }
         }
 
@@ -245,12 +268,12 @@ public class DialoguePlayer : MonoBehaviour
 
         // ⏳ [완전 소멸 타이밍 대기 연동] 
         // 닫기 딜레이 + 수축/페이드 여유 시간(0.5초)만큼 기다립니다.
-        yield return new WaitForSeconds(lastDialogueCloseDelay + 0.5f);
+        yield return new WaitForSecondsRealtime(lastDialogueCloseDelay + 0.5f);
 
         // 🎮 [수동 조작 복원 연동] 모든 대사가 끝나고 UI가 완전히 닫혔을 때 조작 완전 해금!
         if (freezePlayerDuringDialogue && playerMoving != null)
         {
-            playerMoving.enabled = true;
+            playerMoving.isDialogueFrozen = false;
         }
 
         // ▶️ [자동 주행 재개 연동] 모든 대사가 끝나고 UI가 완전히 화면에서 사라진 순간에 주행 재개 호출

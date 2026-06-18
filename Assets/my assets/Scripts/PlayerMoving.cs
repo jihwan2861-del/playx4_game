@@ -48,6 +48,7 @@ public class PlayerMoving : MonoBehaviour {
     [HideInInspector] public bool isParryActive = false;
     [HideInInspector] public bool isParryCooldown = false;
     [HideInInspector] public bool isParryRecovery = false; // 패링 실패(whiff) 시 경직 상태
+    [HideInInspector] public bool isDialogueFrozen = false; // 대화 연출 중 이동만 동결하는 플래그
 
     [Header("Parry Sound Settings (사운드 설정)")]
     [Tooltip("패링 활성화 시 (보호막 전개) 사운드")]
@@ -127,6 +128,7 @@ public class PlayerMoving : MonoBehaviour {
 
     private void Start()
     {
+        isDialogueFrozen = false; // 씬 시작 시 상태 초기값 리셋
         mainCamera = Camera.main;
         
         // 데이터 매니저 업그레이드 수치 적용
@@ -296,8 +298,8 @@ public class PlayerMoving : MonoBehaviour {
             PlayerAutoMove autoMove = GetComponent<PlayerAutoMove>();
             bool isAutoMoving = autoMove != null && autoMove.IsAutoMoving;
 
-            // 자동 이동 중이거나 튜토리얼 3단계(패링 훈련) 중에는 플레이어 수동 기동을 잠금
-            if (isAutoMoving || (TutorialController.instance != null && TutorialController.instance.currentPhase == 3))
+            // 자동 이동 중이거나 튜토리얼 3단계(패링 훈련) 중 또는 대화 연출로 조작이 동결된 상태에는 플레이어 수동 기동을 잠금
+            if (isDialogueFrozen || isAutoMoving || (TutorialController.instance != null && TutorialController.instance.currentPhase == 3))
             {
                 horizontal = 0f;
                 vertical = 0f;

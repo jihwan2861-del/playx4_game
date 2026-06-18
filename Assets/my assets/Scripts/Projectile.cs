@@ -33,60 +33,99 @@ public class Projectile : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D collision) //when a projectile collides with another object
     {
-        if (enemyBullet && collision.tag == "Player") //if anoter object is 'player' or 'enemy sending the command of receiving the damage
+        if (enemyBullet && collision.CompareTag("Player")) //if anoter object is 'player' or 'enemy sending the command of receiving the damage
         {
             Player.instance.GetDamage(damage, gameObject); 
             if (destroyedByCollision)
                 Destruction();
         }
-        else if (!enemyBullet && collision.tag == "Enemy")
+        else if (!enemyBullet)
         {
-            Enemy enemy = collision.GetComponent<Enemy>();
-            if (enemy == null)
+            // 🌟 튜토리얼 더미봇(TutorialDummy) 피격 처리
+            // (에디터 태그 설정 실수 등으로 태그가 "Enemy"가 아니더라도 스크립트가 있다면 감지합니다.)
+            TutorialDummy tutorialDummy = collision.GetComponent<TutorialDummy>();
+            if (tutorialDummy == null)
             {
-                enemy = collision.GetComponentInParent<Enemy>();
+                tutorialDummy = collision.GetComponentInParent<TutorialDummy>();
             }
 
-            if (enemy != null)
+            if (tutorialDummy != null)
             {
-                enemy.GetDamage(damage);
+                tutorialDummy.GetDamage(damage);
 
-                // 🔊 1. 명중 오디오 이펙트 재생 (투사체 위치 기준)
+                // 🔊 타격 피드백 효과음
                 if (hitSound != null)
                 {
                     AudioSource.PlayClipAtPoint(hitSound, transform.position, hitVolume);
                 }
-
-                // 🎥 2. 카메라 미세 진동 효과
+                // 🎥 타격 피드백 카메라 흔들기
                 if (cameraShakeMagnitude > 0f && Camera.main != null)
                 {
                     CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
-                    if (cam != null)
-                    {
-                        cam.Shake(cameraShakeDuration, cameraShakeMagnitude);
-                    }
+                    if (cam != null) cam.Shake(cameraShakeDuration, cameraShakeMagnitude);
                 }
-
-                // ⏳ 3. 물리적인 묵직함을 위한 찰나의 히트스탑
+                // ⏳ 타격 피드백 히트스탑
                 if (hitStopDuration > 0f && HitStop.instance != null)
                 {
                     HitStop.instance.Do(hitStopDuration);
                 }
+
+                if (destroyedByCollision)
+                    Destruction();
+
+                return;
             }
 
-            // 장애물(BreakableObject) 피격 처리
-            BreakableObject breakable = collision.GetComponent<BreakableObject>();
-            if (breakable == null)
+            // 일반 적 처리
+            if (collision.CompareTag("Enemy"))
             {
-                breakable = collision.GetComponentInParent<BreakableObject>();
+                Enemy enemy = collision.GetComponent<Enemy>();
+                if (enemy == null)
+                {
+                    enemy = collision.GetComponentInParent<Enemy>();
+                }
+
+                if (enemy != null)
+                {
+                    enemy.GetDamage(damage);
+
+                    // 🔊 1. 명중 오디오 이펙트 재생 (투사체 위치 기준)
+                    if (hitSound != null)
+                    {
+                        AudioSource.PlayClipAtPoint(hitSound, transform.position, hitVolume);
+                    }
+
+                    // 🎥 2. 카메라 미세 진동 효과
+                    if (cameraShakeMagnitude > 0f && Camera.main != null)
+                    {
+                        CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
+                        if (cam != null)
+                        {
+                            cam.Shake(cameraShakeDuration, cameraShakeMagnitude);
+                        }
+                    }
+
+                    // ⏳ 3. 물리적인 묵직함을 위한 찰나의 히트스탑
+                    if (hitStopDuration > 0f && HitStop.instance != null)
+                    {
+                        HitStop.instance.Do(hitStopDuration);
+                    }
+                }
+
+                // 장애물(BreakableObject) 피격 처리
+                BreakableObject breakable = collision.GetComponent<BreakableObject>();
+                if (breakable == null)
+                {
+                    breakable = collision.GetComponentInParent<BreakableObject>();
+                }
+                if (breakable != null)
+                {
+                    breakable.TakeDamage(damage);
+                }
+
+                if (destroyedByCollision)
+                    Destruction();
             }
-            if (breakable != null)
-            {
-                breakable.TakeDamage(damage);
-            }
-            
-            if (destroyedByCollision)
-                Destruction();
         }
     }
 

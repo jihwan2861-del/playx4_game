@@ -39,6 +39,9 @@ public class TutorialController : MonoBehaviour
     [Tooltip("보스 체력/시간 UI 캔버스 오브젝트")]
     public GameObject bossCanvas;
 
+    [Header("=== 연출 상태 저장 ===")]
+    [HideInInspector] public bool isParalman = false;
+
     private void Awake()
     {
         if (instance == null) instance = this;
@@ -50,6 +53,11 @@ public class TutorialController : MonoBehaviour
         {
             player = playerObj.GetComponent<PlayerMoving>();
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this) instance = null;
     }
 
     /// <summary>
@@ -226,7 +234,30 @@ public class TutorialController : MonoBehaviour
         // 암전 상태에서 0.3초 대기
         yield return new WaitForSecondsRealtime(0.3f);
 
+        // 🌟 [추가] 씬 내에 주차되어 있던 기존 '패럴만' 기체(오브젝트) 비활성화
+        GameObject fieldParalman = GameObject.Find("패럴만");
+        if (fieldParalman != null)
+        {
+            fieldParalman.SetActive(false);
+            Debug.Log("👤 [Paralman Transition] 기존 필드에 배치된 '패럴만' 오브젝트를 비활성화했습니다.");
+        }
+        else
+        {
+            GameObject fieldParalmanEng = GameObject.Find("Paralman");
+            if (fieldParalmanEng != null)
+            {
+                fieldParalmanEng.SetActive(false);
+                Debug.Log("👤 [Paralman Transition] 기존 필드에 배치된 'Paralman' 오브젝트를 비활성화했습니다.");
+            }
+        }
+
         // 4. 기존 주인공 기체 옆에 스폰
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) player = playerObj.GetComponent<PlayerMoving>();
+        }
+
         if (player != null)
         {
             // 플레이어 왼쪽 1.3미터 지점 계산
@@ -271,6 +302,10 @@ public class TutorialController : MonoBehaviour
             {
                 // 1) 리지드바디가 있다면 물리 반응 차단 및 Static 고정
                 Rigidbody2D dummyRb = dummyInstance.GetComponent<Rigidbody2D>();
+                if (dummyRb == null)
+                {
+                    dummyRb = dummyInstance.AddComponent<Rigidbody2D>();
+                }
                 if (dummyRb != null)
                 {
                     dummyRb.bodyType = RigidbodyType2D.Static;
@@ -286,8 +321,28 @@ public class TutorialController : MonoBehaviour
                         col.enabled = false;
                     }
                 }
+
+                // 3) 플레이어 제어 및 사격 스크립트 무력화 (더미가 스스로 총을 쏘거나 이동하는 것을 완전히 방지)
+                MonoBehaviour[] scripts = dummyInstance.GetComponentsInChildren<MonoBehaviour>();
+                foreach (var script in scripts)
+                {
+                    if (script == null) continue;
+                    
+                    string scriptName = script.GetType().Name;
+                    if (scriptName.Contains("PlayerShooting") || 
+                        scriptName.Contains("PlayerMoving") || 
+                        scriptName.Contains("PlayerClickAttack") || 
+                        scriptName.Contains("Player"))
+                    {
+                        script.enabled = false;
+                    }
+                }
             }
-            Debug.Log("🤖 [Paralman Transition] 기존 주인공 기체를 제자리에 물리적으로 고정하여 앞모습으로 스폰 완료.");
+            Debug.Log("🤖 [Paralman Transition] 기존 주인공 기체를 제자리에 물리적으로 고정하고 사격을 차단하여 앞모습으로 스폰 완료.");
+        }
+        else
+        {
+            Debug.LogError("⚠️ [Paralman Transition] 플레이어 레퍼런스(player)를 찾을 수 없어 기존 기체 더미 소환을 생략했습니다.");
         }
 
         // 5. 플레이어를 패럴만으로 변신 (스프라이트/애니메이터 교체)
@@ -312,6 +367,21 @@ public class TutorialController : MonoBehaviour
         FreezePlayer(false);
         Destroy(transitionCanvas);
         Debug.Log("✨ [Paralman Transition] 패럴만 탑승/조종 연출 완료!");
+    }
+
+    /// <summary>
+    /// 더미봇 격파 성공 시 플레이어 대사를 출력하고 2.5초 뒤 허브 씬으로 복귀하는 클리어 시퀀스입니다.
+    /// </summary>
+    public IEnumerator TutorialClearRoutine()
+    {
+        // 1. 플레이어 머리 위에 말풍선 띄우기
+        ShowPlayerSpeech("드디어 끝인가....");
+
+        // 2. 대사를 읽을 시간 2.5초 대기
+        yield return new WaitForSecondsRealtime(2.5f);
+
+        // 3. 허브 씬으로 페이드 전환하며 이동
+        LoadNextScene("Hub_Scene");
     }
 
     /// <summary>
@@ -367,6 +437,21 @@ public class TutorialController : MonoBehaviour
                 Player.instance.health = 5; 
             }
             player.currentEnergy = player.maxEnergy;
+
+            // 3. 공격 데미지를 15로 변경 (패럴만 전용 스펙)
+            PlayerClickAttack clickAttack = playerObj.GetComponent<PlayerClickAttack>();
+            if (clickAttack == null)
+            {
+                clickAttack = playerObj.GetComponentInChildren<PlayerClickAttack>();
+            }
+            if (clickAttack != null)
+            {
+                clickAttack.attackDamage = 15;
+                Debug.Log("👤 [데미지 변경] 패럴만 사격 공격 데미지 -> 15");
+            }
+
+            // 4. 패럴만 변신 상태 플래그 활성화
+            isParalman = true;
         }
     }
 
