@@ -757,6 +757,36 @@ public class PlayerMoving : MonoBehaviour {
         UpdateEnergyUI();
     }
 
+    /// <summary>
+    /// 에너지를 차감하고 성공 여부를 반환하며 UI를 갱신합니다.
+    /// </summary>
+    public bool UseEnergy(float amount)
+    {
+        if (currentEnergy >= amount)
+        {
+            currentEnergy -= amount;
+            UpdateEnergyUI();
+            return true;
+        }
+        else
+        {
+            TriggerEnergyWarning();
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 에너지 부족 경고 UI를 트리거합니다.
+    /// </summary>
+    public void TriggerEnergyWarning()
+    {
+        if (warningTextObj != null && !warningTextObj.activeSelf)
+        {
+            StartCoroutine(ShowWarningUI());
+        }
+    }
+
+
     public void AddRegenBonus(float bonus)
     {
         energyRegenBonus += bonus;

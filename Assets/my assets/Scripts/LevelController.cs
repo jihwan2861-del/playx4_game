@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 #region Serializable classes
 [System.Serializable]
@@ -190,6 +191,9 @@ public class LevelController : MonoBehaviour {
     {
         Debug.Log("🏁 [미션 완료] 보스전 생존 성공! 스테이지 클리어!");
 
+        // 0. 타임스케일 안전 복구 (페이즈 전환 연출 도중 보스가 사망할 경우 timeScale이 0일 수 있음)
+        Time.timeScale = 1f;
+
         if (bgmAudioSource != null)
         {
             bgmAudioSource.Stop();
@@ -252,14 +256,54 @@ public class LevelController : MonoBehaviour {
             PlayerUI.instance.ShowVictory();
         }
 
-        // 6. 4초 후 허브 씬으로 자동 복귀
-        StartCoroutine(AutoReturnToHubRoutine(4f));
+        // 6. 허브 복귀는 BossDefeatManager가 독립적으로 처리합니다.
     }
 
     private IEnumerator AutoReturnToHubRoutine(float delay)
     {
-        yield return new WaitForSeconds(delay);
-        Debug.Log("🏠 [자동 복귀] 스테이지 클리어로 인해 4초 후 허브 씬으로 자동 복귀합니다.");
+        // 타임스케일이 0인 경우에도 정상 작동하도록 현실 시간(Realtime) 기준 대기
+        float waitBeforeFade = Mathf.Max(0f, delay - 1.5f);
+        yield return new WaitForSecondsRealtime(waitBeforeFade);
+        
+        Debug.Log("🏠 [자동 복귀] 허브 씬으로 돌아가기 전에 화면을 1.5초 동안 서서히 어둡게 만듭니다.");
+
+        // 1. 페이드아웃 전용 캔버스 생성
+        GameObject fadeCanvasObj = new GameObject("VictoryFadeCanvas");
+        Canvas canvas = fadeCanvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 99999; // 모든 UI보다 위에 표시
+        
+        var scaler = fadeCanvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
+        scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+
+        // 2. 페이드아웃용 블랙 이미지 생성
+        GameObject blackImageObj = new GameObject("BlackImage");
+        blackImageObj.transform.SetParent(fadeCanvasObj.transform, false);
+        Image blackImg = blackImageObj.AddComponent<Image>();
+        blackImg.color = new Color(0f, 0f, 0f, 0f); // 완전히 투명하게 시작
+
+        // 화면 꽉 채우기
+        RectTransform rect = blackImg.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.one;
+
+        // 3. 1.5초 동안 부드럽게 페이드 아웃 (Alpha 0 ➔ 1)
+        float elapsed = 0f;
+        float fadeDuration = 1.5f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float alpha = Mathf.Clamp01(elapsed / fadeDuration);
+            if (blackImg != null)
+            {
+                blackImg.color = new Color(0f, 0f, 0f, alpha);
+            }
+            yield return null;
+        }
+
+        // 4. 허브 씬 로딩 (DontDestroyOnLoad가 아니므로 로딩과 함께 이 캔버스는 삭제됨)
         UnityEngine.SceneManagement.SceneManager.LoadScene("Hub_Scene");
     }
 
@@ -306,6 +350,13 @@ public class LevelController : MonoBehaviour {
         // "Enemy" 태그를 가진 모든 적 기체 파괴
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject enemy in enemies) Destroy(enemy);
+
+        // 씬 내의 모든 토템 파괴
+        var totems = GameObject.FindObjectsOfType<TotemAI>();
+        foreach (var t in totems)
+        {
+            if (t != null) Destroy(t.gameObject);
+        }
 
         // 씬 내의 모든 투사체(적 탄알) 파괴
         var projectiles = GameObject.FindObjectsOfType<Projectile>();
@@ -541,5 +592,67 @@ public class LevelController : MonoBehaviour {
             // 첫 스폰 이후로는 3초마다 반복
             yield return new WaitForSeconds(wallSpawnInterval);
         }
+    }
+
+}
+
+/// <summary>
+/// 보스 격퇴 후 허브 씬으로의 자동 복귀를 담당하는 영속 도우미 컴포넌트입니다.
+/// DontDestroyOnLoad 오브젝트에 붙어 씬 전환 중에도 안전하게 동작합니다.
+/// </summary>
+public class AutoReturnRunner : MonoBehaviour
+{
+    public IEnumerator RunAutoReturn(float delay)
+    {
+        // 타임스케일이 0인 경우에도 정상 작동하도록 현실 시간(Realtime) 기준 대기
+        float waitBeforeFade = Mathf.Max(0f, delay - 1.5f);
+        yield return new WaitForSecondsRealtime(waitBeforeFade);
+
+        Debug.Log("🏠 [자동 복귀] 허브 씬으로 돌아가기 전에 화면을 1.5초 동안 서서히 어둡게 만듭니다.");
+
+        // 1. 페이드아웃 전용 캔버스 생성 (DontDestroyOnLoad 적용)
+        GameObject fadeCanvasObj = new GameObject("VictoryFadeCanvas");
+        DontDestroyOnLoad(fadeCanvasObj);
+        Canvas canvas = fadeCanvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 99999; // 모든 UI보다 위에 표시
+
+        var scaler = fadeCanvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
+        scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+
+        // 2. 페이드아웃용 블랙 이미지 생성
+        GameObject blackImageObj = new GameObject("BlackImage");
+        blackImageObj.transform.SetParent(fadeCanvasObj.transform, false);
+        Image blackImg = blackImageObj.AddComponent<Image>();
+        blackImg.color = new Color(0f, 0f, 0f, 0f); // 완전히 투명하게 시작
+
+        // 화면 꽉 채우기
+        RectTransform rect = blackImg.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.one;
+
+        // 3. 1.5초 동안 부드럽게 페이드 아웃 (Alpha 0 → 1)
+        float elapsed = 0f;
+        float fadeDuration = 1.5f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float alpha = Mathf.Clamp01(elapsed / fadeDuration);
+            if (blackImg != null)
+            {
+                blackImg.color = new Color(0f, 0f, 0f, alpha);
+            }
+            yield return null;
+        }
+
+        // 4. 허브 씬 로딩
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Hub_Scene");
+
+        // 5. 씬 전환 후 잠시 대기 후 페이드인 & 자기 자신 정리
+        yield return null;
+        Destroy(fadeCanvasObj);
+        Destroy(gameObject);
     }
 }

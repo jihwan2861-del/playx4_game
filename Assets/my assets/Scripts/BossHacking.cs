@@ -37,7 +37,7 @@ public class BossHacking : MonoBehaviour
     void Update()
     {
         if (Player.instance == null) return;
-        BossPatternController bossController = GetComponent<BossPatternController>();
+        BossManager bossManager = BossManager.instance;
 
         // 보스와 플레이어 사이의 거리 계산
         float distanceToPlayer = Vector3.Distance(transform.position, Player.instance.transform.position);
@@ -48,7 +48,7 @@ public class BossHacking : MonoBehaviour
             if (!isHackingActive)
             {
                 isHackingActive = true;
-                if (bossController != null) bossController.isHacking = true;
+                if (bossManager != null) bossManager.isHacking = true;
                 
                 if (bossRenderer != null) bossRenderer.color = hackingColor;
                 
@@ -65,7 +65,7 @@ public class BossHacking : MonoBehaviour
             if (isHackingActive)
             {
                 isHackingActive = false;
-                if (bossController != null) bossController.isHacking = false;
+                if (bossManager != null) bossManager.isHacking = false;
                 
                 if (bossRenderer != null) bossRenderer.color = originalColor;
 
@@ -80,10 +80,10 @@ public class BossHacking : MonoBehaviour
 
     void OnDisable()
     {
-        BossPatternController bossController = GetComponent<BossPatternController>();
-        if (bossController != null && isHackingActive)
+        BossManager bossManager = BossManager.instance;
+        if (bossManager != null && isHackingActive)
         {
-            bossController.isHacking = false;
+            bossManager.isHacking = false;
             isHackingActive = false;
         }
     }

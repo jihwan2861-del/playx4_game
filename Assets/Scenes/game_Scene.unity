@@ -1956,7 +1956,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 150
+  health: 50
+  isBoss: 0
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -2032,7 +2033,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 275569070457599651, guid: 47b84160f0aee9a49a28094a16fc7f3a,
     type: 3}
-  fireRate: 0.6
+  fireRate: 1
   coneAngle: 30
 --- !u!114 &862973608
 MonoBehaviour:
@@ -2147,7 +2148,7 @@ PrefabInstance:
     - target: {fileID: 3841995581833992774, guid: ea9429ef7d663044b8b2ce373fb4df8d,
         type: 3}
       propertyPath: m_Name
-      value: "\uD638\uC9C0"
+      value: hodge
       objectReference: {fileID: 0}
     - target: {fileID: 3841995581833992774, guid: ea9429ef7d663044b8b2ce373fb4df8d,
         type: 3}
@@ -2187,11 +2188,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3841995581833992774, guid: ea9429ef7d663044b8b2ce373fb4df8d,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2069774490}
+      addedObject: {fileID: 2069774494}
     - targetCorrespondingSourceObject: {fileID: 3841995581833992774, guid: ea9429ef7d663044b8b2ce373fb4df8d,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2069774489}
+      addedObject: {fileID: 2069774495}
   m_SourcePrefab: {fileID: 100100000, guid: ea9429ef7d663044b8b2ce373fb4df8d, type: 3}
 --- !u!1 &933112122
 GameObject:
@@ -2269,6 +2270,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 933112122}
   m_CullTransparentMesh: 1
+--- !u!1 &969924558
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 969924560}
+  - component: {fileID: 969924559}
+  m_Layer: 0
+  m_Name: BossDefeatManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &969924559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 969924558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9dc493e506e9ab4088d6b5bfc47898a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delayBeforeFade: 2.5
+  fadeDuration: 1.5
+  hubSceneName: Hub_Scene
+--- !u!4 &969924560
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 969924558}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 32.937366, y: 26.006882, z: -0.23472665}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &974050356
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2941,7 +2989,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 6535132119206659836, guid: 1a79067c89fae1645abe332a77fb6a8d,
     type: 3}
-  fireRate: 0.4
+  fireRate: 0.6
   isDiagonal: 1
 --- !u!114 &1043722375
 MonoBehaviour:
@@ -3015,7 +3063,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 150
+  health: 50
+  isBoss: 0
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -3114,6 +3163,16 @@ MonoBehaviour:
   clickDetectRadius: 0.5
   targetIndicatorPrefab: {fileID: 3095060044746406292, guid: 2ca77698239ef50489c0d617d68392b9,
     type: 3}
+  strongAttackCooldown: 1.5
+  strongAttackDamage: 30
+  strongProjectileSpeed: 40
+  strongProjectilePrefab: {fileID: 3120742466501038285, guid: 82e1b18662ff9a9469ac8b20f40d31f8,
+    type: 3}
+  strongScaleMultiplier: 2
+  strongProjectileColor: {r: 1, g: 0.5, b: 0, a: 1}
+  strongShootSound: {fileID: 0}
+  strongShootVolume: 0.8
+  strongAttackEnergyCost: 15
   currentTarget: {fileID: 0}
   shootSound: {fileID: 0}
   audioSource: {fileID: 0}
@@ -3135,7 +3194,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1115089191
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3341,7 +3400,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 275569070457599651, guid: 47b84160f0aee9a49a28094a16fc7f3a,
     type: 3}
-  fireRate: 0.6
+  fireRate: 1
   coneAngle: 30
 --- !u!114 &1298901023
 MonoBehaviour:
@@ -3415,7 +3474,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 150
+  health: 50
+  isBoss: 0
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -3702,7 +3762,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 6535132119206659836, guid: 1a79067c89fae1645abe332a77fb6a8d,
     type: 3}
-  fireRate: 0.4
+  fireRate: 0.6
   isDiagonal: 1
 --- !u!114 &1436092605
 MonoBehaviour:
@@ -3776,7 +3836,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 150
+  health: 50
+  isBoss: 0
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -4487,7 +4548,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 150
+  health: 50
+  isBoss: 0
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -4563,7 +4625,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 6535132119206659836, guid: 1a79067c89fae1645abe332a77fb6a8d,
     type: 3}
-  fireRate: 0.4
+  fireRate: 0.6
   isDiagonal: 1
 --- !u!114 &1626057595
 MonoBehaviour:
@@ -5054,7 +5116,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 150
+  health: 50
+  isBoss: 0
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -5302,7 +5365,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 150
+  health: 50
+  isBoss: 0
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -5313,6 +5377,57 @@ MonoBehaviour:
   homingMissileNerf: 3
   overrideVisualPrefab: {fileID: 0}
   attackAnimTrigger: Attack
+--- !u!1 &2004206489
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2004206491}
+  - component: {fileID: 2004206490}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2004206490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004206489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 969e60da69613914495bb4fc54495dd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetObjectWithHealth: {fileID: 2069774480}
+  uiPanel: {fileID: 2131838328}
+  healthBarFill: {fileID: 933112124}
+  healthSlider: {fileID: 0}
+  healthPercentageTextObj: {fileID: 526551939}
+  bossNameTextObj: {fileID: 0}
+  bossName: HODGE
+--- !u!4 &2004206491
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004206489}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1144.2, y: 742.33026, z: -4.77645}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2026441214
 GameObject:
   m_ObjectHideFlags: 0
@@ -5464,7 +5579,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 275569070457599651, guid: 47b84160f0aee9a49a28094a16fc7f3a,
     type: 3}
-  fireRate: 0.6
+  fireRate: 1
   coneAngle: 30
 --- !u!114 &2049547556
 MonoBehaviour:
@@ -5538,7 +5653,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb93e18709841574888ca778559f3bc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 150
+  health: 50
+  isBoss: 0
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -5568,6 +5684,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 500
+  isBoss: 1
   destructionVFX: {fileID: 0}
   hitEffect: {fileID: 0}
   hitMaterial: {fileID: 0}
@@ -5671,58 +5788,59 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &2069774489
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2069774480}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4111df3d8692ad84ebfaf0552401b4e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  projectilePrefab: {fileID: 1133179940264033133, guid: cc59ab587cecac147ba89f717aaf7ee1,
-    type: 3}
-  patternType: 1
-  startDelay: 1
-  fireInterval: 0.5
-  loopFire: 1
-  randomizePattern: 1
-  burstCount: 0
-  restTimeMin: 1.5
-  restTimeMax: 3
-  projectilesPerFire: 8
-  spiralRotSpeed: 15
-  coneProjectiles: 3
-  coneAngle: 45
-  shooterAnimator: {fileID: 0}
-  attackAnimTrigger: Attack
---- !u!114 &2069774490
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2069774480}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c57bfd60e8ab6024fb7e7295434b831a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentState: 3
-  afterAttackState: 3
-  speed: 2
-  attackDuration: 4
-  chaseWhileAttacking: 1
-  attackChaseSpeed: 1.5
 --- !u!4 &2069774492 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1196779060332950469, guid: ea9429ef7d663044b8b2ce373fb4df8d,
     type: 3}
   m_PrefabInstance: {fileID: 895658280}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2069774494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2069774480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d152405937c51bd40b1525fefea879d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  usePatternMovement: 1
+  idleTime: 4
+  dashSpeed: 15
+  attackDelay: 0
+  attackDuration: 1
+  bulletPrefab: {fileID: 1133179940264033133, guid: cc59ab587cecac147ba89f717aaf7ee1,
+    type: 3}
+  radialBulletCount: 12
+  afterimageInterval: 0.05
+  afterimageFadeDuration: 0.4
+  afterimageColor: {r: 0.1745283, g: 1, b: 1, a: 0.6}
+  moveSpeed: 2
+  isChasingPlayer: 1
+  stopDistance: 3
+  bossAnimator: {fileID: 0}
+  runBoolName: isRunning
+  phase2IdleTime: 0.6
+  phase2DashSpeed: 22
+  currentState: 0
+--- !u!114 &2069774495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2069774480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5023ef2b3ce35d443a194cfb09c82329, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  triggerHpRatio: 0.5
+  glowDuration: 3
+  maxScaleMultiplier: 1.25
+  reinstallWhenAllDestroyed: 0
 --- !u!1 &2114990825
 GameObject:
   m_ObjectHideFlags: 0
@@ -5887,13 +6005,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 2131838328}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8418ef0095e23784393a4a5119fcd0f8, type: 3}
+  m_Script: {fileID: 11500000, guid: 518b1690ab823294d93bb537ed9509b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiPanel: {fileID: 1669956060}
+  maxHp: 500
+  currentHp: 0
+  bossName: HODGE
+  uiPanel: {fileID: 2131838328}
   healthBarFill: {fileID: 933112124}
   healthPercentageTextObj: {fileID: 526551939}
   bossNameTextObj: {fileID: 0}
+  isHacking: 0
 --- !u!1001 &3398299749492925391
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6229,3 +6351,5 @@ SceneRoots:
   - {fileID: 1637137102}
   - {fileID: 1370319792}
   - {fileID: 1548770505}
+  - {fileID: 2004206491}
+  - {fileID: 969924560}

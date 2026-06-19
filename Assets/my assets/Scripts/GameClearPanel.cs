@@ -57,12 +57,12 @@ public class GameClearPanel : MonoBehaviour
 
         if (activeSceneName == "game_Scene")
         {
-            titleText = "HODGE RESOLVED";
+            titleText = "HODGE RESOLVED\n[STAGE CLEAR]";
             subText = "PROJECT MILLENNIUM\nENTITY RESOLVED. STATUS: STABLE";
         }
         else if (activeSceneName == "Stage2_Scene")
         {
-            titleText = "MASS GAP RESOLVED";
+            titleText = "MASS GAP RESOLVED\n[STAGE CLEAR]";
             subText = "PROJECT MILLENNIUM\nENTITY RESOLVED. STATUS: STABLE";
         }
 
@@ -73,7 +73,7 @@ public class GameClearPanel : MonoBehaviour
         // 지정된 시간 동안 알파 값을 0에서 1로 부드럽게 증가시킴
         while (elapsedTime < fadeDuration)
         {
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.unscaledDeltaTime;
             canvasGroup.alpha = Mathf.Clamp01(elapsedTime / fadeDuration);
             yield return null;
         }

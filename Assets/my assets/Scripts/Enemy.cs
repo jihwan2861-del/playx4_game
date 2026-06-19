@@ -9,6 +9,8 @@ public class Enemy : MonoBehaviour
     [Header("체력")]
     [Tooltip("Health points in integer")]
     public int health = 10;
+    [Tooltip("이 오브젝트가 보스인지 여부")]
+    public bool isBoss = false;
 
     [Header("이펙트")]
     [Tooltip("VFX prefab generating after destruction")]
@@ -45,6 +47,12 @@ public class Enemy : MonoBehaviour
     private void Start()
     {
         CacheOriginalState();
+
+        // 보스일 경우, HP 값을 BossManager에 지정된 최대 체력과 동기화합니다.
+        if (isBoss && BossManager.instance != null)
+        {
+            health = Mathf.RoundToInt(BossManager.instance.maxHp);
+        }
     }
 
     private void CacheOriginalState()
@@ -66,6 +74,12 @@ public class Enemy : MonoBehaviour
     {
         health -= damage;
 
+        // 보스일 경우 BossManager의 게이지를 감소시킵니다.
+        if (isBoss && BossManager.instance != null)
+        {
+            BossManager.instance.TakeDamage(damage);
+        }
+
         // 1. 피격 파티클 이펙트 스폰
         if (hitEffect != null)
         {
@@ -84,6 +98,12 @@ public class Enemy : MonoBehaviour
         // 체력이 0 이하가 되면 파괴
         if (health <= 0)
         {
+            // 보스의 경우: Enemy.health(int)가 먼저 0이 되었지만 BossManager.currentHp(float)가 아직 양수일 수 있음
+            // → 보스 오브젝트가 파괴되기 전에 반드시 OnBossDefeated()가 발동되도록 강제 동기화
+            if (isBoss && BossManager.instance != null && BossManager.instance.currentHp > 0)
+            {
+                BossManager.instance.TakeDamage(BossManager.instance.currentHp); // 잔여 HP를 전부 깎아 사망 처리 확정
+            }
             Destruction();
         }
     }

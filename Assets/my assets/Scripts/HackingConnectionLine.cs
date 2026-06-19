@@ -6,7 +6,7 @@ using UnityEngine;
 public class HackingConnectionLine : MonoBehaviour
 {
     private LineRenderer lineRenderer;
-    private BossPatternController bossPC;
+    private BossManager bossManager;
     private PlayerMoving player;
 
     [Header("시각 효과 설정")]
@@ -24,9 +24,9 @@ public class HackingConnectionLine : MonoBehaviour
 
     private void Start()
     {
-        bossPC = GetComponent<BossPatternController>();
+        bossManager = BossManager.instance;
         player = PlayerMoving.instance;
-
+        
         // LineRenderer 컴포넌트 자동 추가 및 세팅
         lineRenderer = GetComponent<LineRenderer>();
         if (lineRenderer == null)
@@ -63,8 +63,13 @@ public class HackingConnectionLine : MonoBehaviour
             player = PlayerMoving.instance;
         }
 
+        if (bossManager == null)
+        {
+            bossManager = BossManager.instance;
+        }
+
         // 보스의 해킹 상태 여부 및 플레이어와 보스의 활성화 여부에 맞춰 선 켜고 끄기
-        if (bossPC != null && bossPC.isHacking && player != null)
+        if (bossManager != null && bossManager.isHacking && player != null)
         {
             if (!lineRenderer.enabled)
             {

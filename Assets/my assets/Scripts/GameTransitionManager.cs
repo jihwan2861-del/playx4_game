@@ -18,7 +18,7 @@ public class GameTransitionManager : MonoBehaviour
     public float deathFadeTime = 2f;    // 죽었을 때 서서히 어두워지는 시간
 
     [Header("인트로 연출 설정")]
-    [Tooltip("인트로 시네마틱 연출에서 줌인해서 보여줄 대상 캐릭터입니다. 비워두면 씬 내의 보스(BossPatternController)를 자동으로 찾아 비춥니다.")]
+    [Tooltip("인트로 시네마틱 연출에서 줌인해서 보여줄 대상 캐릭터입니다. 비워두면 씬 내의 보스(BossManager)를 자동으로 찾아 비춥니다.")]
     public Transform introZoomTarget;
 
     public static GameTransitionManager instance;
@@ -82,10 +82,10 @@ public class GameTransitionManager : MonoBehaviour
         {
             Transform targetTransform = introZoomTarget;
 
-            // 인스펙터에 지정되지 않았다면 씬에서 보스(BossPatternController)를 자동 검색
+            // 인스펙터에 지정되지 않았다면 씬에서 보스(BossManager)를 자동 검색
             if (targetTransform == null)
             {
-                BossPatternController boss = FindObjectOfType<BossPatternController>();
+                BossManager boss = FindObjectOfType<BossManager>();
                 if (boss != null)
                 {
                     targetTransform = boss.transform;
@@ -161,6 +161,124 @@ public class GameTransitionManager : MonoBehaviour
 
         TransitionRunner runner = transitionCanvas.AddComponent<TransitionRunner>();
         runner.StartCoroutine(runner.Run(sceneName, gameOverPanel, this));
+    }
+
+    /// <summary>
+    /// 보스 50% 체력 페이즈 전환 시네마틱 연출을 실행합니다. (글로벌 시간 정지 연동)
+    /// </summary>
+    public void StartBossPhaseTransition(Transform bossTransform, System.Action onMidpoint, System.Action onEnd)
+    {
+        StartCoroutine(BossPhaseTransitionRoutine(bossTransform, onMidpoint, onEnd));
+    }
+
+    private IEnumerator BossPhaseTransitionRoutine(Transform bossTransform, System.Action onMidpoint, System.Action onEnd)
+    {
+        if (bossTransform == null) yield break;
+
+        // 1. 글로벌 시간 정지
+        Time.timeScale = 0f;
+
+        // 2. 플레이어 조작 비활성화 (이동 및 사격 잠금)
+        if (PlayerMoving.instance != null)
+        {
+            PlayerMoving.instance.isDialogueFrozen = true;
+            var playerRb = PlayerMoving.instance.GetComponent<Rigidbody2D>();
+            if (playerRb != null) playerRb.velocity = Vector2.zero; // 물리 미끄러짐 방지
+        }
+
+        // 3. 카메라 추적 일시 중단 및 줌인 제어
+        Camera mainCam = Camera.main;
+        CameraFollow camFollow = mainCam != null ? mainCam.GetComponent<CameraFollow>() : null;
+        
+        float originalOrthoSize = 5f;
+        Vector3 camStartPos = Vector3.zero;
+        if (mainCam != null)
+        {
+            originalOrthoSize = mainCam.orthographicSize;
+            camStartPos = mainCam.transform.position;
+        }
+
+        if (camFollow != null)
+        {
+            camFollow.isIntroCinematic = true;
+        }
+
+        // 줌인 진행 (0.8초)
+        float zoomInDuration = 0.8f;
+        float elapsed = 0f;
+        float targetOrthoSize = originalOrthoSize * 0.6f;
+
+        while (elapsed < zoomInDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / zoomInDuration);
+
+            if (mainCam != null)
+            {
+                mainCam.orthographicSize = Mathf.Lerp(originalOrthoSize, targetOrthoSize, t);
+                Vector3 targetPos = bossTransform.position;
+                targetPos.z = camStartPos.z;
+                mainCam.transform.position = Vector3.Lerp(camStartPos, targetPos, t);
+            }
+            yield return null;
+        }
+
+        // 중간 시점 (보스 확대/빛남이 최대치인 상태) 대기 (0.4초)
+        // 이 시점에 탄막 제거 및 토템 재생성이 시작됩니다.
+        if (onMidpoint != null)
+        {
+            onMidpoint.Invoke();
+        }
+        yield return new WaitForSecondsRealtime(0.4f);
+
+        // 4. 다시 플레이어 위치로 줌아웃하며 복귀 (0.8초)
+        elapsed = 0f;
+        float zoomOutDuration = 0.8f;
+        Vector3 zoomOutStartPos = mainCam != null ? mainCam.transform.position : camStartPos;
+        Transform playerTransform = PlayerMoving.instance != null ? PlayerMoving.instance.transform : null;
+
+        while (elapsed < zoomOutDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / zoomOutDuration);
+
+            if (mainCam != null)
+            {
+                Vector3 targetPos = camStartPos;
+                if (playerTransform != null && camFollow != null)
+                {
+                    targetPos = playerTransform.position + camFollow.offset;
+                }
+                targetPos.z = camStartPos.z;
+
+                mainCam.transform.position = Vector3.Lerp(zoomOutStartPos, targetPos, t);
+                mainCam.orthographicSize = Mathf.Lerp(targetOrthoSize, originalOrthoSize, t);
+            }
+            yield return null;
+        }
+
+        // 카메라 원래 상태로 복귀 및 제어권 해제
+        if (mainCam != null)
+        {
+            mainCam.orthographicSize = originalOrthoSize;
+        }
+        if (camFollow != null)
+        {
+            camFollow.isIntroCinematic = false;
+        }
+
+        // 5. 플레이어 조작 활성화 및 글로벌 시간 원복
+        if (PlayerMoving.instance != null)
+        {
+            PlayerMoving.instance.isDialogueFrozen = false;
+        }
+        Time.timeScale = 1f;
+
+        // 6. 페이즈 2 시작 알림 콜백 호출
+        if (onEnd != null)
+        {
+            onEnd.Invoke();
+        }
     }
 }
 

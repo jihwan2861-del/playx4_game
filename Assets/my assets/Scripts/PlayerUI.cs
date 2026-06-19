@@ -46,7 +46,7 @@ public class PlayerUI : MonoBehaviour
         {
             victoryTextObj.SetActive(true);
             Text t = victoryTextObj.GetComponent<Text>();
-            if (t != null) t.text = "MISSION COMPLETE!\nSAFE ZONE REACHED";
+            if (t != null) t.text = "STAGE CLEAR\nMISSION COMPLETE";
         }
 
         // 2. 신규 부드러운 UI 페이드 연출 실행
